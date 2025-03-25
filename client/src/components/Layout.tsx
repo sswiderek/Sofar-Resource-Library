@@ -10,22 +10,12 @@ export default function Layout({ children }: LayoutProps) {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center">
-            <svg
-              className="h-10 w-auto mr-3 text-primary"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
-              <path d="M8 7h6" />
-              <path d="M8 11h8" />
-              <path d="M8 15h5" />
-            </svg>
-            <h1 className="text-xl font-semibold text-neutral-700">
+            <img 
+              src="/sofar-logo.png" 
+              alt="Sofar Logo" 
+              className="h-10 w-auto mr-3"
+            />
+            <h1 className="text-xl font-semibold text-neutral-700 bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
               Partner Resource Library
             </h1>
           </div>
@@ -38,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-neutral-500">
-              &copy; {new Date().getFullYear()} Resource Library. All rights reserved.
+              &copy; {new Date().getFullYear()} Sofar Ocean. All rights reserved.
             </div>
             <div className="mt-3 md:mt-0">
               <span className="text-sm text-neutral-500">

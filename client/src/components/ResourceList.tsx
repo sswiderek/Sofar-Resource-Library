@@ -25,54 +25,51 @@ const getTypeBadgeClasses = (type: string): string => {
 
 export default function ResourceList({ resource }: ResourceListProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] hover:border-blue-200">
       <div className="p-4 sm:p-5 flex flex-col sm:flex-row">
         <div className="flex-1">
           <div className="flex items-center flex-wrap gap-2 mb-2">
-            <Badge variant="outline" className={`${getTypeBadgeClasses(resource.type)} border-0`}>
+            <Badge variant="outline" className={`${getTypeBadgeClasses(resource.type)} border-0 px-3 py-1 rounded-full font-medium`}>
               {resource.type}
             </Badge>
-            <span className="text-xs text-neutral-500">{resource.date}</span>
-            <span className="text-xs text-neutral-500 hidden sm:inline-block">•</span>
-            <span className="text-xs text-neutral-500">
-              Buyer's Journey: <span className="font-medium">{resource.messagingStage}</span>
-            </span>
+            <span className="text-xs text-neutral-500 font-medium">{resource.date}</span>
           </div>
           
-          <h3 className="text-lg font-medium text-neutral-700">
+          <h3 className="text-lg font-semibold text-neutral-700 leading-tight">
             {resource.name}
           </h3>
           
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-neutral-500 mb-2">
             {resource.description}
           </p>
           
-          <div className="mt-3 flex flex-wrap gap-1">
-            {resource.product.map((prod) => (
-              <Badge key={prod} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200">
-                {prod}
-              </Badge>
-            ))}
-            
-            {resource.audience.map((aud) => (
-              <Badge key={aud} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200">
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {resource.audience.slice(0, 3).map((aud) => (
+              <Badge key={aud} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
                 {aud}
               </Badge>
             ))}
+            {resource.audience.length > 3 && (
+              <Badge variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
+                +{resource.audience.length - 3} more
+              </Badge>
+            )}
           </div>
         </div>
         
         <div className="mt-4 sm:mt-0 sm:ml-6 flex sm:flex-col sm:justify-center">
           <Button 
             asChild
-            className="w-full"
+            className="px-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all"
           >
             <a
               href={resource.url}
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center"
             >
               View resource
+              <ArrowRight className="ml-1 h-4 w-4" />
             </a>
           </Button>
         </div>

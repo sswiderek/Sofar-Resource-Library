@@ -25,47 +25,42 @@ const getTypeBadgeClasses = (type: string): string => {
 
 export default function ResourceCard({ resource }: ResourceCardProps) {
   return (
-    <Card className="bg-white overflow-hidden hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-4">
+    <Card className="bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border border-transparent hover:border-blue-200">
+      <CardContent className="p-5">
         <div className="flex justify-between items-start">
-          <Badge variant="outline" className={`${getTypeBadgeClasses(resource.type)} border-0`}>
+          <Badge variant="outline" className={`${getTypeBadgeClasses(resource.type)} border-0 px-3 py-1 rounded-full font-medium`}>
             {resource.type}
           </Badge>
-          <span className="text-xs text-neutral-500">{resource.date}</span>
+          <span className="text-xs text-neutral-500 font-medium">{resource.date}</span>
         </div>
         
-        <h3 className="mt-2 text-lg font-medium text-neutral-700 line-clamp-2">
+        <h3 className="mt-3 text-lg font-semibold text-neutral-700 line-clamp-2 leading-tight">
           {resource.name}
         </h3>
         
-        <p className="mt-1 text-sm text-neutral-500 line-clamp-2">
+        <p className="mt-2 text-sm text-neutral-500 line-clamp-2 mb-4">
           {resource.description}
         </p>
         
-        <div className="mt-3 flex flex-wrap gap-1">
-          {resource.product.map((prod) => (
-            <Badge key={prod} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200">
-              {prod}
-            </Badge>
-          ))}
-          
-          {resource.audience.map((aud) => (
-            <Badge key={aud} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200">
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {resource.audience.slice(0, 3).map((aud) => (
+            <Badge key={aud} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
               {aud}
             </Badge>
           ))}
+          {resource.audience.length > 3 && (
+            <Badge variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
+              +{resource.audience.length - 3} more
+            </Badge>
+          )}
         </div>
         
-        <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-between items-center">
-          <span className="text-xs text-neutral-500">
-            Buyer's Journey: <span className="font-medium">{resource.messagingStage}</span>
-          </span>
-          
+        <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end items-center">
           <a
             href={resource.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-dark"
+            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
           >
             View resource
             <ArrowRight className="ml-1 h-4 w-4" />
