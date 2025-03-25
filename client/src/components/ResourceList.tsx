@@ -12,11 +12,11 @@ const getTypeBadgeClasses = (type: string): string => {
   switch (type.toLowerCase()) {
     case 'webinar':
       return 'bg-blue-100 text-blue-800';
-    case 'document':
+    case 'slides':
       return 'bg-green-100 text-green-800';
-    case 'message':
+    case 'customer story':
       return 'bg-purple-100 text-purple-800';
-    case 'meeting recap':
+    case 'blog':
       return 'bg-yellow-100 text-yellow-800';
     default:
       return 'bg-neutral-100 text-neutral-600';
@@ -35,7 +35,7 @@ export default function ResourceList({ resource }: ResourceListProps) {
             <span className="text-xs text-neutral-500">{resource.date}</span>
             <span className="text-xs text-neutral-500 hidden sm:inline-block">•</span>
             <span className="text-xs text-neutral-500">
-              Messaging: <span className="font-medium">{resource.messagingStage}</span>
+              Buyer's Journey: <span className="font-medium">{resource.messagingStage}</span>
             </span>
           </div>
           

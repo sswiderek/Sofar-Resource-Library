@@ -204,9 +204,9 @@ export default function FilterSidebar({
             ))}
           </div>
 
-          {/* Messaging Stage Filter */}
+          {/* Buyer's Journey Filter */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Messaging Stage</h3>
+            <h3 className="text-sm font-medium text-neutral-500 mb-2">Buyer's Journey</h3>
             {metadata?.messagingStages.map((stage: string) => (
               <div key={stage} className="flex items-center mb-2">
                 <Checkbox
