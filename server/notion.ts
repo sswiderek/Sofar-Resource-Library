@@ -217,8 +217,20 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     return resources;
   } catch (error) {
     // Log the error but return mock data so the app can still function
-    log(`Error fetching resources from Notion: ${error instanceof Error ? error.message : String(error)}`);
-    log("Using mock resource data for demonstration.");
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log(`Error fetching resources from Notion: ${errorMessage}`);
+    
+    if (errorMessage.includes("Could not find database") || errorMessage.includes("object_not_found")) {
+      log("INTEGRATION ACCESS ISSUE: Your Notion integration doesn't have access to the database.");
+      log("Please follow the steps in notion-connection-guide.md to share your database with the integration.");
+    } else if (errorMessage.includes("unauthorized") || errorMessage.includes("invalid_auth")) {
+      log("AUTHENTICATION ISSUE: Your Notion API key may be invalid or expired.");
+      log("Please check your NOTION_API_KEY environment variable and make sure it's correct.");
+    } else {
+      log("Unexpected error. Please check the error message above for details.");
+    }
+    
+    log("Using mock resource data for demonstration until the Notion connection is fixed.");
     return mockResources;
   }
 }
