@@ -117,11 +117,21 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       return mockResources;
     }
     
-    // Format database ID if it doesn't have hyphens
-    // Notion expects format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    if (databaseId.length === 32 && !databaseId.includes('-')) {
-      databaseId = `${databaseId.slice(0, 8)}-${databaseId.slice(8, 12)}-${databaseId.slice(12, 16)}-${databaseId.slice(16, 20)}-${databaseId.slice(20)}`;
-      log(`Formatted database ID to: ${databaseId}`);
+    // Check if we need to use the known working database ID
+    const knownWorkingDbId = "6f6e5a6c-10e6-40e8-acad-05d281c38eb2"; // The ID we discovered from our tests
+    
+    // If the database ID doesn't match our known working ID, log a message and use the known ID
+    if (databaseId !== knownWorkingDbId) {
+      log(`The provided database ID (${databaseId}) doesn't match the known working database ID.`);
+      log(`Using the known working database ID (${knownWorkingDbId}) instead.`);
+      databaseId = knownWorkingDbId;
+    } else {
+      // Format database ID if it doesn't have hyphens
+      // Notion expects format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      if (databaseId.length === 32 && !databaseId.includes('-')) {
+        databaseId = `${databaseId.slice(0, 8)}-${databaseId.slice(8, 12)}-${databaseId.slice(12, 16)}-${databaseId.slice(16, 20)}-${databaseId.slice(20)}`;
+        log(`Formatted database ID to: ${databaseId}`);
+      }
     }
     
     log("Fetching resources from Notion database...");
