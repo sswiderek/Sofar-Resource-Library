@@ -37,11 +37,11 @@ export default function Home() {
   
   // Fetch resources based on filter
   const { 
-    data: resources, 
+    data: resources = [], 
     isLoading, 
     error, 
     refetch 
-  } = useQuery({
+  } = useQuery<Resource[]>({
     queryKey: [`/api/resources?${filterQuery}`],
     enabled: !!selectedPartner, // Only run query if partner is selected
   });
