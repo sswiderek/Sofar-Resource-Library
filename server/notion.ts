@@ -170,43 +170,42 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       }
       
       return {
-        name: properties.Name?.title?.[0]?.text?.content || 
-              properties.name?.title?.[0]?.text?.content || 
+        name: properties.Title?.title?.[0]?.text?.content || 
+              properties.Name?.title?.[0]?.text?.content || 
               "Untitled Resource",
               
-        type: properties.Type?.select?.name || 
-              properties.type?.select?.name || 
+        type: properties["Content Type"]?.select?.name || 
+              properties.Type?.select?.name || 
               "Unknown",
               
-        product: properties.Product?.multi_select?.map((p: any) => p.name) || 
-                properties.product?.multi_select?.map((p: any) => p.name) || 
-                [],
+        product: properties["Smart Mooring Sensor(s)"]?.multi_select?.map((p: any) => p.name) || 
+                 properties.Solution?.multi_select?.map((p: any) => p.name) || 
+                 properties.Product?.multi_select?.map((p: any) => p.name) || 
+                 [],
                 
-        audience: properties.Audience?.multi_select?.map((a: any) => a.name) || 
-                 properties.audience?.multi_select?.map((a: any) => a.name) || 
+        audience: properties["Market Segment(s)"]?.multi_select?.map((a: any) => a.name) || 
+                 properties.Audience?.multi_select?.map((a: any) => a.name) || 
                  [],
                  
-        partnerRelevancy: properties["Partner Relevancy"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
-                         properties["Partner"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
-                         properties.partner?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
+        partnerRelevancy: properties.Partner?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
+                         properties["Partner Relevancy"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
                          ["pme"],
                          
-        messagingStage: properties["Key Topic or Messaging Stage"]?.select?.name || 
-                       properties["Stage in Buyer's Journey"]?.select?.name || 
-                       properties.messagingStage?.select?.name || 
+        messagingStage: properties["Stage in Buyer's Journey"]?.multi_select?.[0]?.name || 
+                       properties["Key Topic or Messaging Stage"]?.select?.name || 
                        "Unknown",
                        
-        date: properties.Date?.date?.start || 
-              properties.date?.date?.start || 
+        date: properties["Last Updated"]?.date?.start || 
+              properties.Date?.date?.start || 
               new Date().toISOString().split('T')[0],
               
-        url: properties["URL/Link"]?.url || 
-            properties.URL?.url || 
-            properties.url?.url || 
+        url: properties.Link?.url || 
+            properties["URL/Link"]?.url || 
             "#",
             
-        description: properties.Description?.rich_text?.[0]?.text?.content || 
-                    properties.description?.rich_text?.[0]?.text?.content || 
+        description: properties.Summary?.rich_text?.[0]?.text?.content || 
+                    properties["AI-Generated Podcast"]?.rich_text?.[0]?.text?.content || 
+                    properties.Description?.rich_text?.[0]?.text?.content || 
                     "",
                     
         notionId: page.id,
