@@ -20,18 +20,22 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
+  // Handle partner selection change
+  const handlePartnerChange = (partnerId: string) => {
+    console.log("Partner changed to:", partnerId);
+    setSelectedPartner(partnerId);
+    setFilters({
+      ...initialFilters,
+      partnerId: partnerId
+    });
+  };
+  
   // Hooks
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Update the filter state when partner changes - this is the key effect
-  useEffect(() => {
-    console.log("Partner selection changed to:", selectedPartner);
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      partnerId: selectedPartner
-    }));
-  }, [selectedPartner]);
+  // We don't need this effect anymore since we're handling partner changes directly
+  // through the handlePartnerChange function
 
   // Build query string for API request
   const filterQuery = buildFilterQueryString(filters);
@@ -123,7 +127,7 @@ export default function Home() {
         <div className="md:hidden mb-4">
           <PartnerSelector
             selectedPartner={selectedPartner}
-            onPartnerChange={setSelectedPartner}
+            onPartnerChange={handlePartnerChange}
           />
         </div>
 
@@ -154,7 +158,7 @@ export default function Home() {
             <div className="hidden md:block">
               <PartnerSelector
                 selectedPartner={selectedPartner}
-                onPartnerChange={setSelectedPartner}
+                onPartnerChange={handlePartnerChange}
               />
             </div>
           </div>

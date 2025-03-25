@@ -114,9 +114,20 @@ export class MemStorage implements IStorage {
   }
 
   async getFilteredResources(filter: ResourceFilter): Promise<Resource[]> {
-    return Array.from(this.resources.values()).filter(resource => {
+    console.log(`Filtering resources with filter:`, JSON.stringify(filter, null, 2));
+    
+    const allResources = Array.from(this.resources.values());
+    console.log(`Total resources before filtering: ${allResources.length}`);
+    
+    // Log partner relevancy info for debugging
+    const partnerRelevancies = new Set<string>();
+    allResources.forEach(r => r.partnerRelevancy.forEach(p => partnerRelevancies.add(p)));
+    console.log(`Available partner relevancies:`, Array.from(partnerRelevancies));
+    
+    const filtered = allResources.filter(resource => {
       // Filter by partner relevancy first
-      if (!resource.partnerRelevancy.includes(filter.partnerId)) {
+      const partnerMatch = resource.partnerRelevancy.includes(filter.partnerId);
+      if (!partnerMatch) {
         return false;
       }
 
@@ -153,6 +164,13 @@ export class MemStorage implements IStorage {
 
       return true;
     });
+    
+    console.log(`Filtered results count: ${filtered.length}`);
+    if (filtered.length > 0) {
+      console.log(`First result: ${filtered[0].name}`);
+    }
+    
+    return filtered;
   }
 
   // Partner methods
