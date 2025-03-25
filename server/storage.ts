@@ -52,11 +52,7 @@ export class MemStorage implements IStorage {
   // Initialize with common partners
   private initializePartners() {
     const defaultPartners: InsertPartner[] = [
-      { name: "Oceanic Shipping Co.", slug: "oceanic-shipping" },
-      { name: "Coastal Maritime Ltd.", slug: "coastal-maritime" },
-      { name: "Global Logistics Partners", slug: "global-logistics" },
-      { name: "Harbor Authority", slug: "harbor-authority" },
-      { name: "Naval Operations Command", slug: "naval-operations" }
+      { name: "PME", slug: "pme" }
     ];
     
     for (const partner of defaultPartners) {
