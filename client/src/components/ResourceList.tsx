@@ -39,22 +39,9 @@ export default function ResourceList({ resource }: ResourceListProps) {
             {resource.name}
           </h3>
           
-          <p className="mt-2 text-sm text-neutral-500 mb-2">
+          <p className="mt-2 text-sm text-neutral-500 mb-3">
             {resource.description}
           </p>
-          
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {resource.audience.slice(0, 3).map((aud) => (
-              <Badge key={aud} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
-                {aud}
-              </Badge>
-            ))}
-            {resource.audience.length > 3 && (
-              <Badge variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
-                +{resource.audience.length - 3} more
-              </Badge>
-            )}
-          </div>
         </div>
         
         <div className="mt-4 sm:mt-0 sm:ml-6 flex sm:flex-col sm:justify-center">

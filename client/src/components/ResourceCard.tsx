@@ -38,22 +38,9 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           {resource.name}
         </h3>
         
-        <p className="mt-2 text-sm text-neutral-500 line-clamp-2 mb-4">
+        <p className="mt-2 text-sm text-neutral-500 line-clamp-3 mb-4">
           {resource.description}
         </p>
-        
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {resource.audience.slice(0, 3).map((aud) => (
-            <Badge key={aud} variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
-              {aud}
-            </Badge>
-          ))}
-          {resource.audience.length > 3 && (
-            <Badge variant="secondary" className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded-full text-xs px-2.5 py-1">
-              +{resource.audience.length - 3} more
-            </Badge>
-          )}
-        </div>
         
         <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end items-center">
           <a
