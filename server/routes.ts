@@ -178,6 +178,14 @@ async function syncResourcesWithNotion() {
     // Get all existing resources
     const existingResources = await storage.getResources();
     
+    // Clear existing resources first when using mock data to ensure latest table data
+    if (!process.env.NOTION_API_KEY) {
+      for (const existingResource of existingResources) {
+        await storage.deleteResource(existingResource.id);
+        log(`Removed old resource: ${existingResource.name}`);
+      }
+    }
+    
     // Create or update resources
     for (const resource of notionResources) {
       const existingResource = await storage.getResourceByNotionId(resource.notionId);
