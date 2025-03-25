@@ -125,8 +125,15 @@ export class MemStorage implements IStorage {
     console.log(`Available partner relevancies:`, Array.from(partnerRelevancies));
     
     const filtered = allResources.filter(resource => {
-      // Filter by partner relevancy first
-      const partnerMatch = resource.partnerRelevancy.includes(filter.partnerId);
+      // Filter by partner relevancy first - ensure we convert the partnerId to lowercase
+      // since slugs might be in different case formats
+      const partnerIdLower = filter.partnerId.toLowerCase();
+      const partnerMatch = resource.partnerRelevancy.some(p => 
+        p.toLowerCase() === partnerIdLower
+      );
+      
+      console.log(`Resource: ${resource.name} | Partner relevancy: ${resource.partnerRelevancy.join(', ')} | Match for "${filter.partnerId}": ${partnerMatch}`);
+      
       if (!partnerMatch) {
         return false;
       }
@@ -168,6 +175,8 @@ export class MemStorage implements IStorage {
     console.log(`Filtered results count: ${filtered.length}`);
     if (filtered.length > 0) {
       console.log(`First result: ${filtered[0].name}`);
+    } else {
+      console.log('No matching resources found');
     }
     
     return filtered;
