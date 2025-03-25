@@ -143,22 +143,14 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       return mockResources;
     }
     
-    // Check if we need to use the known working database ID
-    const knownWorkingDbId = "6f6e5a6c-10e6-40e8-acad-05d281c38eb2"; // The ID we discovered from our tests
-    
-    // If the database ID doesn't match our known working ID, log a message and use the known ID
-    if (databaseId !== knownWorkingDbId) {
-      log(`The provided database ID (${databaseId}) doesn't match the known working database ID.`);
-      log(`Using the known working database ID (${knownWorkingDbId}) instead.`);
-      databaseId = knownWorkingDbId;
-    } else {
-      // Format database ID if it doesn't have hyphens
-      // Notion expects format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-      if (databaseId.length === 32 && !databaseId.includes('-')) {
-        databaseId = `${databaseId.slice(0, 8)}-${databaseId.slice(8, 12)}-${databaseId.slice(12, 16)}-${databaseId.slice(16, 20)}-${databaseId.slice(20)}`;
-        log(`Formatted database ID to: ${databaseId}`);
-      }
+    // Format database ID if it doesn't have hyphens
+    // Notion expects format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    if (databaseId.length === 32 && !databaseId.includes('-')) {
+      databaseId = `${databaseId.slice(0, 8)}-${databaseId.slice(8, 12)}-${databaseId.slice(12, 16)}-${databaseId.slice(16, 20)}-${databaseId.slice(20)}`;
+      log(`Formatted database ID to: ${databaseId}`);
     }
+    
+    log(`Using Notion database ID: ${databaseId}`);
     
     log("Fetching resources from Notion database...");
     
@@ -172,16 +164,51 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     const resources: InsertResource[] = response.results.map((page: any) => {
       const properties = page.properties;
       
+      // Log all property names once for debugging
+      if (page === response.results[0]) {
+        log("Available Notion properties: " + Object.keys(properties).join(", "));
+      }
+      
       return {
-        name: properties.Name?.title?.[0]?.text?.content || "Untitled Resource",
-        type: properties.Type?.select?.name || "Unknown",
-        product: properties.Product?.multi_select?.map((p: any) => p.name) || [],
-        audience: properties.Audience?.multi_select?.map((a: any) => a.name) || [],
-        partnerRelevancy: properties["Partner"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || ["pme"],
-        messagingStage: properties["Stage in Buyer's Journey"]?.select?.name || "Unknown",
-        date: properties.Date?.date?.start || new Date().toISOString().split('T')[0],
-        url: properties["URL/Link"]?.url || "#",
-        description: properties.Description?.rich_text?.[0]?.text?.content || "",
+        name: properties.Name?.title?.[0]?.text?.content || 
+              properties.name?.title?.[0]?.text?.content || 
+              "Untitled Resource",
+              
+        type: properties.Type?.select?.name || 
+              properties.type?.select?.name || 
+              "Unknown",
+              
+        product: properties.Product?.multi_select?.map((p: any) => p.name) || 
+                properties.product?.multi_select?.map((p: any) => p.name) || 
+                [],
+                
+        audience: properties.Audience?.multi_select?.map((a: any) => a.name) || 
+                 properties.audience?.multi_select?.map((a: any) => a.name) || 
+                 [],
+                 
+        partnerRelevancy: properties["Partner Relevancy"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
+                         properties["Partner"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
+                         properties.partner?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
+                         ["pme"],
+                         
+        messagingStage: properties["Key Topic or Messaging Stage"]?.select?.name || 
+                       properties["Stage in Buyer's Journey"]?.select?.name || 
+                       properties.messagingStage?.select?.name || 
+                       "Unknown",
+                       
+        date: properties.Date?.date?.start || 
+              properties.date?.date?.start || 
+              new Date().toISOString().split('T')[0],
+              
+        url: properties["URL/Link"]?.url || 
+            properties.URL?.url || 
+            properties.url?.url || 
+            "#",
+            
+        description: properties.Description?.rich_text?.[0]?.text?.content || 
+                    properties.description?.rich_text?.[0]?.text?.content || 
+                    "",
+                    
         notionId: page.id,
         lastSynced: new Date(),
       };
