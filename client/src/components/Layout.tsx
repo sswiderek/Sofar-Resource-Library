@@ -8,8 +8,8 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
       <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-6 py-3 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center self-start">
+        <div className="py-3 flex flex-col md:flex-row items-center">
+          <div className="flex items-center self-start pl-4">
             <img 
               src="/sofar-logo.png" 
               alt="Sofar Logo" 
