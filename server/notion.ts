@@ -110,11 +110,18 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     }
     
     const notion = getNotionClient();
-    const databaseId = process.env.NOTION_DATABASE_ID;
+    let databaseId = process.env.NOTION_DATABASE_ID;
     
     if (!databaseId) {
       log("No Notion database ID found. Using mock resource data for demonstration.");
       return mockResources;
+    }
+    
+    // Format database ID if it doesn't have hyphens
+    // Notion expects format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    if (databaseId.length === 32 && !databaseId.includes('-')) {
+      databaseId = `${databaseId.slice(0, 8)}-${databaseId.slice(8, 12)}-${databaseId.slice(12, 16)}-${databaseId.slice(16, 20)}-${databaseId.slice(20)}`;
+      log(`Formatted database ID to: ${databaseId}`);
     }
     
     log("Fetching resources from Notion database...");
