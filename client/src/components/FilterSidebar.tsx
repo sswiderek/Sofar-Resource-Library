@@ -15,6 +15,14 @@ interface Filter {
   search: string;
 }
 
+interface Metadata {
+  types: string[];
+  products: string[];
+  audiences: string[];
+  messagingStages: string[];
+  lastSynced?: string;
+}
+
 interface FilterSidebarProps {
   filter: Filter;
   onFilterChange: (filter: Filter) => void;
@@ -33,9 +41,17 @@ export default function FilterSidebar({
   const [search, setSearch] = useState(filter.search);
 
   // Get metadata for filling filter options
-  const { data: metadata, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<Metadata>({
     queryKey: ['/api/resources/metadata'],
   });
+
+  // Ensure we have default values for the metadata
+  const metadata: Metadata = data || {
+    types: [],
+    products: [],
+    audiences: [],
+    messagingStages: []
+  };
 
   // Handle search input with debounce
   useEffect(() => {
@@ -141,7 +157,7 @@ export default function FilterSidebar({
           {/* Resource Type Filter */}
           <div className="mb-5">
             <h3 className="text-sm font-medium text-neutral-500 mb-2">Resource Type</h3>
-            {metadata?.types.map((type: string) => (
+            {metadata.types && metadata.types.map((type: string) => (
               <div key={type} className="flex items-center mb-2">
                 <Checkbox
                   id={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
@@ -163,7 +179,7 @@ export default function FilterSidebar({
           {/* Product Filter */}
           <div className="mb-5">
             <h3 className="text-sm font-medium text-neutral-500 mb-2">Product</h3>
-            {metadata?.products.map((product: string) => (
+            {metadata.products && metadata.products.map((product: string) => (
               <div key={product} className="flex items-center mb-2">
                 <Checkbox
                   id={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
@@ -185,7 +201,7 @@ export default function FilterSidebar({
           {/* Audience Filter */}
           <div className="mb-5">
             <h3 className="text-sm font-medium text-neutral-500 mb-2">Audience</h3>
-            {metadata?.audiences.map((audience: string) => (
+            {metadata.audiences && metadata.audiences.map((audience: string) => (
               <div key={audience} className="flex items-center mb-2">
                 <Checkbox
                   id={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
@@ -207,7 +223,7 @@ export default function FilterSidebar({
           {/* Buyer's Journey Filter */}
           <div>
             <h3 className="text-sm font-medium text-neutral-500 mb-2">Buyer's Journey</h3>
-            {metadata?.messagingStages.map((stage: string) => (
+            {metadata.messagingStages && metadata.messagingStages.map((stage: string) => (
               <div key={stage} className="flex items-center mb-2">
                 <Checkbox
                   id={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
