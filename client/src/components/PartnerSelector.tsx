@@ -51,11 +51,21 @@ export default function PartnerSelector({
         onValueChange={onPartnerChange}
       >
         <SelectTrigger id="partner-select" className="w-full bg-white">
-          <SelectValue placeholder="Select your partner organization" />
+          <SelectValue placeholder="Select your partner organization">
+            {selectedPartner === 'pme' && (
+              <div className="flex items-center">
+                <img src="/pme-logo.png" alt="PME Logo" className="h-4 w-auto mr-2" />
+                PME
+              </div>
+            )}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {partners?.map((partner: Partner) => (
-            <SelectItem key={partner.slug} value={partner.slug}>
+            <SelectItem key={partner.slug} value={partner.slug} className="flex items-center">
+              {partner.slug === 'pme' && (
+                <img src="/pme-logo.png" alt="PME Logo" className="h-4 w-auto mr-2" />
+              )}
               {partner.name}
             </SelectItem>
           ))}
