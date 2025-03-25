@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Partner } from "@shared/schema";
@@ -13,9 +13,16 @@ export default function PartnerSelector({
   selectedPartner, 
   onPartnerChange 
 }: PartnerSelectorProps) {
-  const { data: partners, isLoading, error } = useQuery({
+  const { data: partners = [], isLoading, error } = useQuery<Partner[]>({
     queryKey: ['/api/partners'],
   });
+
+  // Auto-select first partner if none is selected and partners are loaded
+  useEffect(() => {
+    if (partners.length > 0 && !selectedPartner) {
+      onPartnerChange(partners[0].slug);
+    }
+  }, [partners, selectedPartner, onPartnerChange]);
 
   if (isLoading) {
     return (
@@ -49,6 +56,7 @@ export default function PartnerSelector({
       <Select 
         value={selectedPartner || ""} 
         onValueChange={onPartnerChange}
+        defaultValue={partners.length > 0 ? partners[0].slug : ""}
       >
         <SelectTrigger id="partner-select" className="w-full bg-white">
           <SelectValue placeholder="Select your partner organization">
@@ -61,7 +69,7 @@ export default function PartnerSelector({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {partners?.map((partner: Partner) => (
+          {partners.map((partner: Partner) => (
             <SelectItem key={partner.slug} value={partner.slug} className="flex items-center">
               {partner.slug === 'pme' && (
                 <img src="/pme-logo.png" alt="PME Logo" className="h-4 w-auto mr-2" />

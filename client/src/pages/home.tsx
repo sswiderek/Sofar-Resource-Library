@@ -26,14 +26,22 @@ export default function Home() {
 
   // Update the filter state when partner changes
   useEffect(() => {
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      partnerId: selectedPartner
-    }));
+    if (selectedPartner) {
+      console.log("Setting partner ID in filters:", selectedPartner);
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        partnerId: selectedPartner
+      }));
+    }
   }, [selectedPartner]);
 
   // Build query string for API request
   const filterQuery = buildFilterQueryString(filters);
+  
+  // Log the filter query for debugging
+  console.log("Filter query:", filterQuery);
+  console.log("Selected partner:", selectedPartner);
+  console.log("Filters:", filters);
   
   // Fetch resources based on filter
   const { 
