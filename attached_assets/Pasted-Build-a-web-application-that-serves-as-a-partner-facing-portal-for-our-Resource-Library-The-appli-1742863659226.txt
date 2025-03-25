@@ -1,0 +1,69 @@
+Build a web application that serves as a partner-facing portal for our “Resource Library.” The application should integrate with a Notion database that contains the following columns (or similar) for each resource:
+
+Name (Title)
+
+Type (e.g., “Webinar,” “Message,” “Meeting Recap,” etc.)
+
+Product (e.g., “Spotter,” “Smart Mooring System,” etc.)
+
+Audience (multi-select, e.g., “Government,” “Shipping,” etc.)
+
+Partner Relevancy (multi-select listing the specific partner(s) this resource applies to)
+
+Key Topic or Messaging Stage (e.g., “Awareness,” “Education,” “Evaluation”)
+
+Date (Date of publication or last update)
+
+URL/Link (link to the resource or external file)
+
+Description (text describing the resource)
+
+Requirements:
+
+Data Integration:
+
+Connect to the Notion database (via Notion’s API) to retrieve all resource records.
+
+Ensure the web app stays in sync with updates made in Notion (periodically or on demand).
+
+Partner Self-Identification:
+
+On the web app’s landing page, provide a simple UI for the partner to select their name or partner category (matching values in the “Partner Relevancy” column).
+
+Once selected, dynamically filter the displayed resources so that only rows where the chosen partner is listed in the “Partner Relevancy” column are shown.
+
+UI/UX Design:
+
+Present resources in a clean, visually appealing layout (e.g., card or table format).
+
+Display key fields such as “Name,” “Type,” “Product,” “Date,” “Audience,” and a clickable link.
+
+Provide easy navigation (search or filter) for other columns like “Type,” “Product,” or “Audience.”
+
+Dynamic Filtering & Search:
+
+Implement real-time filtering (without page reload) when a partner or additional filters are selected.
+
+Optional: Include a global search bar to filter by “Name” or keywords in “Description.”
+
+Security & Access Control:
+
+Partners should only see resources tagged for them in the “Partner Relevancy” column.
+
+Handle any necessary authentication or secure link-sharing if needed.
+
+Technology Stack (Suggestions):
+
+Frontend: A modern JavaScript framework (React, Vue, or Angular).
+
+Backend / Serverless Functions: Use Node.js or similar to fetch data from the Notion API and pass it to the frontend.
+
+Deployment: Consider using Vercel, Netlify, or another cloud platform for hosting.
+
+Documentation & Maintenance:
+
+Provide clear setup instructions, including how to configure the Notion API integration and environment variables (e.g., Notion API key, Database ID).
+
+Document how to update or add new partners, resources, or fields in the Notion table, ensuring these changes reflect automatically in the web app.
+
+Goal: Create a partner portal that offers a dynamic, user-friendly view of the Notion “Resource Library,” allowing each partner to see only the resources relevant to them while preserving a single source of truth in Notion.
