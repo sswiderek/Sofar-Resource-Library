@@ -24,15 +24,13 @@ export default function Home() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Update the filter state when partner changes
+  // Update the filter state when partner changes - this is the key effect
   useEffect(() => {
-    if (selectedPartner) {
-      console.log("Setting partner ID in filters:", selectedPartner);
-      setFilters(prevFilters => ({
-        ...prevFilters,
-        partnerId: selectedPartner
-      }));
-    }
+    console.log("Partner selection changed to:", selectedPartner);
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      partnerId: selectedPartner
+    }));
   }, [selectedPartner]);
 
   // Build query string for API request
@@ -52,6 +50,7 @@ export default function Home() {
   } = useQuery<Resource[]>({
     queryKey: [`/api/resources?${filterQuery}`],
     enabled: !!selectedPartner, // Only run query if partner is selected
+    retry: 1, // Limit retries on failure
   });
 
   // Force sync with Notion

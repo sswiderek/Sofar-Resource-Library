@@ -17,12 +17,7 @@ export default function PartnerSelector({
     queryKey: ['/api/partners'],
   });
 
-  // Auto-select first partner if none is selected and partners are loaded
-  useEffect(() => {
-    if (partners.length > 0 && !selectedPartner) {
-      onPartnerChange(partners[0].slug);
-    }
-  }, [partners, selectedPartner, onPartnerChange]);
+  // Removed auto-select behavior as per user request
 
   if (isLoading) {
     return (
@@ -56,17 +51,9 @@ export default function PartnerSelector({
       <Select 
         value={selectedPartner || ""} 
         onValueChange={onPartnerChange}
-        defaultValue={partners.length > 0 ? partners[0].slug : ""}
       >
         <SelectTrigger id="partner-select" className="w-full bg-white">
-          <SelectValue placeholder="Select your partner organization">
-            {selectedPartner === 'pme' && (
-              <div className="flex items-center">
-                <img src="/pme-logo.png" alt="PME Logo" className="h-4 w-auto mr-2" />
-                PME
-              </div>
-            )}
-          </SelectValue>
+          <SelectValue placeholder="Select your partner organization" />
         </SelectTrigger>
         <SelectContent>
           {partners.map((partner: Partner) => (
