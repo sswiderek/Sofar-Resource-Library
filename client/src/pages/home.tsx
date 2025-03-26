@@ -167,6 +167,14 @@ export default function Home() {
 
   return (
     <div className="flex flex-col md:flex-row overflow-hidden">
+      {/* Partner Password Modal */}
+      <PartnerPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        partner={selectedPartnerObj}
+        onPasswordVerified={handlePasswordVerified}
+      />
+      
       {/* Filter Sidebar - Desktop */}
       <aside className="hidden md:block bg-white border-r border-neutral-200 w-64 md:flex-shrink-0 overflow-y-auto">
         {selectedPartner && (
