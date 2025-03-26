@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List } from "lucide-react";
+import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List, Lock } from "lucide-react";
 import PartnerSelector from "@/components/PartnerSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
-import { Resource } from "@shared/schema";
+import PartnerPasswordModal from "@/components/PartnerPasswordModal";
+import { Resource, Partner } from "@shared/schema";
 import { ResourceFilters, initialFilters, buildFilterQueryString } from "@/lib/resourceFilters";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -19,20 +20,88 @@ export default function Home() {
   const [filters, setFilters] = useState<ResourceFilters>(initialFilters);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  
-  // Handle partner selection change
-  const handlePartnerChange = (partnerId: string) => {
-    console.log("Partner changed to:", partnerId);
-    setSelectedPartner(partnerId);
-    setFilters({
-      ...initialFilters,
-      partnerId: partnerId
-    });
-  };
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [selectedPartnerObj, setSelectedPartnerObj] = useState<Partner | null>(null);
+  const [authorizedPartners, setAuthorizedPartners] = useState<string[]>([]);
   
   // Hooks
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
+  // Fetch partners for the password modal
+  const { data: partners = [] } = useQuery<Partner[]>({
+    queryKey: ["/api/partners"],
+  });
+  
+  // Handle partner selection change
+  const handlePartnerChange = (partnerId: string) => {
+    console.log("Partner changed to:", partnerId);
+    
+    // Find the partner object for the password modal
+    const partnerObj = partners.find(p => p.slug === partnerId) || null;
+    setSelectedPartnerObj(partnerObj);
+    
+    // Check if this partner is already authorized
+    if (authorizedPartners.includes(partnerId)) {
+      // Already authorized, no need for password verification
+      setSelectedPartner(partnerId);
+      setFilters({
+        ...initialFilters,
+        partnerId: partnerId
+      });
+    } else {
+      // Not authorized, show password modal
+      setIsPasswordModalOpen(true);
+      // Don't set the selected partner yet until password is verified
+    }
+  };
+  
+  // Check if a partner is already authorized when the component mounts
+  useEffect(() => {
+    const checkPartnerAuthorization = async () => {
+      if (selectedPartnerObj?.slug) {
+        try {
+          const response = await apiRequest('GET', `/api/partner-access/${selectedPartnerObj.slug}`);
+          const data = await response.json();
+          
+          if (data.authorized) {
+            // If already authorized, add to the authorized list
+            setAuthorizedPartners(prev => 
+              prev.includes(selectedPartnerObj.slug) 
+                ? prev 
+                : [...prev, selectedPartnerObj.slug]
+            );
+          }
+        } catch (error) {
+          console.error("Failed to check partner authorization:", error);
+        }
+      }
+    };
+    
+    checkPartnerAuthorization();
+  }, [selectedPartnerObj]);
+  
+  // Handle password verification
+  const handlePasswordVerified = () => {
+    if (selectedPartnerObj?.slug) {
+      // Add to authorized partners list
+      setAuthorizedPartners(prev => 
+        prev.includes(selectedPartnerObj.slug) 
+          ? prev 
+          : [...prev, selectedPartnerObj.slug]
+      );
+      
+      // Close modal
+      setIsPasswordModalOpen(false);
+      
+      // Now set the selected partner to load resources
+      setSelectedPartner(selectedPartnerObj.slug);
+      setFilters({
+        ...initialFilters,
+        partnerId: selectedPartnerObj.slug
+      });
+    }
+  };
 
   // We don't need this effect anymore since we're handling partner changes directly
   // through the handlePartnerChange function

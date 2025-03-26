@@ -2,15 +2,11 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 
-// Extend the Request type to include session
-declare global {
-  namespace Express {
-    interface Request {
-      session: session.Session & {
-        isAdmin?: boolean;
-        authorizedPartners?: string[];
-      };
-    }
+// Extend express-session
+declare module "express-session" {
+  interface SessionData {
+    isAdmin?: boolean;
+    authorizedPartners?: string[];
   }
 }
 import { storage } from "./storage";

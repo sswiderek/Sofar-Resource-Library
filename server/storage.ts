@@ -10,6 +10,9 @@ import createMemoryStore from "memorystore";
 // modify the interface with any CRUD methods
 // you might need
 export interface IStorage {
+  // Session store
+  sessionStore: session.Store;
+
   // User methods (keeping existing ones)
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -41,6 +44,7 @@ export class MemStorage implements IStorage {
   currentUserId: number;
   currentResourceId: number;
   currentPartnerId: number;
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -49,6 +53,12 @@ export class MemStorage implements IStorage {
     this.currentUserId = 1;
     this.currentResourceId = 1;
     this.currentPartnerId = 1;
+    
+    // Create memory store for sessions
+    const MemoryStore = createMemoryStore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
     
     // Initialize with some partner data
     this.initializePartners();

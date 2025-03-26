@@ -5,13 +5,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 
-// Extend express-session declarations
-declare module "express-session" {
-  interface SessionData {
-    isAdmin?: boolean;
-    authorizedPartners?: string[];
-  }
-}
+// Session declaration is now in routes.ts
 
 const app = express();
 app.use(express.json());
