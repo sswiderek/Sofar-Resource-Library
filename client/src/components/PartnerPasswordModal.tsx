@@ -112,7 +112,7 @@ export default function PartnerPasswordModal({
                   <FormControl>
                     <Input 
                       type="password" 
-                      placeholder="••••••••" 
+                      placeholder="" 
                       autoFocus
                       className="border-neutral-300 focus:border-neutral-400 focus:ring-neutral-400"
                       {...field}

@@ -9,6 +9,20 @@ interface PartnerSelectorProps {
   onPartnerChange: (partnerId: string) => void;
 }
 
+// Custom component to display partner with logo
+const PartnerDisplay = ({ partner }: { partner: Partner | undefined }) => {
+  if (!partner) return null;
+  
+  return (
+    <div className="flex items-center gap-2">
+      {partner.slug === 'pme' && (
+        <img src="/pme-logo.png" alt="PME Logo" className="h-5 w-auto object-contain" />
+      )}
+      <span>{partner.name}</span>
+    </div>
+  );
+};
+
 export default function PartnerSelector({ 
   selectedPartner, 
   onPartnerChange 
@@ -16,8 +30,11 @@ export default function PartnerSelector({
   const { data: partners = [], isLoading, error } = useQuery<Partner[]>({
     queryKey: ['/api/partners'],
   });
-
-  // Removed auto-select behavior as per user request
+  
+  // Find the currently selected partner object
+  const selectedPartnerObject = selectedPartner 
+    ? partners.find(p => p.slug === selectedPartner) 
+    : undefined;
 
   if (isLoading) {
     return (
@@ -53,15 +70,19 @@ export default function PartnerSelector({
         onValueChange={onPartnerChange}
       >
         <SelectTrigger id="partner-select" className="w-full bg-white">
-          <SelectValue placeholder="Select your partner organization" />
+          {selectedPartnerObject ? (
+            <PartnerDisplay partner={selectedPartnerObject} />
+          ) : (
+            <SelectValue 
+              placeholder="Select your partner organization"
+              className="flex items-center gap-2"
+            />
+          )}
         </SelectTrigger>
         <SelectContent>
           {partners.map((partner: Partner) => (
-            <SelectItem key={partner.slug} value={partner.slug} className="flex items-center">
-              {partner.slug === 'pme' && (
-                <img src="/pme-logo.png" alt="PME Logo" className="h-4 w-auto mr-2" />
-              )}
-              {partner.name}
+            <SelectItem key={partner.slug} value={partner.slug} className="flex items-center p-1">
+              <PartnerDisplay partner={partner} />
             </SelectItem>
           ))}
         </SelectContent>

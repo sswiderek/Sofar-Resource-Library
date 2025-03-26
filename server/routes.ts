@@ -92,14 +92,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Route to get resource metadata (unique values for filters)
-  app.get("/api/resources/metadata", async (_req: Request, res: Response) => {
+  app.get("/api/resources/metadata", async (req: Request, res: Response) => {
     try {
       // Try to sync with Notion, but don't fail if we can't
       if (shouldSyncResources(lastSyncTime)) {
         await syncResourcesWithNotion();
       }
 
-      const resources = await storage.getResources();
+      // Check if a partner filter is applied
+      const partnerId = req.query.partnerId as string | undefined;
+      
+      // Get resources, filtered by partner if specified
+      let resources;
+      if (partnerId) {
+        // Get partner details to match case-insensitively
+        const partner = await storage.getPartnerBySlug(partnerId);
+        if (partner) {
+          // Apply partner filter with case-insensitive matching
+          resources = await storage.getFilteredResources({ 
+            partnerId: partnerId
+          });
+        } else {
+          resources = await storage.getResources();
+        }
+      } else {
+        resources = await storage.getResources();
+      }
       
       // Extract unique values for each filter category directly without using Set
       const typesSet = new Set<string>();
@@ -126,7 +144,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         products,
         audiences,
         messagingStages,
-        lastSynced: lastSyncTime
+        lastSynced: lastSyncTime,
+        partnerFiltered: !!partnerId
       });
     } catch (error) {
       log(`Error handling metadata request: ${error instanceof Error ? error.message : String(error)}`);

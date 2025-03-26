@@ -6,14 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-
-interface Filter {
-  types: string[];
-  products: string[];
-  audiences: string[];
-  messagingStages: string[];
-  search: string;
-}
+import { ResourceFilters } from "@/lib/resourceFilters";
 
 interface Metadata {
   types: string[];
@@ -24,8 +17,8 @@ interface Metadata {
 }
 
 interface FilterSidebarProps {
-  filter: Filter;
-  onFilterChange: (filter: Filter) => void;
+  filter: ResourceFilters;
+  onFilterChange: (filter: ResourceFilters) => void;
   onClearFilters: () => void;
   isMobile: boolean;
   onMobileClose?: () => void;
@@ -40,9 +33,9 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
   const [search, setSearch] = useState(filter.search);
 
-  // Get metadata for filling filter options
+  // Get metadata for filling filter options with partner-specific data
   const { data, isLoading } = useQuery<Metadata>({
-    queryKey: ['/api/resources/metadata'],
+    queryKey: ['/api/resources/metadata', filter.partnerId ? { partnerId: filter.partnerId } : undefined],
   });
 
   // Ensure we have default values for the metadata
@@ -65,9 +58,9 @@ export default function FilterSidebar({
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Handle checkbox change
+  // Type-safe checkbox change handler
   const handleCheckboxChange = (
-    category: keyof Omit<Filter, 'search'>,
+    category: 'types' | 'products' | 'audiences' | 'messagingStages',
     value: string,
     checked: boolean
   ) => {
@@ -82,8 +75,11 @@ export default function FilterSidebar({
     });
   };
 
-  // Helper function to check if a value is selected
-  const isSelected = (category: keyof Omit<Filter, 'search'>, value: string) => {
+  // Type-safe helper function to check if a value is selected
+  const isSelected = (
+    category: 'types' | 'products' | 'audiences' | 'messagingStages',
+    value: string
+  ) => {
     return filter[category].includes(value);
   };
 
