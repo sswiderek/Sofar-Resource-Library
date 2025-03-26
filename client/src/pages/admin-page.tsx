@@ -43,6 +43,24 @@ export default function AdminPage() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Check if already authenticated on component mount
+  const checkAuthStatus = useQuery({
+    queryKey: ['/api/admin/check-auth'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/admin/check-auth');
+        const data = await response.json();
+        if (data.isAuthenticated) {
+          setIsAuthenticated(true);
+        }
+        return data;
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        return { isAuthenticated: false };
+      }
+    },
+  });
+
   // Login form with zod validation
   const loginForm = useForm({
     resolver: zodResolver(adminLoginSchema),
@@ -141,6 +159,32 @@ export default function AdminPage() {
   const handleBackToHome = () => {
     setLocation("/");
   };
+  
+  // Logout handler
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/logout", {});
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsAuthenticated(false);
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Logout failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   // If not authenticated, show login form
   if (!isAuthenticated) {
@@ -224,13 +268,23 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">Resource Library Admin</h1>
             <p className="text-neutral-500">Manage partner passwords and access</p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={handleBackToHome}
-            className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
-          >
-            Back to Portal
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
+              disabled={logoutMutation.isPending}
+            >
+              {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleBackToHome}
+              className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
+            >
+              Back to Portal
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">

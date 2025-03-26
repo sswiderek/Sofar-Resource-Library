@@ -243,6 +243,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     res.json({ success: true });
   });
+  
+  // Check admin authentication status
+  app.get("/api/admin/check-auth", (req: Request, res: Response) => {
+    if (req.session && req.session.isAdmin) {
+      res.json({ isAuthenticated: true });
+    } else {
+      res.json({ isAuthenticated: false });
+    }
+  });
 
   // Admin middleware to check authentication
   const checkAdminAuth = (req: Request, res: Response, next: NextFunction) => {
