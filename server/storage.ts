@@ -4,6 +4,8 @@ import {
   partners, type Partner, type InsertPartner, type UpdatePartnerPassword,
   type ResourceFilter
 } from "@shared/schema";
+import session from "express-session";
+import createMemoryStore from "memorystore";
 
 // modify the interface with any CRUD methods
 // you might need

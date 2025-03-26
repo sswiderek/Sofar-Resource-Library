@@ -1,10 +1,36 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import { randomBytes } from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
+
+// Extend express-session declarations
+declare module "express-session" {
+  interface SessionData {
+    isAdmin?: boolean;
+    authorizedPartners?: string[];
+  }
+}
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Session setup with memory storage
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || randomBytes(32).toString("hex"),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    },
+    store: storage.sessionStore,
+  })
+);
 
 app.use((req, res, next) => {
   const start = Date.now();

@@ -1,9 +1,22 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import session from "express-session";
+
+// Extend the Request type to include session
+declare global {
+  namespace Express {
+    interface Request {
+      session: session.Session & {
+        isAdmin?: boolean;
+        authorizedPartners?: string[];
+      };
+    }
+  }
+}
 import { storage } from "./storage";
 import { fetchResourcesFromNotion, shouldSyncResources } from "./notion";
 import { log } from "./vite";
-import { resourceFilterSchema } from "@shared/schema";
+import { resourceFilterSchema, adminLoginSchema, updatePartnerPasswordSchema, partnerAccessSchema } from "@shared/schema";
 
 // Track when we last synced with Notion
 let lastSyncTime: Date | null = null;
@@ -168,6 +181,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to sync with Notion",
         error: error instanceof Error ? error.message : String(error)
       });
+    }
+  });
+
+  // Admin authentication routes
+  app.post("/api/admin/login", async (req: Request, res: Response) => {
+    try {
+      // Validate request body
+      const parseResult = adminLoginSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input",
+          errors: parseResult.error.errors
+        });
+      }
+
+      // Get admin credentials from environment variables
+      const adminUsername = process.env.ADMIN_USERNAME || "admin";
+      const adminPassword = process.env.ADMIN_PASSWORD || "admin";
+      
+      // Check credentials
+      if (req.body.username === adminUsername && req.body.password === adminPassword) {
+        // Set admin session flag
+        if (req.session) {
+          req.session.isAdmin = true;
+        }
+        
+        return res.json({ success: true });
+      } else {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+    } catch (error) {
+      log(`Error in admin login: ${error instanceof Error ? error.message : String(error)}`);
+      return res.status(500).json({ 
+        message: "Authentication failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Admin logout
+  app.post("/api/admin/logout", (req: Request, res: Response) => {
+    if (req.session) {
+      req.session.isAdmin = false;
+    }
+    res.json({ success: true });
+  });
+
+  // Admin middleware to check authentication
+  const checkAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+    if (req.session && req.session.isAdmin) {
+      next();
+    } else {
+      res.status(401).json({ message: "Admin authentication required" });
+    }
+  };
+
+  // Admin route to update partner passwords
+  app.patch("/api/admin/partners/:id/password", checkAdminAuth, async (req: Request, res: Response) => {
+    try {
+      // Validate password
+      const parseResult = updatePartnerPasswordSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid password",
+          errors: parseResult.error.errors
+        });
+      }
+
+      // Get partner ID from route params
+      const partnerId = parseInt(req.params.id);
+      if (isNaN(partnerId)) {
+        return res.status(400).json({ message: "Invalid partner ID" });
+      }
+
+      // Update the password
+      const partner = await storage.updatePartnerPassword(partnerId, parseResult.data);
+      
+      if (!partner) {
+        return res.status(404).json({ message: "Partner not found" });
+      }
+
+      // Return success without exposing the password
+      res.json({ 
+        id: partner.id,
+        name: partner.name,
+        slug: partner.slug,
+        lastPasswordUpdate: partner.lastPasswordUpdate,
+        hasPassword: !!partner.password
+      });
+    } catch (error) {
+      log(`Error updating partner password: ${error instanceof Error ? error.message : String(error)}`);
+      res.status(500).json({ 
+        message: "Failed to update password",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Partner access verification route
+  app.post("/api/partner-access", async (req: Request, res: Response) => {
+    try {
+      // Validate request
+      const parseResult = partnerAccessSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input",
+          errors: parseResult.error.errors
+        });
+      }
+
+      // Verify partner password
+      const { partnerId, password } = parseResult.data;
+      const isValid = await storage.verifyPartnerPassword(partnerId, password);
+      
+      if (isValid) {
+        // Store partner access in session
+        if (req.session) {
+          if (!req.session.authorizedPartners) {
+            req.session.authorizedPartners = [];
+          }
+          
+          if (!req.session.authorizedPartners.includes(partnerId)) {
+            req.session.authorizedPartners.push(partnerId);
+          }
+        }
+        
+        return res.json({ success: true });
+      } else {
+        return res.status(401).json({ message: "Invalid password" });
+      }
+    } catch (error) {
+      log(`Error verifying partner access: ${error instanceof Error ? error.message : String(error)}`);
+      res.status(500).json({ 
+        message: "Verification failed",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Check partner access
+  app.get("/api/partner-access/:partnerId", (req: Request, res: Response) => {
+    const partnerId = req.params.partnerId;
+    
+    // Check if partner access is already authorized in session
+    if (req.session && req.session.authorizedPartners && req.session.authorizedPartners.includes(partnerId)) {
+      return res.json({ authorized: true });
+    } else {
+      return res.json({ authorized: false });
     }
   });
 
