@@ -91,7 +91,7 @@ export default function PartnerPasswordModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-primary" />
@@ -101,7 +101,7 @@ export default function PartnerPasswordModal({
             Please enter the password to access {partner.name} resources
           </DialogDescription>
         </DialogHeader>
-
+        
         <Form {...form}>
           <form onSubmit={onSubmit} className="space-y-4">
             <FormField
@@ -136,19 +136,17 @@ export default function PartnerPasswordModal({
               </div>
             )}
 
-            <DialogFooter className="flex gap-3 mt-6">
-              <Button 
-                variant="outline" 
-                type="button" 
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleClose}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 border border-gray-200 transition-colors"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={verifyMutation.isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {verifyMutation.isPending ? "Verifying..." : "Access Resources"}
               </Button>
