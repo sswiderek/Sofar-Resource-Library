@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,13 +90,13 @@ export default function PartnerPasswordModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="bg-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-neutral-800">
+            <Lock className="h-5 w-5 text-neutral-600" />
             Password Required
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-neutral-600">
             Please enter the password to access {partner.name} resources
           </DialogDescription>
         </DialogHeader>
@@ -109,12 +108,13 @@ export default function PartnerPasswordModal({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-neutral-700">Password</FormLabel>
                   <FormControl>
                     <Input 
                       type="password" 
-                      placeholder="Enter partner password" 
+                      placeholder="••••••••" 
                       autoFocus
+                      className="border-neutral-300 focus:border-neutral-400 focus:ring-neutral-400"
                       {...field}
                     />
                   </FormControl>
@@ -136,17 +136,19 @@ export default function PartnerPasswordModal({
               </div>
             )}
 
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleClose}
+                className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={verifyMutation.isPending}
+                className="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700"
               >
                 {verifyMutation.isPending ? "Verifying..." : "Access Resources"}
               </Button>

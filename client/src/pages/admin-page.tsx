@@ -146,10 +146,10 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-neutral-50">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-            <CardDescription>
+        <Card className="w-full max-w-md shadow-lg border-neutral-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-2xl font-bold text-neutral-800">Admin Login</CardTitle>
+            <CardDescription className="text-neutral-600">
               Enter your credentials to access the admin panel
             </CardDescription>
           </CardHeader>
@@ -161,9 +161,13 @@ export default function AdminPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel className="text-neutral-700">Username</FormLabel>
                       <FormControl>
-                        <Input placeholder="admin" {...field} />
+                        <Input 
+                          placeholder="" 
+                          className="border-neutral-300 focus:border-neutral-400 focus:ring-neutral-400" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -174,9 +178,14 @@ export default function AdminPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-neutral-700">Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <Input 
+                          type="password" 
+                          placeholder="" 
+                          className="border-neutral-300 focus:border-neutral-400 focus:ring-neutral-400" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -184,7 +193,7 @@ export default function AdminPage() {
                 />
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700" 
                   disabled={loginMutation.isPending}
                 >
                   {loginMutation.isPending ? "Logging in..." : "Login"}
@@ -193,7 +202,11 @@ export default function AdminPage() {
             </Form>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={handleBackToHome}>
+            <Button 
+              variant="outline" 
+              onClick={handleBackToHome}
+              className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
+            >
               Back to Home
             </Button>
           </CardFooter>
@@ -211,7 +224,11 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">Resource Library Admin</h1>
             <p className="text-neutral-500">Manage partner passwords and access</p>
           </div>
-          <Button variant="outline" onClick={handleBackToHome}>
+          <Button 
+            variant="outline" 
+            onClick={handleBackToHome}
+            className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
+          >
             Back to Portal
           </Button>
         </div>
@@ -278,7 +295,7 @@ export default function AdminPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => openPasswordDialog(partner.id)}
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
                             >
                               <Key className="h-3.5 w-3.5" />
                               {partner.password ? "Change Password" : "Set Password"}
@@ -297,16 +314,17 @@ export default function AdminPage() {
 
       {/* Password Update Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-neutral-800 flex items-center gap-2">
+              <Key className="h-5 w-5 text-neutral-600" />
               {selectedPartnerId
                 ? partners.find((p) => p.id === selectedPartnerId)?.password
                   ? "Change Partner Password"
                   : "Set Partner Password"
                 : "Update Password"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-neutral-600">
               {selectedPartnerId
                 ? `Enter a new password for ${
                     partners.find((p) => p.id === selectedPartnerId)?.name
@@ -322,26 +340,33 @@ export default function AdminPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel className="text-neutral-700">New Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter new password" {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        className="border-neutral-300 focus:border-neutral-400 focus:ring-neutral-400" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setIsPasswordDialogOpen(false)}
+                  className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={updatePasswordMutation.isPending}
+                  className="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700"
                 >
                   {updatePasswordMutation.isPending ? "Saving..." : "Save Password"}
                 </Button>
