@@ -150,93 +150,112 @@ export default function FilterSidebar({
         </>
       ) : (
         <>
-          {/* Resource Type Filter */}
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Resource Type</h3>
-            {metadata.types && metadata.types.map((type: string) => (
-              <div key={type} className="flex items-center mb-2">
-                <Checkbox
-                  id={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('types', type)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('types', type, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {type}
-                </Label>
-              </div>
-            ))}
-          </div>
+          {/* Resource Type Filter - only show if there are options */}
+          {metadata.types && metadata.types.length > 0 && (
+            <div className="mb-5">
+              <h3 className="text-sm font-medium text-neutral-500 mb-2">Resource Type</h3>
+              {metadata.types.map((type: string) => (
+                <div key={type} className="flex items-center mb-2">
+                  <Checkbox
+                    id={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('types', type)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('types', type, checked as boolean)
+                    }
+                  />
+                  <Label
+                    htmlFor={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-600"
+                  >
+                    {type}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Product Filter */}
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Product</h3>
-            {metadata.products && metadata.products.map((product: string) => (
-              <div key={product} className="flex items-center mb-2">
-                <Checkbox
-                  id={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('products', product)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('products', product, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {product}
-                </Label>
-              </div>
-            ))}
-          </div>
+          {/* Product Filter - only show if there are options */}
+          {metadata.products && metadata.products.length > 0 && (
+            <div className="mb-5">
+              <h3 className="text-sm font-medium text-neutral-500 mb-2">Product</h3>
+              {metadata.products.map((product: string) => (
+                <div key={product} className="flex items-center mb-2">
+                  <Checkbox
+                    id={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('products', product)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('products', product, checked as boolean)
+                    }
+                  />
+                  <Label
+                    htmlFor={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-600"
+                  >
+                    {product}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Audience Filter */}
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Audience</h3>
-            {metadata.audiences && metadata.audiences.map((audience: string) => (
-              <div key={audience} className="flex items-center mb-2">
-                <Checkbox
-                  id={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('audiences', audience)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('audiences', audience, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {audience}
-                </Label>
-              </div>
-            ))}
-          </div>
+          {/* Audience Filter - only show if there are options */}
+          {metadata.audiences && metadata.audiences.length > 0 && (
+            <div className="mb-5">
+              <h3 className="text-sm font-medium text-neutral-500 mb-2">Audience</h3>
+              {metadata.audiences.map((audience: string) => (
+                <div key={audience} className="flex items-center mb-2">
+                  <Checkbox
+                    id={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('audiences', audience)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('audiences', audience, checked as boolean)
+                    }
+                  />
+                  <Label
+                    htmlFor={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-600"
+                  >
+                    {audience}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Buyer's Journey Filter */}
-          <div>
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Buyer's Journey</h3>
-            {metadata.messagingStages && metadata.messagingStages.map((stage: string) => (
-              <div key={stage} className="flex items-center mb-2">
-                <Checkbox
-                  id={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('messagingStages', stage)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('messagingStages', stage, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {stage}
-                </Label>
-              </div>
-            ))}
-          </div>
+          {/* Buyer's Journey Filter - only show if there are options */}
+          {metadata.messagingStages && metadata.messagingStages.length > 0 && (
+            <div className="mb-5">
+              <h3 className="text-sm font-medium text-neutral-500 mb-2">Buyer's Journey</h3>
+              {metadata.messagingStages.map((stage: string) => (
+                <div key={stage} className="flex items-center mb-2">
+                  <Checkbox
+                    id={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('messagingStages', stage)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('messagingStages', stage, checked as boolean)
+                    }
+                  />
+                  <Label
+                    htmlFor={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-600"
+                  >
+                    {stage}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* If no filters available for this partner, show a message */}
+          {filter.partnerId && 
+           !metadata.types.length && 
+           !metadata.products.length && 
+           !metadata.audiences.length && 
+           !metadata.messagingStages.length && (
+            <div className="text-neutral-500 text-sm italic mt-4">
+              No additional filters available for this partner.
+            </div>
+          )}
         </>
       )}
     </div>
