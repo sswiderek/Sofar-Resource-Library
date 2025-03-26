@@ -44,15 +44,22 @@ export type Resource = typeof resources.$inferSelect;
 export const partners = pgTable("partners", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  slug: text("slug").notNull().unique()
+  slug: text("slug").notNull().unique(),
+  password: text("password").default("").notNull(),
+  lastPasswordUpdate: timestamp("last_password_update"),
 });
 
 export const insertPartnerSchema = createInsertSchema(partners).omit({
   id: true,
 });
 
+export const updatePartnerPasswordSchema = z.object({
+  password: z.string().min(4, { message: "Password must be at least 4 characters" }),
+});
+
 export type InsertPartner = z.infer<typeof insertPartnerSchema>;
 export type Partner = typeof partners.$inferSelect;
+export type UpdatePartnerPassword = z.infer<typeof updatePartnerPasswordSchema>;
 
 // Define a schema for the resource filtering
 export const resourceFilterSchema = z.object({
@@ -65,3 +72,17 @@ export const resourceFilterSchema = z.object({
 });
 
 export type ResourceFilter = z.infer<typeof resourceFilterSchema>;
+
+// Authentication schemas
+export const adminLoginSchema = z.object({
+  username: z.string().min(1, { message: "Username is required" }),
+  password: z.string().min(1, { message: "Password is required" }),
+});
+
+export const partnerAccessSchema = z.object({
+  partnerId: z.string().min(1, { message: "Partner ID is required" }),
+  password: z.string().min(1, { message: "Password is required" }),
+});
+
+export type AdminLogin = z.infer<typeof adminLoginSchema>;
+export type PartnerAccess = z.infer<typeof partnerAccessSchema>;

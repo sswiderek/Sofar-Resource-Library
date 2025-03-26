@@ -1,7 +1,7 @@
 import { 
   users, type User, type InsertUser,
   resources, type Resource, type InsertResource,
-  partners, type Partner, type InsertPartner,
+  partners, type Partner, type InsertPartner, type UpdatePartnerPassword,
   type ResourceFilter
 } from "@shared/schema";
 
@@ -25,7 +25,10 @@ export interface IStorage {
   // Partner methods
   getPartners(): Promise<Partner[]>;
   getPartnerBySlug(slug: string): Promise<Partner | undefined>;
+  getPartnerById(id: number): Promise<Partner | undefined>;
   createPartner(partner: InsertPartner): Promise<Partner>;
+  updatePartnerPassword(id: number, passwordData: UpdatePartnerPassword): Promise<Partner | undefined>;
+  verifyPartnerPassword(slug: string, password: string): Promise<boolean>;
   deletePartner(id: number): Promise<boolean>;
 }
 
@@ -192,12 +195,46 @@ export class MemStorage implements IStorage {
       (partner) => partner.slug === slug
     );
   }
+  
+  async getPartnerById(id: number): Promise<Partner | undefined> {
+    return this.partners.get(id);
+  }
 
   async createPartner(insertPartner: InsertPartner): Promise<Partner> {
     const id = this.currentPartnerId++;
-    const partner: Partner = { ...insertPartner, id };
+    const partner: Partner = { 
+      ...insertPartner, 
+      id,
+      password: "",
+      lastPasswordUpdate: null 
+    };
     this.partners.set(id, partner);
     return partner;
+  }
+  
+  async updatePartnerPassword(id: number, passwordData: UpdatePartnerPassword): Promise<Partner | undefined> {
+    const partner = await this.getPartnerById(id);
+    if (!partner) return undefined;
+    
+    const updatedPartner: Partner = {
+      ...partner,
+      password: passwordData.password,
+      lastPasswordUpdate: new Date()
+    };
+    
+    this.partners.set(id, updatedPartner);
+    return updatedPartner;
+  }
+  
+  async verifyPartnerPassword(slug: string, password: string): Promise<boolean> {
+    const partner = await this.getPartnerBySlug(slug);
+    if (!partner) return false;
+    
+    // If no password is set, don't allow access
+    if (!partner.password) return false;
+    
+    // Basic password comparison (in a real app, use proper hashing)
+    return partner.password === password;
   }
 
   async deletePartner(id: number): Promise<boolean> {
