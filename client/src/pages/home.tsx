@@ -176,7 +176,7 @@ export default function Home() {
       />
       
       {/* Filter Sidebar - Desktop */}
-      <aside className="hidden md:block bg-white border-r border-neutral-200 w-64 md:flex-shrink-0 overflow-y-auto">
+      <aside className="hidden md:block bg-white border-r border-neutral-200 w-72 md:flex-shrink-0 overflow-y-auto h-screen">
         {selectedPartner && (
           <FilterSidebar
             filter={filters}
@@ -199,9 +199,9 @@ export default function Home() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-grow overflow-auto p-4 md:p-6 bg-neutral-50">
+      <div className="flex-grow overflow-auto p-4 md:p-8 bg-neutral-50">
         {/* Partner Selector */}
-        <div className="md:hidden mb-4">
+        <div className="md:hidden mb-6">
           <PartnerSelector
             selectedPartner={selectedPartner}
             onPartnerChange={handlePartnerChange}
@@ -209,7 +209,7 @@ export default function Home() {
         </div>
 
         {/* Filter button for mobile */}
-        <div className="md:hidden mb-4">
+        <div className="md:hidden mb-6">
           <Button
             variant="outline"
             className="w-full flex items-center justify-center bg-white"
@@ -221,13 +221,13 @@ export default function Home() {
         </div>
 
         {/* View toggle and resource info */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-neutral-700">Resources</h2>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-5 w-full">
+            <div className="flex-grow">
+              <h2 className="text-2xl font-semibold text-neutral-800 mb-1">Resources</h2>
               {resources && (
-                <p className="text-sm text-neutral-500">
-                  Showing {resources.length} resources
+                <p className="text-sm text-neutral-600">
+                  Showing {resources.length} resources relevant to your partnership
                 </p>
               )}
             </div>
@@ -318,7 +318,7 @@ export default function Home() {
 
         {/* Resources Grid View */}
         {viewMode === 'card' && resources && resources.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in-0 slide-in-from-bottom-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-0 duration-300">
             {resources.map((resource: Resource) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
@@ -327,7 +327,7 @@ export default function Home() {
 
         {/* Resources List View */}
         {viewMode === 'list' && resources && resources.length > 0 && (
-          <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-5">
+          <div className="space-y-4 animate-in fade-in-0 duration-300">
             {resources.map((resource: Resource) => (
               <ResourceList key={resource.id} resource={resource} />
             ))}

@@ -36,6 +36,7 @@ export default function FilterSidebar({
   // Get metadata for filling filter options with partner-specific data
   const { data, isLoading } = useQuery<Metadata>({
     queryKey: ['/api/resources/metadata', filter.partnerId ? { partnerId: filter.partnerId } : undefined],
+    enabled: !!filter.partnerId, // Only fetch metadata if a partner is selected
   });
 
   // Ensure we have default values for the metadata

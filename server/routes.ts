@@ -102,24 +102,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if a partner filter is applied
       const partnerId = req.query.partnerId as string | undefined;
       
-      // Get resources, filtered by partner if specified
-      let resources;
-      if (partnerId) {
-        // Get partner details to match case-insensitively
-        const partner = await storage.getPartnerBySlug(partnerId);
-        if (partner) {
-          // Apply partner filter with case-insensitive matching
-          resources = await storage.getFilteredResources({ 
-            partnerId: partnerId
-          });
-        } else {
-          resources = await storage.getResources();
-        }
-      } else {
-        resources = await storage.getResources();
+      // If no partner is specified, return empty metadata
+      if (!partnerId) {
+        return res.json({
+          types: [],
+          products: [],
+          audiences: [],
+          messagingStages: [],
+          lastSynced: lastSyncTime,
+          partnerFiltered: false
+        });
       }
       
-      // Extract unique values for each filter category directly without using Set
+      // Get partner details
+      const partner = await storage.getPartnerBySlug(partnerId);
+      if (!partner) {
+        return res.status(404).json({ message: "Partner not found" });
+      }
+      
+      // Apply partner filter to get only resources relevant to this partner
+      const resources = await storage.getFilteredResources({ 
+        partnerId: partnerId
+      });
+      
+      log(`Found ${resources.length} resources for partner ${partnerId} for metadata`);
+      
+      // Extract unique values for each filter category only from resources relevant to this partner
       const typesSet = new Set<string>();
       const productsSet = new Set<string>();
       const audiencesSet = new Set<string>();
