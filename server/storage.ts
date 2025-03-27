@@ -6,6 +6,8 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import fs from 'fs';
+import path from 'path';
 
 // modify the interface with any CRUD methods
 // you might need
@@ -46,6 +48,9 @@ export class MemStorage implements IStorage {
   currentPartnerId: number;
   sessionStore: session.Store;
 
+  // File path for saving partner data
+  private partnersFilePath: string = path.join(process.cwd(), 'partners-data.json');
+
   constructor() {
     this.users = new Map();
     this.resources = new Map();
@@ -60,8 +65,63 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000 // prune expired entries every 24h
     });
     
-    // Initialize with some partner data
-    this.initializePartners();
+    // Load partners from file if it exists, otherwise initialize with defaults
+    this.loadPartnersFromFile();
+  }
+
+  // Save partners data to file
+  private savePartnersToFile() {
+    try {
+      const partnersData = {
+        partners: Array.from(this.partners.values()),
+        currentPartnerId: this.currentPartnerId
+      };
+      fs.writeFileSync(this.partnersFilePath, JSON.stringify(partnersData, null, 2));
+      console.log('Partners data saved to file');
+    } catch (error) {
+      console.error('Error saving partners data to file:', error);
+    }
+  }
+
+  // Load partners data from file if exists
+  private loadPartnersFromFile() {
+    try {
+      if (fs.existsSync(this.partnersFilePath)) {
+        const fileData = fs.readFileSync(this.partnersFilePath, 'utf8');
+        
+        interface StoredData {
+          partners: Array<Partner & { lastPasswordUpdate: string | null }>;
+          currentPartnerId: number;
+        }
+        
+        const parsedData = JSON.parse(fileData) as StoredData;
+        
+        // Restore partners
+        if (parsedData.partners && Array.isArray(parsedData.partners)) {
+          parsedData.partners.forEach(partner => {
+            // Convert string lastPasswordUpdate back to Date if it exists
+            if (partner.lastPasswordUpdate) {
+              partner.lastPasswordUpdate = new Date(partner.lastPasswordUpdate);
+            }
+            this.partners.set(partner.id, partner as Partner);
+          });
+        }
+        
+        // Restore current ID counter
+        if (parsedData.currentPartnerId) {
+          this.currentPartnerId = parsedData.currentPartnerId;
+        }
+        
+        console.log(`Loaded ${this.partners.size} partners from file`);
+      } else {
+        // Initialize with default data if no file exists
+        this.initializePartners();
+      }
+    } catch (error) {
+      console.error('Error loading partners data from file:', error);
+      // If there's an error loading, initialize with defaults
+      this.initializePartners();
+    }
   }
 
   // Initialize with common partners
@@ -221,6 +281,7 @@ export class MemStorage implements IStorage {
       lastPasswordUpdate: null 
     };
     this.partners.set(id, partner);
+    this.savePartnersToFile();
     return partner;
   }
   
@@ -235,6 +296,7 @@ export class MemStorage implements IStorage {
     };
     
     this.partners.set(id, updatedPartner);
+    this.savePartnersToFile();
     return updatedPartner;
   }
   
@@ -250,7 +312,11 @@ export class MemStorage implements IStorage {
   }
 
   async deletePartner(id: number): Promise<boolean> {
-    return this.partners.delete(id);
+    const result = this.partners.delete(id);
+    if (result) {
+      this.savePartnersToFile();
+    }
+    return result;
   }
 }
 

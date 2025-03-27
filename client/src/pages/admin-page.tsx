@@ -398,7 +398,7 @@ export default function AdminPage() {
                     <FormControl>
                       <Input 
                         type="password" 
-                        placeholder="••••••••" 
+                        placeholder="" 
                         className="border-neutral-300 focus:border-neutral-400 focus:ring-neutral-400" 
                         {...field} 
                       />

@@ -1,0 +1,12 @@
+{
+  "partners": [
+    {
+      "name": "PME",
+      "slug": "pme",
+      "id": 1,
+      "password": "",
+      "lastPasswordUpdate": null
+    }
+  ],
+  "currentPartnerId": 2
+}
