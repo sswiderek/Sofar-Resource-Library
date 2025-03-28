@@ -31,6 +31,8 @@ const getTypeBadgeClasses = (type: string): string => {
       return 'bg-green-100 text-green-700 border-green-200';
     case 'webpage':
       return 'bg-orange-100 text-orange-700 border-orange-200';
+    case 'branding':
+      return 'bg-pink-100 text-pink-700 border-pink-200';
     default:
       return 'bg-neutral-100 text-neutral-700 border-neutral-200';
   }
