@@ -112,27 +112,27 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
             <div className="mt-2 space-y-2">
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("What resources do you have about smart mooring?")}
+                onClick={() => setQuestion("What is a Smart Mooring and how does it enhance ocean data collection?")}
               >
-                What resources do you have about smart mooring?
+                What is a Smart Mooring and how does it enhance ocean data collection?
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("Show me sales materials for customers")}
+                onClick={() => setQuestion("Tell me about Bristlemouth and its impact on ocean technology")}
               >
-                Show me sales materials for customers
+                Tell me about Bristlemouth and its impact on ocean technology
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("What are the key features of your solution?")}
+                onClick={() => setQuestion("What subsurface sensors are available for the Spotter platform?")}
               >
-                What are the key features of your solution?
+                What subsurface sensors are available for the Spotter platform?
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("Can you explain how your technology works?")}
+                onClick={() => setQuestion("How are Spotter buoys being used for coral reef research?")}
               >
-                Can you explain how your technology works?
+                How are Spotter buoys being used for coral reef research?
               </button>
             </div>
           </div>
