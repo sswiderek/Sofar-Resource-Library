@@ -12,15 +12,17 @@ const openai = new OpenAI({
  */
 export function prepareResourcesContext(resources: Resource[]): string {
   return resources.map(resource => {
-    // Use detailed description if available, otherwise fall back to regular description
-    const description = resource.detailedDescription && resource.detailedDescription.trim() 
-      ? resource.detailedDescription
-      : resource.description || 'No description provided';
+    // Always include regular description
+    const description = resource.description || 'No description provided';
+    
+    // Include detailed description as separate field when available
+    const hasDetailedDescription = resource.detailedDescription && resource.detailedDescription.trim().length > 0;
       
     return `
 RESOURCE ID: ${resource.id}
 TITLE: ${resource.name}
 DESCRIPTION: ${description}
+${hasDetailedDescription ? `DETAILED DESCRIPTION: ${resource.detailedDescription}` : ''}
 TYPE: ${resource.type || 'Unknown'}
 PRODUCT: ${resource.product.join(', ') || 'Unknown'}
 AUDIENCE: ${resource.audience.join(', ') || 'Unknown'}
@@ -59,7 +61,10 @@ export async function processQuestion(
           
 You'll be given resource information and a question from a user.
 Answer the question based ONLY on the provided resources information.
-If you can't answer from the provided information, say that you don't have enough information.
+
+IMPORTANT: Search deeply through all resources for relevant information. Even if a resource doesn't seem directly related by title, it may contain important information in its description that answers the user's question.
+
+Terms like "Smart Mooring", "Spotter", or other product names may appear in different resources. Check ALL resources carefully for mentions of these keywords.
 
 When referencing specific resources, mention them by name and ID.
 Keep responses concise but informative.

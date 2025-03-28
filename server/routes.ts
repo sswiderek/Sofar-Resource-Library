@@ -403,6 +403,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let resources;
       if (partnerId) {
         resources = await storage.getFilteredResources({ partnerId });
+        log(`Available resources for partner ${partnerId}:`);
+        resources.forEach(resource => {
+          log(`- ${resource.id}: ${resource.name} (${resource.type})`);
+        });
       } else {
         resources = await storage.getResources();
       }

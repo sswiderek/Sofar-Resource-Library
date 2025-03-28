@@ -107,8 +107,8 @@ export async function findSimilarResources(
       };
     });
     
-    // Filter by minimum similarity threshold (0.7), then sort by similarity and limit to topK
-    const similarityThreshold = 0.7;
+    // Filter by minimum similarity threshold (0.6), then sort by similarity and limit to topK
+    const similarityThreshold = 0.6;
     const filteredResources = scoredResources.filter(item => item.similarity >= similarityThreshold);
     
     // If no resources meet the threshold, just take the top ones
