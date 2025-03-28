@@ -19,8 +19,7 @@ export function prepareResourcesContext(resources: Resource[]): string {
     const hasDetailedDescription = resource.detailedDescription && resource.detailedDescription.trim().length > 0;
       
     return `
-RESOURCE ID: ${resource.id}
-TITLE: ${resource.name}
+RESOURCE: ${resource.name}
 DESCRIPTION: ${description}
 ${hasDetailedDescription ? `DETAILED DESCRIPTION: ${resource.detailedDescription}` : ''}
 TYPE: ${resource.type || 'Unknown'}
@@ -66,11 +65,11 @@ IMPORTANT: Search deeply through all resources for relevant information. Even if
 
 Terms like "Smart Mooring", "Spotter", or other product names may appear in different resources. Check ALL resources carefully for mentions of these keywords.
 
-When referencing specific resources, mention them by name and ID.
+VERY IMPORTANT: When referencing specific resources, mention them ONLY by name, NEVER include any ID numbers or reference numbers when mentioning resources.
 Keep responses concise but informative.
-Include a "RELEVANT_RESOURCES" section at the end with IDs of resources most relevant to the question.
+Include a "RELEVANT_RESOURCES" section at the end, but only list resource names, NOT their ID numbers.
 
-Format for RELEVANT_RESOURCES: [ID1, ID2, ...]`
+Format for RELEVANT_RESOURCES: ["Resource Name 1", "Resource Name 2", ...]`
         },
         {
           role: "user",
@@ -83,21 +82,39 @@ Format for RELEVANT_RESOURCES: [ID1, ID2, ...]`
 
     const responseText = completion.choices[0].message.content || '';
     
-    // Parse relevant resource IDs from the response
+    // Parse relevant resource names from the response and map them to IDs
     const relevantResourceIds: number[] = [];
     const relevantMatch = responseText.match(/RELEVANT_RESOURCES:\s*\[(.*?)\]/);
     
     if (relevantMatch && relevantMatch[1]) {
-      const idStrings = relevantMatch[1].split(',').map(str => str.trim());
-      for (const idStr of idStrings) {
-        const id = parseInt(idStr);
-        if (!isNaN(id)) {
-          relevantResourceIds.push(id);
+      // Extract resource names (possibly in quotes)
+      const nameRegex = /"([^"]+)"|'([^']+)'|([^,]+)/g;
+      const matches = relevantMatch[1].matchAll(nameRegex);
+      
+      const resourceNames: string[] = [];
+      for (const match of matches) {
+        // Use the first non-undefined group (either quoted or unquoted)
+        const name = match[1] || match[2] || match[3];
+        if (name && name.trim()) {
+          resourceNames.push(name.trim());
         }
       }
+      
+      // Map names to IDs by looking up in resources
+      resourceNames.forEach(name => {
+        const matchingResource = mostRelevantResources.find(r => 
+          r.name.toLowerCase() === name.toLowerCase() ||
+          r.name.toLowerCase().includes(name.toLowerCase()) ||
+          name.toLowerCase().includes(r.name.toLowerCase())
+        );
+        
+        if (matchingResource) {
+          relevantResourceIds.push(matchingResource.id);
+        }
+      });
     }
     
-    // If no relevant resources were specified in the response,
+    // If no relevant resources were identified,
     // use the IDs from the most relevant resources found by embeddings
     if (relevantResourceIds.length === 0) {
       mostRelevantResources.forEach(resource => {
