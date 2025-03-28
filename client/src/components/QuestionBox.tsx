@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Loader2, Sparkles } from 'lucide-react';
+import { Send, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -54,20 +54,36 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
     .slice(0, 3);
 
   return (
-    <Card className="w-full bg-white border shadow-sm transition-all duration-300 mb-6 relative">
-      <CardHeader className={`pb-2 ${expanded ? 'border-b' : ''}`}>
-        <CardTitle className="text-lg flex items-center">
-          <Sparkles className="h-5 w-5 mr-2 text-primary" />
-          Ask about resources
-        </CardTitle>
+    <Card className="w-full bg-white border border-primary/10 shadow-xs transition-all duration-300 mb-6 relative">
+      <CardHeader className={`py-3 px-4 ${expanded ? 'border-b' : ''}`}>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg flex items-center">
+            <Sparkles className="h-5 w-5 mr-2 text-primary" />
+            Ask about resources
+          </CardTitle>
+          {data && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0 rounded-full"
+              onClick={() => {
+                setQuestion('');
+                setExpanded(false);
+              }}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
+          )}
+        </div>
         {expanded && (
-          <CardDescription>
+          <CardDescription className="ml-7 mt-1">
             Ask any question about the resources available to you
           </CardDescription>
         )}
       </CardHeader>
       
-      <CardContent className={`${expanded ? 'pb-3 pt-4' : 'py-2'}`}>
+      <CardContent className={`px-4 ${expanded ? 'py-3' : 'py-2'}`}>
         <form onSubmit={handleSubmit} className="flex gap-2 items-center">
           <Input
             placeholder="Ask a question about resources..."
@@ -207,20 +223,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
         )}
       </CardContent>
       
-      {expanded && data && (
-        <CardFooter className="pt-0 border-t flex justify-end">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              setQuestion('');
-              setExpanded(false);
-            }}
-          >
-            Ask another question
-          </Button>
-        </CardFooter>
-      )}
+      {/* Footer removed as requested */}
     </Card>
   );
 }
