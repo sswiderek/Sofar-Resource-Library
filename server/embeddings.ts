@@ -87,7 +87,7 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
 export async function findSimilarResources(
   query: string, 
   resourcesWithEmbeddings: ResourceWithEmbedding[],
-  topK: number = 5
+  topK: number = 10
 ): Promise<Resource[]> {
   try {
     // Create embedding for the query
@@ -107,10 +107,23 @@ export async function findSimilarResources(
       };
     });
     
-    // Sort by similarity (highest first) and limit to topK
-    const sortedResources = scoredResources
+    // Filter by minimum similarity threshold (0.7), then sort by similarity and limit to topK
+    const similarityThreshold = 0.7;
+    const filteredResources = scoredResources.filter(item => item.similarity >= similarityThreshold);
+    
+    // If no resources meet the threshold, just take the top ones
+    const resourcesToUse = filteredResources.length > 0 
+      ? filteredResources 
+      : scoredResources;
+    
+    const sortedResources = resourcesToUse
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, topK);
+    
+    // Log the resources with their similarity scores for debugging
+    sortedResources.forEach(item => {
+      log(`Resource: ${item.resource.name} | Similarity: ${item.similarity.toFixed(4)}`);
+    });
     
     // Return just the resources
     return sortedResources.map(item => item.resource);

@@ -43,7 +43,7 @@ export async function processQuestion(
     const resourcesWithEmbeddings = await createResourceEmbeddings(resources);
     
     // Step 2: Find the most relevant resources using embeddings
-    const topK = Math.min(10, resources.length); // Use top 10 resources or all if fewer
+    const topK = Math.min(20, resources.length); // Use top 20 resources or all if fewer
     const mostRelevantResources = await findSimilarResources(question, resourcesWithEmbeddings, topK);
     
     // Step 3: Prepare context with the most relevant resources only
