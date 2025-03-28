@@ -2,6 +2,20 @@ import { Client } from "@notionhq/client";
 import { log } from "./vite";
 import { InsertResource } from "@shared/schema";
 
+/**
+ * Helper function to extract and combine all rich text blocks from a Notion rich text field
+ * @param richTextArray The rich_text array from a Notion property
+ * @returns Combined string of all text content or empty string if no content
+ */
+function extractRichText(richTextArray: any[] | undefined): string {
+  if (!richTextArray || !Array.isArray(richTextArray) || richTextArray.length === 0) {
+    return "";
+  }
+  
+  // Combine all rich text blocks into a single string
+  return richTextArray.map(rt => rt.text?.content || "").join("");
+}
+
 // Data from the table (screenshot)
 const mockResources: InsertResource[] = [
   {
@@ -204,12 +218,12 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
             properties["URL/Link"]?.url || 
             "#",
             
-        description: properties.Summary?.rich_text?.[0]?.text?.content || 
-                    properties["AI-Generated Podcast"]?.rich_text?.[0]?.text?.content || 
-                    properties.Description?.rich_text?.[0]?.text?.content || 
+        description: extractRichText(properties.Summary?.rich_text) || 
+                    extractRichText(properties["AI-Generated Podcast"]?.rich_text) || 
+                    extractRichText(properties.Description?.rich_text) || 
                     "",
                     
-        detailedDescription: properties["Detailed description (for AI parsing)"]?.rich_text?.[0]?.text?.content || 
+        detailedDescription: extractRichText(properties["Detailed description (for AI parsing)"]?.rich_text) || 
                             "",
                     
         notionId: page.id,
