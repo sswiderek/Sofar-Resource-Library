@@ -69,7 +69,7 @@ export default function PartnerSelector({
         value={selectedPartner || ""} 
         onValueChange={onPartnerChange}
       >
-        <SelectTrigger id="partner-select" className="w-full bg-white h-9">
+        <SelectTrigger id="partner-select" className="w-full bg-white">
           {selectedPartnerObject ? (
             <PartnerDisplay partner={selectedPartnerObject} />
           ) : (

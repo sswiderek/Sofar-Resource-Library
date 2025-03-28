@@ -228,29 +228,29 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-3 md:mt-0">
-            <div className="hidden md:block">
+          <div className="flex flex-col md:flex-row items-end md:items-center gap-4 mt-3 md:mt-0">
+            <div className="hidden md:block md:self-center">
               <PartnerSelector
                 selectedPartner={selectedPartner}
                 onPartnerChange={handlePartnerChange}
               />
             </div>
             
-            <div className="flex items-center gap-2 md:h-9">
+            <div className="flex items-center gap-2 self-end">
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={handleSync}
-                className="flex items-center h-9"
+                className="flex items-center"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Sync
               </Button>
 
-              <div className="flex border border-neutral-300 rounded-md overflow-hidden h-9">
+              <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
                 <Button
                   variant={viewMode === 'card' ? 'default' : 'ghost'}
-                  size="sm"
+                  size="default"
                   className="rounded-none px-2 h-full"
                   onClick={() => setViewMode('card')}
                 >
@@ -258,7 +258,7 @@ export default function Home() {
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
+                  size="default"
                   className="rounded-none px-2 h-full"
                   onClick={() => setViewMode('list')}
                 >
