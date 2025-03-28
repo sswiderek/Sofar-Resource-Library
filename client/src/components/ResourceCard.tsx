@@ -51,11 +51,11 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           )}
         </div>
         
-        <h3 className="text-lg font-semibold text-neutral-800 line-clamp-2 leading-tight mb-2">
+        <h3 className="text-lg font-semibold text-neutral-800 line-clamp-3 leading-tight mb-3">
           {resource.name}
         </h3>
         
-        <p className="text-sm text-neutral-600 line-clamp-3 flex-grow">
+        <p className="text-sm text-neutral-600 line-clamp-4 flex-grow">
           {resource.description}
         </p>
         

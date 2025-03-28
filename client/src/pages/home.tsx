@@ -324,7 +324,7 @@ export default function Home() {
 
         {/* Resources Grid View */}
         {viewMode === 'card' && resources && resources.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-in fade-in-0 duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-0 duration-300">
             {resources.map((resource: Resource) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
