@@ -13,6 +13,14 @@ import { storage } from "./storage";
 import { fetchResourcesFromNotion, shouldSyncResources } from "./notion";
 import { log } from "./vite";
 import { resourceFilterSchema, adminLoginSchema, updatePartnerPasswordSchema, partnerAccessSchema } from "@shared/schema";
+import { processQuestion } from "./openai";
+import { z } from 'zod';
+
+// Schema for question validation
+const questionSchema = z.object({
+  question: z.string().min(3).max(500),
+  partnerId: z.string().nullable(),
+});
 
 // Track when we last synced with Notion
 let lastSyncTime: Date | null = null;
@@ -364,6 +372,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ authorized: true });
     } else {
       return res.json({ authorized: false });
+    }
+  });
+
+  // Process a question using AI
+  app.post("/api/ask", async (req: Request, res: Response) => {
+    try {
+      // Validate the question
+      const parseResult = questionSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input",
+          errors: parseResult.error.errors
+        });
+      }
+
+      const { question, partnerId } = parseResult.data;
+      
+      // Verify the partner exists
+      if (partnerId) {
+        const partner = await storage.getPartnerBySlug(partnerId);
+        if (!partner) {
+          return res.status(404).json({ message: "Partner not found" });
+        }
+      }
+
+      // Get relevant resources (either for specific partner or all resources)
+      let resources;
+      if (partnerId) {
+        resources = await storage.getFilteredResources({ partnerId });
+      } else {
+        resources = await storage.getResources();
+      }
+
+      log(`Processing question: "${question}" with ${resources.length} resources`);
+      
+      // Process the question with OpenAI
+      const result = await processQuestion(question, resources);
+      
+      // Return the answer along with relevant resource IDs
+      res.json(result);
+    } catch (error) {
+      log(`Error processing question: ${error instanceof Error ? error.message : String(error)}`);
+      res.status(500).json({ 
+        message: "Failed to process your question",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

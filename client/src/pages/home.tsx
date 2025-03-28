@@ -9,6 +9,7 @@ import PartnerSelector from "@/components/PartnerSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
+import QuestionBox from "@/components/QuestionBox";
 import PartnerPasswordModal from "@/components/PartnerPasswordModal";
 import { Resource, Partner } from "@shared/schema";
 import { ResourceFilters, initialFilters, buildFilterQueryString } from "@/lib/resourceFilters";
@@ -269,6 +270,14 @@ export default function Home() {
           </div>
         </div>
 
+        {/* AI Question Box */}
+        {selectedPartner && (
+          <QuestionBox
+            partnerId={selectedPartner}
+            resources={resources}
+          />
+        )}
+        
         {/* Partner Selection Warning */}
         {!selectedPartner && (
           <Alert className="bg-amber-50 border-amber-400 mb-6">
