@@ -236,22 +236,22 @@ export default function Home() {
               />
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 md:h-9">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleSync}
-                className="flex items-center"
+                className="flex items-center h-9"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Sync
               </Button>
 
-              <div className="flex border border-neutral-300 rounded-md overflow-hidden">
+              <div className="flex border border-neutral-300 rounded-md overflow-hidden h-9">
                 <Button
                   variant={viewMode === 'card' ? 'default' : 'ghost'}
                   size="sm"
-                  className="rounded-none px-2"
+                  className="rounded-none px-2 h-full"
                   onClick={() => setViewMode('card')}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -259,7 +259,7 @@ export default function Home() {
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
-                  className="rounded-none px-2"
+                  className="rounded-none px-2 h-full"
                   onClick={() => setViewMode('list')}
                 >
                   <List className="h-4 w-4" />

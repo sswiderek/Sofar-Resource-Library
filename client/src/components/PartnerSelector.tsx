@@ -38,18 +38,18 @@ export default function PartnerSelector({
 
   if (isLoading) {
     return (
-      <div className="mt-3 md:mt-0 w-full md:w-72">
+      <div className="w-full md:w-72">
         <label className="block text-sm font-medium text-neutral-500 mb-1">
           Viewing resources as:
         </label>
-        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-9 w-full" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mt-3 md:mt-0 w-full md:w-72">
+      <div className="w-full md:w-72">
         <label className="block text-sm font-medium text-neutral-500 mb-1">
           Viewing resources as:
         </label>
@@ -61,7 +61,7 @@ export default function PartnerSelector({
   }
 
   return (
-    <div className="mt-3 md:mt-0 w-full md:w-72">
+    <div className="w-full md:w-72">
       <label htmlFor="partner-select" className="block text-sm font-medium text-neutral-500 mb-1">
         Viewing resources as:
       </label>
@@ -69,7 +69,7 @@ export default function PartnerSelector({
         value={selectedPartner || ""} 
         onValueChange={onPartnerChange}
       >
-        <SelectTrigger id="partner-select" className="w-full bg-white">
+        <SelectTrigger id="partner-select" className="w-full bg-white h-9">
           {selectedPartnerObject ? (
             <PartnerDisplay partner={selectedPartnerObject} />
           ) : (
