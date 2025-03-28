@@ -112,27 +112,21 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
             <div className="mt-2 space-y-2">
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("What is a Smart Mooring and how does it enhance ocean data collection?")}
+                onClick={() => setQuestion("What is a Smart Mooring?")}
               >
-                What is a Smart Mooring and how does it enhance ocean data collection?
+                What is a Smart Mooring?
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("Tell me about Bristlemouth and its impact on ocean technology")}
+                onClick={() => setQuestion("Tell me about Bristlemouth")}
               >
-                Tell me about Bristlemouth and its impact on ocean technology
+                Tell me about Bristlemouth
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("What subsurface sensors are available for the Spotter platform?")}
+                onClick={() => setQuestion("How does the dissolved oxygen sensor work?")}
               >
-                What subsurface sensors are available for the Spotter platform?
-              </button>
-              <button 
-                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("How are Spotter buoys being used for coral reef research?")}
-              >
-                How are Spotter buoys being used for coral reef research?
+                How does the dissolved oxygen sensor work?
               </button>
             </div>
           </div>
