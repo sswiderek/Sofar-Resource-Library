@@ -75,22 +75,37 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
         </form>
         
         {expanded && !data && !isPending && (
-          <div className="text-sm text-muted-foreground mt-2 p-2 bg-gray-50 rounded-md">
-            <p>Example questions:</p>
-            <ul className="list-disc pl-5 mt-1 space-y-1">
-              <li><button 
-                className="text-primary hover:underline text-left" 
+          <div className="text-sm mt-3 p-3 bg-gray-50 rounded-md border border-gray-100">
+            <div className="flex items-center">
+              <Sparkles className="h-4 w-4 text-primary mr-1" />
+              <p className="font-medium">Try asking:</p>
+            </div>
+            <div className="mt-2 space-y-2">
+              <button 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => setQuestion("What resources do you have about smart mooring?")}
               >
                 What resources do you have about smart mooring?
-              </button></li>
-              <li><button 
-                className="text-primary hover:underline text-left" 
+              </button>
+              <button 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => setQuestion("Show me sales materials for customers")}
               >
                 Show me sales materials for customers
-              </button></li>
-            </ul>
+              </button>
+              <button 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
+                onClick={() => setQuestion("What are the key features of your solution?")}
+              >
+                What are the key features of your solution?
+              </button>
+              <button 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
+                onClick={() => setQuestion("Can you explain how your technology works?")}
+              >
+                Can you explain how your technology works?
+              </button>
+            </div>
           </div>
         )}
         
@@ -109,40 +124,76 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
         
         {data && (
           <div className="mt-4">
-            <div className="bg-primary/5 p-4 rounded-md">
-              <h3 className="font-semibold text-primary mb-2">Answer:</h3>
-              <div className="whitespace-pre-line text-sm">
+            <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
+              <div className="flex items-center mb-3">
+                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+                <h3 className="font-semibold text-primary">AI Answer</h3>
+              </div>
+              <div className="whitespace-pre-line text-sm prose prose-sm max-w-none">
                 {data.answer}
               </div>
             </div>
             
             {relevantResources.length > 0 && (
               <div className="mt-4">
-                <h3 className="font-semibold text-sm mb-2">Relevant Resources:</h3>
-                <ul className="space-y-2">
-                  {relevantResources.map(resource => (
-                    <li key={resource.id} className="bg-gray-50 p-2 rounded-md text-sm">
-                      <div className="font-medium">{resource.name}</div>
-                      <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{resource.description}</div>
-                      {onShowResource ? (
-                        <Button 
-                          variant="link" 
-                          size="sm" 
-                          className="p-0 h-auto mt-1 text-xs"
-                          onClick={() => onShowResource(resource.id)}
-                        >
-                          View Resource
-                        </Button>
-                      ) : (
-                        <a 
-                          href={resource.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-primary text-xs hover:underline inline-block mt-1"
-                        >
-                          View Resource
-                        </a>
-                      )}
+                <h3 className="font-semibold text-sm mb-2">
+                  <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
+                  Relevant Resources:
+                </h3>
+                <ul className="space-y-3">
+                  {relevantResources.map((resource, index) => (
+                    <li key={resource.id} className="border border-primary/20 bg-primary/5 p-3 rounded-md text-sm">
+                      <div className="flex items-start justify-between">
+                        <div className="font-medium text-primary flex-1">{resource.name}</div>
+                        <div className="flex items-center gap-1 text-xs bg-primary/10 px-2 py-1 rounded-full">
+                          <span className="font-semibold">#{index + 1}</span>
+                          <span className="uppercase text-[10px]">{resource.type}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs mt-2 line-clamp-2 text-gray-700">
+                        {resource.description}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {resource.product.map(prod => (
+                          <span key={prod} className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
+                            {prod}
+                          </span>
+                        ))}
+                        {resource.audience.map(aud => (
+                          <span key={aud} className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
+                            {aud}
+                          </span>
+                        ))}
+                        {resource.messagingStage && (
+                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
+                            {resource.messagingStage}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="mt-3 flex gap-2">
+                        {onShowResource ? (
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="h-7 text-xs"
+                            onClick={() => onShowResource(resource.id)}
+                          >
+                            View Resource
+                          </Button>
+                        ) : (
+                          <a 
+                            href={resource.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
+                          >
+                            View Resource
+                          </a>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

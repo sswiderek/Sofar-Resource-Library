@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { Resource } from '../shared/schema';
+import { createResourceEmbeddings, findSimilarResources } from './embeddings';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -11,10 +12,15 @@ const openai = new OpenAI({
  */
 export function prepareResourcesContext(resources: Resource[]): string {
   return resources.map(resource => {
+    // Use detailed description if available, otherwise fall back to regular description
+    const description = resource.detailedDescription && resource.detailedDescription.trim() 
+      ? resource.detailedDescription
+      : resource.description || 'No description provided';
+      
     return `
 RESOURCE ID: ${resource.id}
 TITLE: ${resource.name}
-DESCRIPTION: ${resource.description || 'No description provided'}
+DESCRIPTION: ${description}
 TYPE: ${resource.type || 'Unknown'}
 PRODUCT: ${resource.product.join(', ') || 'Unknown'}
 AUDIENCE: ${resource.audience.join(', ') || 'Unknown'}
@@ -26,14 +32,24 @@ LINK: ${resource.url || 'No link available'}
 
 /**
  * Process a question using OpenAI's API and provide a response based on resources
+ * Uses embeddings to find the most relevant resources first
  */
 export async function processQuestion(
   question: string,
   resources: Resource[]
 ): Promise<{ answer: string; relevantResourceIds: number[] }> {
   try {
-    const contextText = prepareResourcesContext(resources);
+    // Step 1: Create embeddings for all resources
+    const resourcesWithEmbeddings = await createResourceEmbeddings(resources);
     
+    // Step 2: Find the most relevant resources using embeddings
+    const topK = Math.min(10, resources.length); // Use top 10 resources or all if fewer
+    const mostRelevantResources = await findSimilarResources(question, resourcesWithEmbeddings, topK);
+    
+    // Step 3: Prepare context with the most relevant resources only
+    const contextText = prepareResourcesContext(mostRelevantResources);
+    
+    // Step 4: Generate answer using OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -62,7 +78,7 @@ Format for RELEVANT_RESOURCES: [ID1, ID2, ...]`
 
     const responseText = completion.choices[0].message.content || '';
     
-    // Parse relevant resource IDs
+    // Parse relevant resource IDs from the response
     const relevantResourceIds: number[] = [];
     const relevantMatch = responseText.match(/RELEVANT_RESOURCES:\s*\[(.*?)\]/);
     
@@ -74,6 +90,14 @@ Format for RELEVANT_RESOURCES: [ID1, ID2, ...]`
           relevantResourceIds.push(id);
         }
       }
+    }
+    
+    // If no relevant resources were specified in the response,
+    // use the IDs from the most relevant resources found by embeddings
+    if (relevantResourceIds.length === 0) {
+      mostRelevantResources.forEach(resource => {
+        relevantResourceIds.push(resource.id);
+      });
     }
     
     // Remove the RELEVANT_RESOURCES section from the displayed answer

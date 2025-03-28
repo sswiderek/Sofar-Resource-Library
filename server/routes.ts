@@ -14,6 +14,7 @@ import { fetchResourcesFromNotion, shouldSyncResources } from "./notion";
 import { log } from "./vite";
 import { resourceFilterSchema, adminLoginSchema, updatePartnerPasswordSchema, partnerAccessSchema } from "@shared/schema";
 import { processQuestion } from "./openai";
+import { createResourceEmbeddings } from "./embeddings";
 import { z } from 'zod';
 
 // Schema for question validation
@@ -408,8 +409,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       log(`Processing question: "${question}" with ${resources.length} resources`);
       
-      // Process the question with OpenAI
+      // Create a timer to measure performance
+      const startTime = Date.now();
+      
+      // Process the question with OpenAI (now uses embeddings for relevance matching)
       const result = await processQuestion(question, resources);
+      
+      // Calculate processing time
+      const processingTime = Date.now() - startTime;
+      log(`Question processed in ${processingTime}ms with ${result.relevantResourceIds.length} relevant resources found`);
       
       // Return the answer along with relevant resource IDs
       res.json(result);

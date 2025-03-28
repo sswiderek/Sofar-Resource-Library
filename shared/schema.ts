@@ -29,6 +29,7 @@ export const resources = pgTable("resources", {
   date: text("date").notNull(),
   url: text("url").notNull(),
   description: text("description").notNull(),
+  detailedDescription: text("detailed_description"),
   notionId: text("notion_id").notNull().unique(),
   lastSynced: timestamp("last_synced").notNull(),
 });

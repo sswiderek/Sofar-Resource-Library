@@ -14,6 +14,7 @@ const mockResources: InsertResource[] = [
     date: "2023-03-24",
     url: "https://docs.google.com/...",
     description: "Living deck that includes the core set of slides introducing Spotter, its applications, and other key information.",
+    detailedDescription: "This comprehensive sales deck details the Spotter platform with specific information about the Dissolved Oxygen, Hydrophone, and Temperature sensors. The deck covers technical specifications, deployment methods, data collection capabilities, and real-world applications. It includes comparative analysis with competing products and highlights the key value propositions for government, defense, aquaculture, and marine construction sectors. The presentation explains data transmission protocols, battery life, maintenance requirements, and integration with existing systems.",
     notionId: "mock-notion-id-1",
     lastSynced: new Date(),
   },
@@ -207,6 +208,9 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                     properties["AI-Generated Podcast"]?.rich_text?.[0]?.text?.content || 
                     properties.Description?.rich_text?.[0]?.text?.content || 
                     "",
+                    
+        detailedDescription: properties["Detailed description (for AI parsing)"]?.rich_text?.[0]?.text?.content || 
+                            "",
                     
         notionId: page.id,
         lastSynced: new Date(),
