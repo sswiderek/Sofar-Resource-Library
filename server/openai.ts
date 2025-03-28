@@ -89,10 +89,10 @@ Format for RELEVANT_RESOURCES: ["Resource Name 1", "Resource Name 2", ...]`
     if (relevantMatch && relevantMatch[1]) {
       // Extract resource names (possibly in quotes)
       const nameRegex = /"([^"]+)"|'([^']+)'|([^,]+)/g;
-      const matches = relevantMatch[1].matchAll(nameRegex);
       
       const resourceNames: string[] = [];
-      for (const match of matches) {
+      let match;
+      while ((match = nameRegex.exec(relevantMatch[1])) !== null) {
         // Use the first non-undefined group (either quoted or unquoted)
         const name = match[1] || match[2] || match[3];
         if (name && name.trim()) {

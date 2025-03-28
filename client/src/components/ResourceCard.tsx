@@ -27,6 +27,10 @@ const getTypeBadgeClasses = (type: string): string => {
       return 'bg-red-100 text-red-700 border-red-200';
     case 'media':
       return 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200';
+    case 'partner enablement':
+      return 'bg-green-100 text-green-700 border-green-200';
+    case 'webpage':
+      return 'bg-orange-100 text-orange-700 border-orange-200';
     default:
       return 'bg-neutral-100 text-neutral-700 border-neutral-200';
   }
@@ -52,16 +56,6 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
         <p className="text-sm text-neutral-600 line-clamp-3 flex-grow">
           {resource.description}
         </p>
-        
-        {resource.product && resource.product.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {resource.product.map((product, index) => (
-              <span key={index} className="inline-flex text-xs px-2 py-1 bg-neutral-100 text-neutral-700 rounded-md">
-                {product}
-              </span>
-            ))}
-          </div>
-        )}
         
         <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end items-center">
           <a

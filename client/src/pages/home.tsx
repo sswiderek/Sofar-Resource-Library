@@ -174,7 +174,7 @@ export default function Home() {
       />
       
       {/* Filter Sidebar - Desktop */}
-      <aside className="hidden md:block bg-white border-r border-neutral-200 w-72 md:flex-shrink-0 overflow-y-auto h-screen">
+      <aside className="hidden md:block bg-white border-r border-neutral-200 w-64 md:flex-shrink-0 overflow-y-auto h-screen">
         {selectedPartner && (
           <FilterSidebar
             filter={filters}
@@ -197,7 +197,7 @@ export default function Home() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-grow overflow-auto p-4 md:p-8 bg-neutral-50">
+      <div className="flex-grow overflow-auto p-4 md:p-6 lg:p-8 bg-neutral-50">
         {/* Partner Selector */}
         <div className="md:hidden mb-6">
           <PartnerSelector
@@ -324,7 +324,7 @@ export default function Home() {
 
         {/* Resources Grid View */}
         {viewMode === 'card' && resources && resources.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-0 duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-in fade-in-0 duration-300">
             {resources.map((resource: Resource) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
