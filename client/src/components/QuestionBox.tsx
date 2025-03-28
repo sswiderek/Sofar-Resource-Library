@@ -61,14 +61,18 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
             <Sparkles className="h-5 w-5 mr-2 text-primary" />
             Ask about resources
           </CardTitle>
-          {data && (
+          {expanded && (
             <Button 
               variant="ghost" 
               size="sm" 
               className="h-7 w-7 p-0 rounded-full"
               onClick={() => {
-                setQuestion('');
                 setExpanded(false);
+                if (data) {
+                  setQuestion('');
+                  // This will reset the state and collapse the answer
+                  mutate.reset();
+                }
               }}
             >
               <X className="h-4 w-4" />
