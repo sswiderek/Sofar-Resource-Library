@@ -67,12 +67,11 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
               size="sm" 
               className="h-7 w-7 p-0 rounded-full"
               onClick={() => {
+                // Reset state and collapse the answer
                 setExpanded(false);
-                if (data) {
-                  setQuestion('');
-                  // This will reset the state and collapse the answer
-                  mutate.reset();
-                }
+                setQuestion('');
+                
+                // Instead of trying to use reset, we can just clear the component state
               }}
             >
               <X className="h-4 w-4" />
@@ -179,8 +178,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
                     <li key={resource.id} className="border border-primary/20 bg-primary/5 p-3 rounded-md text-sm">
                       <div className="flex items-start justify-between">
                         <div className="font-medium text-primary flex-1">{resource.name}</div>
-                        <div className="flex items-center gap-1 text-xs bg-primary/10 px-2 py-1 rounded-full">
-                          <span className="font-semibold">#{index + 1}</span>
+                        <div className="flex items-center text-xs bg-primary/10 px-2 py-1 rounded-full">
                           <span className="uppercase text-[10px]">{resource.type}</span>
                         </div>
                       </div>
