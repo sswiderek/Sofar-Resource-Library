@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List, Lock } from "lucide-react";
+import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List } from "lucide-react";
 import PartnerSelector from "@/components/PartnerSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
@@ -102,9 +102,6 @@ export default function Home() {
       });
     }
   };
-
-  // We don't need this effect anymore since we're handling partner changes directly
-  // through the handlePartnerChange function
 
   // Build query string for API request
   const filterQuery = buildFilterQueryString(filters);
@@ -222,52 +219,52 @@ export default function Home() {
 
         {/* View toggle and resource info */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div className="flex flex-col md:flex-row md:items-center gap-5 w-full">
-            <div className="flex-grow">
-              <h2 className="text-2xl font-semibold text-neutral-800 mb-1">Resources</h2>
-              {resources && (
-                <p className="text-sm text-neutral-600">
-                  Showing {resources.length} resources relevant to your partnership
-                </p>
-              )}
-            </div>
+          <div className="flex-grow">
+            <h2 className="text-2xl font-semibold text-neutral-800 mb-1">Resources</h2>
+            {resources && (
+              <p className="text-sm text-neutral-600">
+                Showing {resources.length} resources relevant to your partnership
+              </p>
+            )}
+          </div>
 
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-3 md:mt-0">
             <div className="hidden md:block">
               <PartnerSelector
                 selectedPartner={selectedPartner}
                 onPartnerChange={handlePartnerChange}
               />
             </div>
-          </div>
-
-          <div className="flex items-center mt-3 md:mt-0 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSync}
-              className="flex items-center"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Sync
-            </Button>
-
-            <div className="flex border border-neutral-300 rounded-md overflow-hidden">
+            
+            <div className="flex items-center gap-2">
               <Button
-                variant={viewMode === 'card' ? 'default' : 'ghost'}
+                variant="outline"
                 size="sm"
-                className="rounded-none px-2"
-                onClick={() => setViewMode('card')}
+                onClick={handleSync}
+                className="flex items-center"
               >
-                <LayoutGrid className="h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Sync
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-none px-2"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
+
+              <div className="flex border border-neutral-300 rounded-md overflow-hidden">
+                <Button
+                  variant={viewMode === 'card' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-none px-2"
+                  onClick={() => setViewMode('card')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-none px-2"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
