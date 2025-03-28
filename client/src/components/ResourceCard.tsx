@@ -57,7 +57,17 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           {resource.description}
         </p>
         
-        <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end items-center">
+        {resource.audience && resource.audience.length > 0 && (
+          <div className="mt-3 mb-1 flex flex-wrap gap-1">
+            {resource.audience.map((segment, index) => (
+              <span key={index} className="inline-flex text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-md">
+                {segment}
+              </span>
+            ))}
+          </div>
+        )}
+        
+        <div className="mt-3 pt-3 border-t border-neutral-100 flex justify-end items-center">
           <a
             href={resource.url}
             target="_blank"

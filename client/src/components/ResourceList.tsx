@@ -55,6 +55,16 @@ export default function ResourceList({ resource }: ResourceListProps) {
           <p className="mt-2 text-sm text-neutral-500 mb-3">
             {resource.description}
           </p>
+          
+          {resource.audience && resource.audience.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1">
+              {resource.audience.map((segment, index) => (
+                <span key={index} className="inline-flex text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-md">
+                  {segment}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         
         <div className="mt-4 sm:mt-0 sm:ml-6 flex sm:flex-col sm:justify-center">
