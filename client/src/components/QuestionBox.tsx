@@ -41,10 +41,17 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
     }
   };
 
-  // Find resources by IDs
-  const relevantResources = resources.filter(
-    resource => data?.relevantResourceIds?.includes(resource.id)
-  );
+  // Find resources by IDs and limit to a maximum of 3
+  const relevantResources = resources
+    .filter(resource => data?.relevantResourceIds?.includes(resource.id))
+    // Sort by the order they appear in relevantResourceIds to maintain priority
+    .sort((a, b) => {
+      const indexA = data?.relevantResourceIds?.indexOf(a.id) ?? -1;
+      const indexB = data?.relevantResourceIds?.indexOf(b.id) ?? -1;
+      return indexA - indexB;
+    })
+    // Limit to max 3 resources
+    .slice(0, 3);
 
   return (
     <Card className="w-full bg-white border shadow-sm transition-all duration-300 mb-6 relative">
@@ -136,10 +143,17 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
             
             {relevantResources.length > 0 && (
               <div className="mt-4">
-                <h3 className="font-semibold text-sm mb-2">
-                  <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
-                  Relevant Resources:
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm mb-2">
+                    <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
+                    Relevant Resources:
+                  </h3>
+                  {data.relevantResourceIds?.length > 3 && (
+                    <div className="text-xs text-muted-foreground">
+                      Showing top 3 of {data.relevantResourceIds.length} resources
+                    </div>
+                  )}
+                </div>
                 <ul className="space-y-3">
                   {relevantResources.map((resource, index) => (
                     <li key={resource.id} className="border border-primary/20 bg-primary/5 p-3 rounded-md text-sm">
