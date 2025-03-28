@@ -57,15 +57,23 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           {resource.description}
         </p>
         
-        {resource.audience && resource.audience.length > 0 && (
-          <div className="mt-3 mb-1 flex flex-wrap gap-1">
-            {resource.audience.map((segment, index) => (
-              <span key={index} className="inline-flex text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-md">
-                {segment}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="mt-3 mb-1 flex flex-wrap gap-1">
+          {resource.product && resource.product.length > 0 && resource.product.map((product, index) => (
+            <span key={`product-${index}`} className="inline-flex text-xs px-2 py-1 bg-green-50 text-green-700 rounded-md">
+              {product}
+            </span>
+          ))}
+          {resource.audience && resource.audience.length > 0 && resource.audience.map((segment, index) => (
+            <span key={`audience-${index}`} className="inline-flex text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-md">
+              {segment}
+            </span>
+          ))}
+          {resource.messagingStage && (
+            <span className="inline-flex text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded-md">
+              {resource.messagingStage}
+            </span>
+          )}
+        </div>
         
         <div className="mt-3 pt-3 border-t border-neutral-100 flex justify-end items-center">
           <a

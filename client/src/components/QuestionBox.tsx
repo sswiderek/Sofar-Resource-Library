@@ -170,21 +170,11 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
                       </div>
                       
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {resource.product.map(prod => (
-                          <span key={prod} className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
-                            {prod}
-                          </span>
-                        ))}
                         {resource.audience.map(aud => (
-                          <span key={aud} className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
+                          <span key={aud} className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
                             {aud}
                           </span>
                         ))}
-                        {resource.messagingStage && (
-                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
-                            {resource.messagingStage}
-                          </span>
-                        )}
                       </div>
                       
                       <div className="mt-3 flex gap-2">
