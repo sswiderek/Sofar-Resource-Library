@@ -22,6 +22,7 @@ interface AskResponse {
 export default function QuestionBox({ partnerId, onShowResource, resources = [] }: QuestionBoxProps) {
   const [question, setQuestion] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState<AskResponse | null>(null);
   
   const { mutate, data, isPending, isError, error } = useMutation<AskResponse, Error, string>({
     mutationFn: async (question: string) => {
@@ -30,7 +31,10 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
         '/api/ask',
         { question, partnerId }
       );
-      return response.json();
+      const result = await response.json();
+      // Store result in component state
+      setAiAnswer(result);
+      return result;
     },
   });
 
@@ -43,11 +47,11 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
 
   // Find resources by IDs and limit to a maximum of 3
   const relevantResources = resources
-    .filter(resource => data?.relevantResourceIds?.includes(resource.id))
+    .filter(resource => aiAnswer?.relevantResourceIds?.includes(resource.id))
     // Sort by the order they appear in relevantResourceIds to maintain priority
     .sort((a, b) => {
-      const indexA = data?.relevantResourceIds?.indexOf(a.id) ?? -1;
-      const indexB = data?.relevantResourceIds?.indexOf(b.id) ?? -1;
+      const indexA = aiAnswer?.relevantResourceIds?.indexOf(a.id) ?? -1;
+      const indexB = aiAnswer?.relevantResourceIds?.indexOf(b.id) ?? -1;
       return indexA - indexB;
     })
     // Limit to max 3 resources
@@ -67,11 +71,10 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
               size="sm" 
               className="h-7 w-7 p-0 rounded-full"
               onClick={() => {
-                // Reset state and collapse the answer
+                // Reset state and collapse the answer section completely
                 setExpanded(false);
                 setQuestion('');
-                
-                // Instead of trying to use reset, we can just clear the component state
+                setAiAnswer(null); // Clear the AI answer data
               }}
             >
               <X className="h-4 w-4" />
@@ -100,7 +103,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
           </Button>
         </form>
         
-        {expanded && !data && !isPending && (
+        {expanded && !aiAnswer && !isPending && (
           <div className="text-sm mt-3 p-3 bg-gray-50 rounded-md border border-gray-100">
             <div className="flex items-center">
               <Sparkles className="h-4 w-4 text-primary mr-1" />
@@ -148,7 +151,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
           </div>
         )}
         
-        {data && (
+        {aiAnswer && (
           <div className="mt-4">
             <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
               <div className="flex items-center mb-3">
@@ -156,7 +159,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
                 <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
               <div className="whitespace-pre-line text-sm prose prose-sm max-w-none">
-                {data.answer}
+                {aiAnswer.answer}
               </div>
             </div>
             
@@ -167,9 +170,9 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
                     <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
                     Relevant Resources:
                   </h3>
-                  {data.relevantResourceIds?.length > 3 && (
+                  {aiAnswer.relevantResourceIds?.length > 3 && (
                     <div className="text-xs text-muted-foreground">
-                      Showing top 3 of {data.relevantResourceIds.length} resources
+                      Showing top 3 of {aiAnswer.relevantResourceIds.length} resources
                     </div>
                   )}
                 </div>
