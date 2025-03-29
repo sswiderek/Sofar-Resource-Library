@@ -33,6 +33,18 @@ const getTypeBadgeClasses = (type: string): string => {
       return 'bg-orange-100 text-orange-700 border-orange-200';
     case 'branding':
       return 'bg-pink-100 text-pink-700 border-pink-200';
+    case 'one-pager':
+      return 'bg-cyan-100 text-cyan-700 border-cyan-200';
+    case 'guide':
+      return 'bg-lime-100 text-lime-700 border-lime-200';
+    case 'fact sheet':
+      return 'bg-violet-100 text-violet-700 border-violet-200';
+    case 'infographic':
+      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    case 'report':
+      return 'bg-rose-100 text-rose-700 border-rose-200';
+    case 'case study':
+      return 'bg-sky-100 text-sky-700 border-sky-200';
     default:
       return 'bg-neutral-100 text-neutral-700 border-neutral-200';
   }
