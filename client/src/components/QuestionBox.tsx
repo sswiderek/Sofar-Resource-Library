@@ -64,6 +64,9 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
           <CardTitle className="text-lg flex items-center">
             <Sparkles className="h-5 w-5 mr-2 text-primary" />
             Ask about resources
+            <span className="ml-2 text-xs bg-purple-100 text-purple-800 font-medium px-1.5 py-0.5 rounded-sm">
+              BETA
+            </span>
           </CardTitle>
           {expanded && (
             <Button 
