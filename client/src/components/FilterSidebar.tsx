@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X } from "lucide-react";
+import { Search, X, Info } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ResourceFilters } from "@/lib/resourceFilters";
+import { Card, CardContent } from "@/components/ui/card";
+import { Partner } from "@shared/schema";
 
 interface Metadata {
   types: string[];
@@ -38,6 +40,16 @@ export default function FilterSidebar({
     queryKey: ['/api/resources/metadata', filter.partnerId ? { partnerId: filter.partnerId } : undefined],
     enabled: !!filter.partnerId, // Only fetch metadata if a partner is selected
   });
+  
+  // Get partner data
+  const { data: partners = [] } = useQuery<Partner[]>({
+    queryKey: ['/api/partners'],
+  });
+  
+  // Find the selected partner
+  const selectedPartner = filter.partnerId 
+    ? partners.find(p => p.slug === filter.partnerId)
+    : null;
 
   // Ensure we have default values for the metadata
   const metadata: Metadata = data || {
@@ -114,6 +126,46 @@ export default function FilterSidebar({
           )}
         </div>
       </div>
+
+      {/* Welcome Message - only show when a partner is selected */}
+      {filter.partnerId && selectedPartner && (
+        <Card className="mb-6 border-l-4 border-l-primary overflow-hidden bg-gradient-to-br from-white to-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <div className="mt-1 flex-shrink-0">
+                {selectedPartner.slug === 'pme' ? (
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <img src="/pme-logo.png" alt="PME Logo" className="h-5 w-auto" />
+                  </div>
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Info className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg text-primary">
+                  Welcome, {selectedPartner.name}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  This portal provides exclusive access to Sofar Ocean resources tailored specifically for your needs. Browse, search, or ask questions about any resource.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    Browse Resources
+                  </span>
+                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    Search Content
+                  </span>
+                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    Ask AI Questions
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search */}
       <div className="mb-5">
