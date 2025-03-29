@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List, Search, Sparkles } from "lucide-react";
+import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List, Search, Sparkles, X } from "lucide-react";
 import PartnerSelector from "@/components/PartnerSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
@@ -24,6 +24,7 @@ export default function Home() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [selectedPartnerObj, setSelectedPartnerObj] = useState<Partner | null>(null);
   const [authorizedPartners, setAuthorizedPartners] = useState<string[]>([]);
+  const [showWelcome, setShowWelcome] = useState(true);
   
   // Hooks
   const { toast } = useToast();
@@ -41,6 +42,9 @@ export default function Home() {
     // Find the partner object for the password modal
     const partnerObj = partners.find(p => p.slug === partnerId) || null;
     setSelectedPartnerObj(partnerObj);
+    
+    // Reset welcome message visibility when changing partners
+    setShowWelcome(true);
     
     // Check if this partner is already authorized
     if (authorizedPartners.includes(partnerId)) {
@@ -270,14 +274,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Welcome Hero - show when partner is selected */}
-        {selectedPartner && partners.length > 0 && (
-          <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden">
+        {/* Welcome Hero - show when partner is selected and showWelcome is true */}
+        {selectedPartner && partners.length > 0 && showWelcome && (
+          <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
             <div className="flex items-center p-6">
               <div className="flex-shrink-0 mr-6">
                 {selectedPartner === 'pme' ? (
-                  <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20">
-                    <img src="/pme-logo.png" alt="PME Logo" className="h-8 w-auto" />
+                  <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20 overflow-hidden">
+                    <img src="/pme-logo.png" alt="PME Logo" className="h-10 w-10 object-contain" />
                   </div>
                 ) : (
                   <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20">
@@ -306,6 +310,16 @@ export default function Home() {
                   </span>
                 </div>
               </div>
+              
+              {/* Close button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-2 right-2" 
+                onClick={() => setShowWelcome(false)}
+              >
+                <X className="h-4 w-4 text-neutral-500" />
+              </Button>
             </div>
           </div>
         )}
