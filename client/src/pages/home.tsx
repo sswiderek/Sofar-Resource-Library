@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List } from "lucide-react";
+import { Info, AlertCircle, Filter, RefreshCw, LayoutGrid, List, Search, Sparkles } from "lucide-react";
 import PartnerSelector from "@/components/PartnerSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
@@ -270,6 +270,46 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Welcome Hero - show when partner is selected */}
+        {selectedPartner && partners.length > 0 && (
+          <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden">
+            <div className="flex items-center p-6">
+              <div className="flex-shrink-0 mr-6">
+                {selectedPartner === 'pme' ? (
+                  <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20">
+                    <img src="/pme-logo.png" alt="PME Logo" className="h-8 w-auto" />
+                  </div>
+                ) : (
+                  <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20">
+                    <Info className="h-8 w-8 text-primary" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex-grow">
+                <h2 className="text-xl font-semibold text-primary">
+                  Welcome, {partners.find(p => p.slug === selectedPartner)?.name || ''}
+                </h2>
+                <p className="text-neutral-600 mt-1">
+                  This portal provides exclusive access to Sofar Ocean resources tailored for your needs. Browse, search, or ask questions about any resource.
+                </p>
+                
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <LayoutGrid className="h-3 w-3 mr-1" /> Browse Resources
+                  </span>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <Search className="h-3 w-3 mr-1" /> Search Content
+                  </span>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <Sparkles className="h-3 w-3 mr-1" /> Ask AI Questions
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* AI Question Box */}
         {selectedPartner && (
           <QuestionBox

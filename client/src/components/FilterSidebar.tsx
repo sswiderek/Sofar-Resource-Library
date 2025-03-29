@@ -127,46 +127,6 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* Welcome Message - only show when a partner is selected */}
-      {filter.partnerId && selectedPartner && (
-        <Card className="mb-6 border-l-4 border-l-primary overflow-hidden bg-gradient-to-br from-white to-primary/5">
-          <CardContent className="p-4">
-            <div className="flex items-start space-x-3">
-              <div className="mt-1 flex-shrink-0">
-                {selectedPartner.slug === 'pme' ? (
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <img src="/pme-logo.png" alt="PME Logo" className="h-5 w-auto" />
-                  </div>
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Info className="h-5 w-5 text-primary" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg text-primary">
-                  Welcome, {selectedPartner.name}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  This portal provides exclusive access to Sofar Ocean resources tailored specifically for your needs. Browse, search, or ask questions about any resource.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
-                    Browse Resources
-                  </span>
-                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
-                    Search Content
-                  </span>
-                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
-                    Ask AI Questions
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Search */}
       <div className="mb-5">
         <Label htmlFor="search" className="text-sm font-medium text-neutral-500 mb-1">
