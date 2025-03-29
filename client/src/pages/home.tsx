@@ -14,6 +14,7 @@ import {
   Search,
   Sparkles,
   X,
+  Mail,
 } from "lucide-react";
 import PartnerSelector from "@/components/PartnerSelector";
 import FilterSidebar from "@/components/FilterSidebar";
@@ -357,6 +358,20 @@ export default function Home() {
               >
                 <X className="h-4 w-4 text-neutral-500" />
               </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Sales Lead Callout - always show when partner is selected */}
+        {selectedPartner && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
+            <Mail className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="font-medium text-blue-800 mb-1">Have a customer interested in Sofar Ocean products?</h3>
+              <p className="text-blue-700 text-sm">
+                If you have a lead that's interested in learning more about Spotter or any other Sofar product,
+                please forward them to <a href="mailto:sales@sofarocean.com" className="underline font-medium">sales@sofarocean.com</a>
+              </p>
             </div>
           </div>
         )}
