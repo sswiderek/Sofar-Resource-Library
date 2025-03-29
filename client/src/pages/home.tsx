@@ -42,6 +42,7 @@ export default function Home() {
   );
   const [authorizedPartners, setAuthorizedPartners] = useState<string[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showLeadsCallout, setShowLeadsCallout] = useState(true);
 
   // Hooks
   const { toast } = useToast();
@@ -60,8 +61,9 @@ export default function Home() {
     const partnerObj = partners.find((p) => p.slug === partnerId) || null;
     setSelectedPartnerObj(partnerObj);
 
-    // Reset welcome message visibility when changing partners
+    // Reset welcome message and lead callout visibility when changing partners
     setShowWelcome(true);
+    setShowLeadsCallout(true);
 
     // Check if this partner is already authorized
     if (authorizedPartners.includes(partnerId)) {
@@ -362,17 +364,26 @@ export default function Home() {
           </div>
         )}
         
-        {/* Sales Lead Callout - always show when partner is selected */}
-        {selectedPartner && (
-          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
-            <Mail className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
-            <div>
-              <h3 className="font-medium text-blue-800 mb-1">Have a customer interested in Sofar Ocean products?</h3>
-              <p className="text-blue-700 text-sm">
-                If you have a lead that's interested in learning more about Spotter or any other Sofar product,
-                please forward them to <a href="mailto:sales@sofarocean.com" className="underline font-medium">sales@sofarocean.com</a>
-              </p>
-            </div>
+        {/* Sales Lead Callout - subtle version with close button */}
+        {selectedPartner && showLeadsCallout && (
+          <div className="mb-6 bg-white/80 border border-neutral-200 rounded-md p-3 flex items-center text-sm relative">
+            <Mail className="h-4 w-4 text-neutral-500 mr-2 flex-shrink-0" />
+            <span className="text-neutral-600">
+              Have a customer interested in Sofar products? Forward leads to{" "}
+              <a 
+                href="mailto:sales@sofarocean.com" 
+                className="text-primary hover:text-primary-dark font-medium"
+              >
+                sales@sofarocean.com
+              </a>
+            </span>
+            <button 
+              onClick={() => setShowLeadsCallout(false)}
+              className="ml-2 text-neutral-400 hover:text-neutral-600 absolute right-2 top-2"
+              aria-label="Close"
+            >
+              <X className="h-3 w-3" />
+            </button>
           </div>
         )}
 
