@@ -112,21 +112,33 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
             <div className="mt-2 space-y-2">
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("What is a Smart Mooring?")}
+                onClick={() => {
+                  const query = "What is a smart mooring?";
+                  setQuestion(query);
+                  mutate(query);
+                }}
               >
-                What is a Smart Mooring?
+                What is a smart mooring?
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("Tell me about Bristlemouth")}
+                onClick={() => {
+                  const query = "How is Spotter data accessed and managed by users?";
+                  setQuestion(query);
+                  mutate(query);
+                }}
               >
-                Tell me about Bristlemouth
+                How is Spotter data accessed and managed by users?
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
-                onClick={() => setQuestion("How does the dissolved oxygen sensor work?")}
+                onClick={() => {
+                  const query = "Which resources specifically reference dissolved oxygen?";
+                  setQuestion(query);
+                  mutate(query);
+                }}
               >
-                How does the dissolved oxygen sensor work?
+                Which resources specifically reference dissolved oxygen?
               </button>
             </div>
           </div>
