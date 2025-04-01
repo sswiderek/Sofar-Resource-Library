@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Send, Loader2, Sparkles, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Send, Loader2, Sparkles, X, Search, Lightbulb, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
   const [question, setQuestion] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<AskResponse | null>(null);
+  const [loadingStage, setLoadingStage] = useState(1);
   
   const { mutate, data, isPending, isError, error } = useMutation<AskResponse, Error, string>({
     mutationFn: async (question: string) => {
@@ -38,6 +39,28 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
     },
   });
 
+  // Reset loading stage when not pending
+  useEffect(() => {
+    if (!isPending) {
+      setLoadingStage(1);
+    }
+  }, [isPending]);
+  
+  // Advance loading stages to simulate progress
+  useEffect(() => {
+    if (isPending) {
+      const stageTimers = [
+        setTimeout(() => setLoadingStage(2), 2000),
+        setTimeout(() => setLoadingStage(3), 4500),
+        setTimeout(() => setLoadingStage(4), 7000),
+      ];
+      
+      return () => {
+        stageTimers.forEach(timer => clearTimeout(timer));
+      };
+    }
+  }, [isPending]);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (question.trim() && !isPending) {
@@ -148,8 +171,48 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
         )}
         
         {isPending && (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="py-4 px-2">
+            <div className="flex items-center justify-center">
+              <div className="relative">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-4 w-4 bg-white rounded-full flex items-center justify-center">
+                  {loadingStage === 1 && <Search className="h-3 w-3 text-primary animate-pulse" />}
+                  {loadingStage === 2 && <BookOpen className="h-3 w-3 text-primary animate-pulse" />}
+                  {loadingStage === 3 && <Lightbulb className="h-3 w-3 text-primary animate-pulse" />}
+                  {loadingStage === 4 && <Sparkles className="h-3 w-3 text-primary animate-pulse" />}
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 text-center">
+              <h4 className="text-sm font-medium text-primary mb-1">
+                {loadingStage === 1 && "Finding relevant resources..."}
+                {loadingStage === 2 && "Analyzing resource content..."}
+                {loadingStage === 3 && "Processing your question..."}
+                {loadingStage === 4 && "Crafting your answer..."}
+              </h4>
+              <div className="space-y-1">
+                <div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute top-0 bottom-0 left-0 bg-primary/60 transition-all duration-300" 
+                    style={{ width: `${loadingStage * 25}%` }}
+                  />
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-gray-500 max-w-sm mx-auto">
+                {loadingStage === 1 && (
+                  <p className="italic">Searching for the most relevant resources that match your question...</p>
+                )}
+                {loadingStage === 2 && (
+                  <p className="italic">Examining resource content to extract the most helpful information...</p>
+                )}
+                {loadingStage === 3 && (
+                  <p className="italic">Interpreting your question and connecting it with marine intelligence data...</p>
+                )}
+                {loadingStage === 4 && (
+                  <p className="italic">Almost there! Formulating a comprehensive answer tailored to your needs...</p>
+                )}
+              </div>
+            </div>
           </div>
         )}
         
