@@ -279,6 +279,39 @@ export class MemStorage implements IStorage {
       return true;
     });
     
+    // Sort the filtered results based on the sortBy parameter
+    if (filter.sortBy) {
+      switch (filter.sortBy) {
+        case 'popularity':
+          filtered.sort((a, b) => {
+            // Sort by total interactions (views + shares + downloads)
+            const aTotal = (a.viewCount || 0) + (a.shareCount || 0) + (a.downloadCount || 0);
+            const bTotal = (b.viewCount || 0) + (b.shareCount || 0) + (b.downloadCount || 0);
+            return bTotal - aTotal; // Descending order
+          });
+          break;
+        case 'newest':
+          filtered.sort((a, b) => {
+            // Parse dates and sort by newest first
+            const aDate = new Date(a.date);
+            const bDate = new Date(b.date);
+            return bDate.getTime() - aDate.getTime(); // Descending order
+          });
+          break;
+        case 'oldest':
+          filtered.sort((a, b) => {
+            // Parse dates and sort by oldest first
+            const aDate = new Date(a.date);
+            const bDate = new Date(b.date);
+            return aDate.getTime() - bDate.getTime(); // Ascending order
+          });
+          break;
+        default:
+          // Default case (relevance) - no sorting needed as it's handled by search
+          break;
+      }
+    }
+    
     console.log(`Filtered results count: ${filtered.length}`);
     return filtered;
   }

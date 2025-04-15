@@ -9,6 +9,7 @@ export interface ResourceFilters {
   contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
   solutions: string[];        // Maps to Solution in Notion (major product groupings)
   search: string;
+  sortBy?: 'relevance' | 'popularity' | 'newest' | 'oldest'; // Optional sort parameter
 }
 
 // Initialize empty filters
@@ -20,6 +21,7 @@ export const initialFilters: ResourceFilters = {
   contentVisibility: [], // No default selection for content visibility
   solutions: [],
   search: '',
+  sortBy: undefined,
 };
 
 // Builds the URL query string from filter state
@@ -52,6 +54,10 @@ export const buildFilterQueryString = (filters: ResourceFilters): string => {
 
   if (filters.search) {
     params.append('search', filters.search);
+  }
+
+  if (filters.sortBy && filters.sortBy !== 'relevance') {
+    params.append('sortBy', filters.sortBy);
   }
 
   return params.toString();
