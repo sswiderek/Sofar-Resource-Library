@@ -77,7 +77,7 @@ export default function Home() {
 
   // Handle filter changes
   const handleFilterChange = (
-    newFilters: Omit<ResourceFilters, "partnerId">,
+    newFilters: ResourceFilters,
   ) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
