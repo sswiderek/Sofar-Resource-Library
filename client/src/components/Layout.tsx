@@ -35,18 +35,18 @@ export default function Layout({ children }: LayoutProps) {
             <ul className="flex space-x-4">
               <li>
                 <Link href="/">
-                  <a className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${isActive('/') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${isActive('/') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
                     <Home className="h-4 w-4 mr-1" />
                     Home
-                  </a>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link href="/admin/analytics">
-                  <a className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/analytics') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${isActive('/admin/analytics') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
                     <BarChart3 className="h-4 w-4 mr-1" />
                     Analytics
-                  </a>
+                  </span>
                 </Link>
               </li>
             </ul>
