@@ -90,6 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           audiences: [],
           messagingStages: [],
           contentVisibility: [],
+          solutions: [],
           lastSynced: lastSyncTime
         });
       }
@@ -101,19 +102,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const audiencesSet = new Set(resources.flatMap(r => r.audience));
       const messagingStagesSet = new Set(resources.map(r => r.messagingStage));
       const contentVisibilitySet = new Set(resources.map(r => r.contentVisibility || "both"));
+      // Extract solution values from products for now since they're closely related
+      const solutionsSet = new Set(resources.flatMap(r => r.product.filter(p => 
+        p.includes('Wayfinder') || p.includes('Spotter') || p.includes('Smart Mooring')
+      )));
       
       const types = Array.from(typesSet).filter(Boolean);  // Remove empty values
       const products = Array.from(productsSet).filter(Boolean);
       const audiences = Array.from(audiencesSet).filter(Boolean);
       const messagingStages = Array.from(messagingStagesSet).filter(Boolean);
       const contentVisibility = Array.from(contentVisibilitySet).filter(Boolean);
+      const solutions = Array.from(solutionsSet).filter(Boolean);
 
       log(`Metadata extracted: 
         - ${types.length} types
         - ${products.length} products
         - ${audiences.length} audiences
         - ${messagingStages.length} stages
-        - ${contentVisibility.length} visibility options`);
+        - ${contentVisibility.length} visibility options
+        - ${solutions.length} solutions`);
       
       res.json({
         types,
@@ -121,6 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         audiences,
         messagingStages,
         contentVisibility,
+        solutions,
         lastSynced: lastSyncTime
       });
     } catch (error) {

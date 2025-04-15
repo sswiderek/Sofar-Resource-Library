@@ -9,11 +9,12 @@ import { useQuery } from "@tanstack/react-query";
 import { ResourceFilters } from "@/lib/resourceFilters";
 
 interface Metadata {
-  types: string[];
-  products: string[];
-  audiences: string[];
-  messagingStages: string[];
-  contentVisibility: string[];
+  types: string[];      // Maps to "Content Type" in Notion
+  products: string[];   // Maps to "Smart Mooring Sensor(s)" in Notion
+  audiences: string[];  // Maps to "Market Segment(s)" in Notion
+  messagingStages: string[]; // Maps to "Stage in Buyer's Journey" in Notion
+  contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
+  solutions: string[];  // Maps to "Solution" in Notion
   lastSynced?: string;
 }
 
@@ -48,6 +49,7 @@ export default function FilterSidebar({
     audiences: [],
     messagingStages: [],
     contentVisibility: [],
+    solutions: [],
   };
 
   // Handle search input with debounce
@@ -64,11 +66,11 @@ export default function FilterSidebar({
 
   // Type-safe checkbox change handler
   const handleCheckboxChange = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions',
     value: string,
     checked: boolean
   ) => {
-    const currentValues = [...filter[category]];
+    const currentValues = [...(filter[category] || [])];
     const newValues = checked
       ? [...currentValues, value]
       : currentValues.filter((v) => v !== value);
@@ -81,10 +83,10 @@ export default function FilterSidebar({
 
   // Type-safe helper function to check if a value is selected
   const isSelected = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions',
     value: string
   ) => {
-    return filter[category].includes(value);
+    return filter[category]?.includes(value) || false;
   };
 
   if (isMobile) {
@@ -380,6 +382,44 @@ export default function FilterSidebar({
             ) : (
               <div className="text-xs text-neutral-500">
                 No journey stages available
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Solutions Filter */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+            Solution
+          </h3>
+          <div className="space-y-2.5">
+            {metadata.solutions && metadata.solutions.length > 0 ? (
+              metadata.solutions.map((solution: string) => (
+                <div key={solution} className="flex items-center">
+                  <Checkbox
+                    id={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('solutions', solution)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('solutions', solution, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-purple-500"
+                  />
+                  <Label
+                    htmlFor={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {solution}
+                  </Label>
+                </div>
+              ))
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 italic">
+                Loading solutions...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No solutions available
               </div>
             )}
           </div>
