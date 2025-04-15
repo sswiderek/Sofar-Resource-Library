@@ -8,8 +8,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { Link } from 'wouter';
 import { Resource } from '@shared/schema';
 
-// Helper function to format text with clickable links
-function formatAnswerWithLinks(text: string) {
+// Helper function to format text with clickable links and resource references
+function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
   if (!text) return null;
   
   // URL regex pattern to match URLs in text
@@ -24,9 +24,13 @@ function formatAnswerWithLinks(text: string) {
   // Combine text and URL elements
   const elements: React.ReactNode[] = [];
   
+  // Process each part of the text
   parts.forEach((part, index) => {
-    // Add the text part
-    elements.push(<Fragment key={`text-${index}`}>{part}</Fragment>);
+    // For text parts, check if they contain resource names and link them
+    if (part) {
+      const linkedPart = addResourceLinks(part, resources);
+      elements.push(<Fragment key={`text-${index}`}>{linkedPart}</Fragment>);
+    }
     
     // If there's a URL that follows this text part, add it as a link
     if (urls[index]) {
@@ -50,6 +54,66 @@ function formatAnswerWithLinks(text: string) {
   
   return elements;
 };
+
+// Helper function to add links to resource names in text
+function addResourceLinks(text: string, resources: Resource[]) {
+  if (!text || !resources || resources.length === 0) return text;
+  
+  let result: React.ReactNode[] = [text];
+  
+  // Sort resources by name length (descending) to ensure longer names are matched first
+  // This prevents partial matches of shorter resource names within longer ones
+  const sortedResources = [...resources].sort((a, b) => b.name.length - a.name.length);
+  
+  // For each resource, find and replace its name with a link
+  for (const resource of sortedResources) {
+    const resourceName = resource.name;
+    // Skip very short resource names (avoid common words)
+    if (resourceName.length < 10) continue;
+    
+    // Process each text fragment
+    const newResult: React.ReactNode[] = [];
+    
+    for (const node of result) {
+      // Only process string nodes
+      if (typeof node !== 'string') {
+        newResult.push(node);
+        continue;
+      }
+      
+      // Look for resource name in the text
+      if (node.includes(resourceName)) {
+        const parts = node.split(resourceName);
+        
+        // Reassemble with links
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i]) newResult.push(parts[i]);
+          
+          // Add resource link between parts (but not after the last part)
+          if (i < parts.length - 1) {
+            newResult.push(
+              <a 
+                key={`resource-${resource.id}-${i}`}
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary hover:underline"
+              >
+                {resourceName}
+              </a>
+            );
+          }
+        }
+      } else {
+        newResult.push(node);
+      }
+    }
+    
+    result = newResult;
+  }
+  
+  return result;
+}
 
 interface QuestionBoxProps {
   onShowResource?: (resourceId: number) => void;
@@ -271,7 +335,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
               <div className="whitespace-pre-line text-sm prose prose-sm max-w-none">
-                {formatAnswerWithLinks(aiAnswer.answer)}
+                {formatAnswerWithLinks(aiAnswer.answer, resources)}
               </div>
             </div>
             
