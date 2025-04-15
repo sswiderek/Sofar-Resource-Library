@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
  * Hook for tracking resource usage (views, shares, downloads)
@@ -7,7 +7,7 @@ export function useResourceTracking() {
   const [isTracking, setIsTracking] = useState(false);
 
   // Track a resource view
-  const trackView = async (resourceId: number) => {
+  const trackView = useCallback(async (resourceId: number) => {
     try {
       setIsTracking(true);
       const response = await fetch(`/api/resources/${resourceId}/view`, {
@@ -27,10 +27,10 @@ export function useResourceTracking() {
     } finally {
       setIsTracking(false);
     }
-  };
+  }, []);
 
   // Track a resource share
-  const trackShare = async (resourceId: number) => {
+  const trackShare = useCallback(async (resourceId: number) => {
     try {
       setIsTracking(true);
       const response = await fetch(`/api/resources/${resourceId}/share`, {
@@ -50,10 +50,10 @@ export function useResourceTracking() {
     } finally {
       setIsTracking(false);
     }
-  };
+  }, []);
 
   // Track a resource download
-  const trackDownload = async (resourceId: number) => {
+  const trackDownload = useCallback(async (resourceId: number) => {
     try {
       setIsTracking(true);
       const response = await fetch(`/api/resources/${resourceId}/download`, {
@@ -73,10 +73,10 @@ export function useResourceTracking() {
     } finally {
       setIsTracking(false);
     }
-  };
+  }, []);
 
   // Get popular resources
-  const getPopularResources = async (limit: number = 5) => {
+  const getPopularResources = useCallback(async (limit: number = 5) => {
     try {
       const response = await fetch(`/api/resources/popular?limit=${limit}`);
       
@@ -90,7 +90,7 @@ export function useResourceTracking() {
       console.error('Error fetching popular resources:', error);
       return [];
     }
-  };
+  }, []);
 
   return {
     isTracking,

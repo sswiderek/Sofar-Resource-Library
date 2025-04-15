@@ -2,30 +2,47 @@ import { useEffect, useState } from "react";
 import { Resource } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useResourceTracking } from "@/hooks/use-resource-tracking";
 import { EyeIcon, Share2, Download, TrendingUp } from "lucide-react";
 import { getResourceTypeClasses } from "@/lib/resourceTypeColors";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function PopularResources() {
   const [popularResources, setPopularResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { getPopularResources } = useResourceTracking();
-
+  
+  // Use proper fetch directly
   useEffect(() => {
     const fetchPopularResources = async () => {
       try {
         setIsLoading(true);
-        const resources = await getPopularResources(5);
-        setPopularResources(resources);
+        const response = await fetch("/api/resources/popular");
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setPopularResources(data);
+        } else {
+          console.error("Received non-array response:", data);
+          setPopularResources([]);
+        }
       } catch (error) {
         console.error("Error fetching popular resources:", error);
+        setPopularResources([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPopularResources();
-  }, [getPopularResources]);
+    
+    // Set up interval to refresh data every 30 seconds
+    const intervalId = setInterval(fetchPopularResources, 30000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   if (isLoading) {
     return (
