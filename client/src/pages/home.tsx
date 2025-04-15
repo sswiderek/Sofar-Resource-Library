@@ -181,25 +181,25 @@ export default function Home() {
 
         {/* Welcome Hero - show when showWelcome is true */}
         {showWelcome && (
-          <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
+          <div className="mb-6 bg-gradient-to-r from-black/90 to-neutral-800 border border-neutral-700 rounded-lg overflow-hidden relative shadow-lg">
             <div className="flex items-center p-6">
               <div className="flex-grow">
-                <h2 className="text-xl font-semibold text-primary">
+                <h2 className="text-xl font-semibold text-white">
                   Welcome to the Sales Enablement Portal
                 </h2>
-                <p className="text-neutral-600 mt-1">
+                <p className="text-neutral-300 mt-1">
                   This portal provides access to Sofar Ocean resources to help you succeed.
                   Browse, search, or ask questions about any resource.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400">
                     <LayoutGrid className="h-3 w-3 mr-1" /> Browse Resources
                   </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
                     <Search className="h-3 w-3 mr-1" /> Search Content
                   </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-400">
                     <Sparkles className="h-3 w-3 mr-1" /> Ask AI Questions
                   </span>
                 </div>
@@ -209,10 +209,10 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2"
+                className="absolute top-2 right-2 text-white hover:bg-neutral-700/50"
                 onClick={() => setShowWelcome(false)}
               >
-                <X className="h-4 w-4 text-neutral-500" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
