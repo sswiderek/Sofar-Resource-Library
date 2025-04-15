@@ -210,7 +210,7 @@ export default function FilterSidebar({
             Content Type
           </h3>
           <div className="space-y-2.5">
-            {["internal", "external", "both"].map((visibility) => (
+            {["internal", "external"].map((visibility) => (
               <div key={visibility} className="flex items-center">
                 <Checkbox
                   id={`visibility-${visibility}`}
@@ -224,9 +224,7 @@ export default function FilterSidebar({
                   htmlFor={`visibility-${visibility}`}
                   className="ml-2 text-sm text-neutral-700"
                 >
-                  {visibility === 'internal' ? 'Internal Resources' : 
-                   visibility === 'external' ? 'Customer-Facing' : 
-                   'All Content'}
+                  {visibility === 'internal' ? 'Internal Resources' : 'Customer-Facing'}
                 </Label>
               </div>
             ))}

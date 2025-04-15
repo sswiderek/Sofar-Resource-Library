@@ -202,13 +202,18 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                  properties.Audience?.multi_select?.map((a: any) => a.name) || 
                  [],
                  
-        partnerRelevancy: properties.Partner?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
+        teamRelevancy: properties.Partner?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
                          properties["Partner Relevancy"]?.multi_select?.map((p: any) => p.name.toLowerCase().replace(/\s+/g, '-')) || 
                          ["pme"],
                          
         messagingStage: properties["Stage in Buyer's Journey"]?.multi_select?.[0]?.name || 
                        properties["Key Topic or Messaging Stage"]?.select?.name || 
                        "Unknown",
+                       
+        // Map "Internal Use Only?" field to contentVisibility
+        contentVisibility: properties["Internal Use Only?"]?.select?.name === "Y" ? "internal" :
+                         properties["Internal Use Only?"]?.select?.name === "N" ? "external" :
+                         "both",
                        
         date: properties["Last Updated"]?.date?.start || 
               properties.Date?.date?.start || 
