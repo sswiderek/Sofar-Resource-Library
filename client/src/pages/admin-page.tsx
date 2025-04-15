@@ -32,14 +32,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Partner, adminLoginSchema, updatePartnerPasswordSchema } from "@shared/schema";
+import { Team, adminLoginSchema, updateTeamPasswordSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AlertCircle, Key, Shield, UserCog } from "lucide-react";
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -72,7 +72,7 @@ export default function AdminPage() {
 
   // Password update form with zod validation
   const passwordForm = useForm({
-    resolver: zodResolver(updatePartnerPasswordSchema),
+    resolver: zodResolver(updateTeamPasswordSchema),
     defaultValues: {
       password: "",
     },
@@ -100,25 +100,25 @@ export default function AdminPage() {
     },
   });
 
-  // Partners query
-  const { data: partners = [], isLoading: isLoadingPartners } = useQuery<Partner[]>({
-    queryKey: ["/api/partners"],
+  // Teams query
+  const { data: teams = [], isLoading: isLoadingTeams } = useQuery<Team[]>({
+    queryKey: ["/api/teams"],
     enabled: isAuthenticated,
   });
 
-  // Update partner password mutation
+  // Update team password mutation
   const updatePasswordMutation = useMutation({
     mutationFn: async ({ id, password }: { id: number; password: string }) => {
-      const response = await apiRequest("PATCH", `/api/admin/partners/${id}/password`, { password });
+      const response = await apiRequest("PATCH", `/api/admin/teams/${id}/password`, { password });
       return response.json();
     },
     onSuccess: () => {
       setIsPasswordDialogOpen(false);
       passwordForm.reset();
-      queryClient.invalidateQueries({ queryKey: ["/api/partners"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
       toast({
         title: "Password updated",
-        description: "The partner password has been updated successfully",
+        description: "The team password has been updated successfully",
       });
     },
     onError: (error: Error) => {
@@ -137,14 +137,14 @@ export default function AdminPage() {
 
   // Handle password form submission
   const onPasswordSubmit = passwordForm.handleSubmit((data) => {
-    if (selectedPartnerId) {
-      updatePasswordMutation.mutate({ id: selectedPartnerId, password: data.password });
+    if (selectedTeamId) {
+      updatePasswordMutation.mutate({ id: selectedTeamId, password: data.password });
     }
   });
 
-  // Open password dialog for a partner
-  const openPasswordDialog = (partnerId: number) => {
-    setSelectedPartnerId(partnerId);
+  // Open password dialog for a team
+  const openPasswordDialog = (teamId: number) => {
+    setSelectedTeamId(teamId);
     setIsPasswordDialogOpen(true);
     passwordForm.reset();
   };
@@ -266,7 +266,7 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">Resource Library Admin</h1>
-            <p className="text-neutral-500">Manage partner passwords and access</p>
+            <p className="text-neutral-500">Manage team passwords and access</p>
           </div>
           <div className="flex gap-3">
             <Button 
@@ -292,10 +292,10 @@ export default function AdminPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
-                <CardTitle>Partner Access Management</CardTitle>
+                <CardTitle>Team Access Management</CardTitle>
               </div>
               <CardDescription>
-                Set and manage passwords for partner organizations to control their access to resources
+                Set and manage passwords for teams to control their access to resources
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -306,9 +306,9 @@ export default function AdminPage() {
               ) : partners.length === 0 ? (
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No partners found</AlertTitle>
+                  <AlertTitle>No teams found</AlertTitle>
                   <AlertDescription>
-                    No partner organizations have been set up yet.
+                    No teams have been set up yet.
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -316,7 +316,7 @@ export default function AdminPage() {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium text-neutral-500">Partner Name</th>
+                        <th className="text-left py-3 px-4 font-medium text-neutral-500">Team Name</th>
                         <th className="text-left py-3 px-4 font-medium text-neutral-500">Slug</th>
                         <th className="text-left py-3 px-4 font-medium text-neutral-500">Password Status</th>
                         <th className="text-left py-3 px-4 font-medium text-neutral-500">Last Updated</th>
@@ -372,18 +372,18 @@ export default function AdminPage() {
           <DialogHeader>
             <DialogTitle className="text-neutral-800 flex items-center gap-2">
               <Key className="h-5 w-5 text-neutral-600" />
-              {selectedPartnerId
-                ? partners.find((p) => p.id === selectedPartnerId)?.password
-                  ? "Change Partner Password"
-                  : "Set Partner Password"
+              {selectedTeamId
+                ? partners.find((p) => p.id === selectedTeamId)?.password
+                  ? "Change Team Password"
+                  : "Set Team Password"
                 : "Update Password"}
             </DialogTitle>
             <DialogDescription className="text-neutral-600">
-              {selectedPartnerId
+              {selectedTeamId
                 ? `Enter a new password for ${
-                    partners.find((p) => p.id === selectedPartnerId)?.name
+                    partners.find((p) => p.id === selectedTeamId)?.name
                   }`
-                : "Enter a new password for this partner"}
+                : "Enter a new password for this team"}
             </DialogDescription>
           </DialogHeader>
 

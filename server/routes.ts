@@ -6,13 +6,13 @@ import session from "express-session";
 declare module "express-session" {
   interface SessionData {
     isAdmin?: boolean;
-    authorizedPartners?: string[];
+    authorizedTeams?: string[];
   }
 }
 import { storage } from "./storage";
 import { fetchResourcesFromNotion, shouldSyncResources } from "./notion";
 import { log } from "./vite";
-import { resourceFilterSchema, adminLoginSchema, updatePartnerPasswordSchema, partnerAccessSchema } from "@shared/schema";
+import { resourceFilterSchema, adminLoginSchema, updateTeamPasswordSchema, teamAccessSchema } from "@shared/schema";
 import { processQuestion } from "./openai";
 import { createResourceEmbeddings } from "./embeddings";
 import { z } from 'zod';
@@ -20,7 +20,7 @@ import { z } from 'zod';
 // Schema for question validation
 const questionSchema = z.object({
   question: z.string().min(3).max(500),
-  partnerId: z.string().nullable(),
+  teamId: z.string().nullable(),
 });
 
 // Track when we last synced with Notion
@@ -30,14 +30,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
   // prefix all routes with /api
 
-  // Route to get all partners
-  app.get("/api/partners", async (_req: Request, res: Response) => {
+  // Route to get all teams
+  app.get("/api/teams", async (_req: Request, res: Response) => {
     try {
-      const partners = await storage.getPartners();
-      res.json(partners);
+      const teams = await storage.getPartners(); // Note: still using getPartners() method until storage is updated
+      res.json(teams);
     } catch (error) {
       res.status(500).json({ 
-        message: "Failed to fetch partners",
+        message: "Failed to fetch teams",
         error: error instanceof Error ? error.message : String(error)
       });
     }
@@ -51,24 +51,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await syncResourcesWithNotion();
       }
 
-      // Get partner ID from query parameter
-      const partnerId = req.query.partnerId as string;
+      // Get team ID from query parameter
+      const teamId = req.query.teamId as string;
       
       // Add logging for debugging
-      log(`GET /api/resources partnerId query parameter: ${partnerId}`);
+      log(`GET /api/resources teamId query parameter: ${teamId}`);
       
-      if (!partnerId) {
-        log(`Error: Partner ID is required but was not provided`);
-        return res.status(400).json({ message: "Partner ID is required" });
+      if (!teamId) {
+        log(`Error: Team ID is required but was not provided`);
+        return res.status(400).json({ message: "Team ID is required" });
       }
 
       // Parse and validate filter parameters
       const filter = {
-        partnerId,
+        teamId,
         types: req.query.types ? (req.query.types as string).split(',') : [],
         products: req.query.products ? (req.query.products as string).split(',') : [],
         audiences: req.query.audiences ? (req.query.audiences as string).split(',') : [],
         messagingStages: req.query.messagingStages ? (req.query.messagingStages as string).split(',') : [],
+        contentVisibility: req.query.contentVisibility ? (req.query.contentVisibility as string).split(',') : [],
         search: req.query.search as string || '',
       };
 
@@ -86,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resources = await storage.getFilteredResources(parseResult.data);
       
       // Log filter and result count
-      log(`Filtered resources for partner ${partnerId}. Found ${resources.length} matching resources`);
+      log(`Filtered resources for team ${teamId}. Found ${resources.length} matching resources`);
       
       res.json(resources);
     } catch (error) {
@@ -108,33 +109,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await syncResourcesWithNotion();
       }
 
-      // Check if a partner filter is applied
-      const partnerId = req.query.partnerId as string | undefined;
+      // Check if a team filter is applied
+      const teamId = req.query.teamId as string | undefined;
       
-      // If no partner is specified, return empty metadata
-      if (!partnerId) {
+      // If no team is specified, return empty metadata
+      if (!teamId) {
         return res.json({
           types: [],
           products: [],
           audiences: [],
           messagingStages: [],
+          contentVisibility: [],
           lastSynced: lastSyncTime,
-          partnerFiltered: false
+          teamFiltered: false
         });
       }
       
-      // Get partner details
-      const partner = await storage.getPartnerBySlug(partnerId);
-      if (!partner) {
-        return res.status(404).json({ message: "Partner not found" });
+      // Get team details
+      const team = await storage.getPartnerBySlug(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
       }
       
-      // Apply partner filter to get only resources relevant to this partner
+      // Apply team filter to get only resources relevant to this team
       const resources = await storage.getFilteredResources({ 
-        partnerId: partnerId
+        teamId
       });
       
-      log(`Found ${resources.length} resources for partner ${partnerId} for metadata`);
+      log(`Found ${resources.length} resources for team ${teamId} for metadata`);
       
       // Extract unique values for each filter category only from resources relevant to this partner
       const typesSet = new Set<string>();
@@ -156,13 +158,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const audiences = Array.from(audiencesSet);
       const messagingStages = Array.from(messagingStagesSet);
       
+      // Get content visibility values
+      const contentVisibilitySet = new Set<string>();
+      resources.forEach(r => {
+        if (r.contentVisibility) {
+          contentVisibilitySet.add(r.contentVisibility);
+        }
+      });
+      const contentVisibility = Array.from(contentVisibilitySet);
+      
       res.json({
         types,
         products,
         audiences,
         messagingStages,
+        contentVisibility,
         lastSynced: lastSyncTime,
-        partnerFiltered: !!partnerId
+        teamFiltered: !!teamId
       });
     } catch (error) {
       log(`Error handling metadata request: ${error instanceof Error ? error.message : String(error)}`);
@@ -173,6 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         products: [],
         audiences: [],
         messagingStages: [],
+        contentVisibility: [],
         lastSynced: lastSyncTime || new Date()
       });
     }
@@ -279,11 +292,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Admin route to update partner passwords
-  app.patch("/api/admin/partners/:id/password", checkAdminAuth, async (req: Request, res: Response) => {
+  // Admin route to update team passwords
+  app.patch("/api/admin/teams/:id/password", checkAdminAuth, async (req: Request, res: Response) => {
     try {
       // Validate password
-      const parseResult = updatePartnerPasswordSchema.safeParse(req.body);
+      const parseResult = updateTeamPasswordSchema.safeParse(req.body);
       
       if (!parseResult.success) {
         return res.status(400).json({ 
@@ -292,29 +305,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get partner ID from route params
-      const partnerId = parseInt(req.params.id);
-      if (isNaN(partnerId)) {
-        return res.status(400).json({ message: "Invalid partner ID" });
+      // Get team ID from route params
+      const teamId = parseInt(req.params.id);
+      if (isNaN(teamId)) {
+        return res.status(400).json({ message: "Invalid team ID" });
       }
 
       // Update the password
-      const partner = await storage.updatePartnerPassword(partnerId, parseResult.data);
+      const team = await storage.updatePartnerPassword(teamId, parseResult.data);
       
-      if (!partner) {
-        return res.status(404).json({ message: "Partner not found" });
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
       }
 
       // Return success without exposing the password
       res.json({ 
-        id: partner.id,
-        name: partner.name,
-        slug: partner.slug,
-        lastPasswordUpdate: partner.lastPasswordUpdate,
-        hasPassword: !!partner.password
+        id: team.id,
+        name: team.name,
+        slug: team.slug,
+        lastPasswordUpdate: team.lastPasswordUpdate,
+        hasPassword: !!team.password
       });
     } catch (error) {
-      log(`Error updating partner password: ${error instanceof Error ? error.message : String(error)}`);
+      log(`Error updating team password: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({ 
         message: "Failed to update password",
         error: error instanceof Error ? error.message : String(error)
@@ -322,11 +335,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Partner access verification route
-  app.post("/api/partner-access", async (req: Request, res: Response) => {
+  // Team access verification route
+  app.post("/api/team-access", async (req: Request, res: Response) => {
     try {
       // Validate request
-      const parseResult = partnerAccessSchema.safeParse(req.body);
+      const parseResult = teamAccessSchema.safeParse(req.body);
       
       if (!parseResult.success) {
         return res.status(400).json({ 
@@ -335,19 +348,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Verify partner password
-      const { partnerId, password } = parseResult.data;
-      const isValid = await storage.verifyPartnerPassword(partnerId, password);
+      // Verify team password
+      const { teamId, password } = parseResult.data;
+      const isValid = await storage.verifyPartnerPassword(teamId, password);
       
       if (isValid) {
-        // Store partner access in session
+        // Store team access in session
         if (req.session) {
-          if (!req.session.authorizedPartners) {
-            req.session.authorizedPartners = [];
+          if (!req.session.authorizedTeams) {
+            req.session.authorizedTeams = [];
           }
           
-          if (!req.session.authorizedPartners.includes(partnerId)) {
-            req.session.authorizedPartners.push(partnerId);
+          if (!req.session.authorizedTeams.includes(teamId)) {
+            req.session.authorizedTeams.push(teamId);
           }
         }
         
@@ -356,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid password" });
       }
     } catch (error) {
-      log(`Error verifying partner access: ${error instanceof Error ? error.message : String(error)}`);
+      log(`Error verifying team access: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({ 
         message: "Verification failed",
         error: error instanceof Error ? error.message : String(error)
@@ -364,12 +377,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Check partner access
-  app.get("/api/partner-access/:partnerId", (req: Request, res: Response) => {
-    const partnerId = req.params.partnerId;
+  // Check team access
+  app.get("/api/team-access/:teamId", (req: Request, res: Response) => {
+    const teamId = req.params.teamId;
     
-    // Check if partner access is already authorized in session
-    if (req.session && req.session.authorizedPartners && req.session.authorizedPartners.includes(partnerId)) {
+    // Check if team access is already authorized in session
+    if (req.session && req.session.authorizedTeams && req.session.authorizedTeams.includes(teamId)) {
       return res.json({ authorized: true });
     } else {
       return res.json({ authorized: false });
@@ -389,21 +402,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { question, partnerId } = parseResult.data;
+      const { question, teamId } = parseResult.data;
       
-      // Verify the partner exists
-      if (partnerId) {
-        const partner = await storage.getPartnerBySlug(partnerId);
-        if (!partner) {
-          return res.status(404).json({ message: "Partner not found" });
+      // Verify the team exists
+      if (teamId) {
+        const team = await storage.getPartnerBySlug(teamId);
+        if (!team) {
+          return res.status(404).json({ message: "Team not found" });
         }
       }
 
-      // Get relevant resources (either for specific partner or all resources)
+      // Get relevant resources (either for specific team or all resources)
       let resources;
-      if (partnerId) {
-        resources = await storage.getFilteredResources({ partnerId });
-        log(`Available resources for partner ${partnerId}:`);
+      if (teamId) {
+        resources = await storage.getFilteredResources({ teamId });
+        log(`Available resources for team ${teamId}:`);
         resources.forEach(resource => {
           log(`- ${resource.id}: ${resource.name} (${resource.type})`);
         });

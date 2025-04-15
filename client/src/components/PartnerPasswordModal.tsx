@@ -13,16 +13,16 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { partnerAccessSchema } from "@shared/schema";
+import { teamAccessSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Lock, ShieldAlert } from "lucide-react";
-import { Partner } from "@shared/schema";
+import { Team } from "@shared/schema";
 
-interface PartnerPasswordModalProps {
+interface TeamPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
-  partner: Partner | null;
+  partner: Team | null;
   onPasswordVerified: () => void;
 }
 
@@ -31,28 +31,28 @@ export default function PartnerPasswordModal({
   onClose,
   partner,
   onPasswordVerified
-}: PartnerPasswordModalProps) {
+}: TeamPasswordModalProps) {
   const [attempts, setAttempts] = useState(0);
   const { toast } = useToast();
 
   // Initialize form with zod validation
   const form = useForm({
-    resolver: zodResolver(partnerAccessSchema),
+    resolver: zodResolver(teamAccessSchema),
     defaultValues: {
-      partnerId: partner?.slug || "",
+      teamId: partner?.slug || "",
       password: "",
     },
   });
 
-  // Update partnerId when partner changes
-  if (partner && form.getValues("partnerId") !== partner.slug) {
-    form.setValue("partnerId", partner.slug);
+  // Update teamId when team changes
+  if (partner && form.getValues("teamId") !== partner.slug) {
+    form.setValue("teamId", partner.slug);
   }
 
-  // Partner access verification mutation
+  // Team access verification mutation
   const verifyMutation = useMutation({
-    mutationFn: async (data: { partnerId: string; password: string }) => {
-      const response = await apiRequest("POST", "/api/partner-access", data);
+    mutationFn: async (data: { teamId: string; password: string }) => {
+      const response = await apiRequest("POST", "/api/team-access", data);
       return response.json();
     },
     onSuccess: () => {

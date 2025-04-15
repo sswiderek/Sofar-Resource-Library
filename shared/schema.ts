@@ -24,8 +24,9 @@ export const resources = pgTable("resources", {
   type: text("type").notNull(),
   product: text("product").array().notNull(),
   audience: text("audience").array().notNull(),
-  partnerRelevancy: text("partner_relevancy").array().notNull(),
+  teamRelevancy: text("team_relevancy").array().notNull(), // Renamed from partnerRelevancy
   messagingStage: text("messaging_stage").notNull(),
+  contentVisibility: text("content_visibility").notNull().default("internal"), // New field: "internal", "external", or "both"
   date: text("date").notNull(),
   url: text("url").notNull(),
   description: text("description").notNull(),
@@ -41,8 +42,8 @@ export const insertResourceSchema = createInsertSchema(resources).omit({
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type Resource = typeof resources.$inferSelect;
 
-// Partner schema
-export const partners = pgTable("partners", {
+// Team schema (renamed from Partner)
+export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
@@ -50,25 +51,26 @@ export const partners = pgTable("partners", {
   lastPasswordUpdate: timestamp("last_password_update"),
 });
 
-export const insertPartnerSchema = createInsertSchema(partners).omit({
+export const insertTeamSchema = createInsertSchema(teams).omit({
   id: true,
 });
 
-export const updatePartnerPasswordSchema = z.object({
+export const updateTeamPasswordSchema = z.object({
   password: z.string().min(4, { message: "Password must be at least 4 characters" }),
 });
 
-export type InsertPartner = z.infer<typeof insertPartnerSchema>;
-export type Partner = typeof partners.$inferSelect;
-export type UpdatePartnerPassword = z.infer<typeof updatePartnerPasswordSchema>;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type Team = typeof teams.$inferSelect;
+export type UpdateTeamPassword = z.infer<typeof updateTeamPasswordSchema>;
 
 // Define a schema for the resource filtering
 export const resourceFilterSchema = z.object({
-  partnerId: z.string(),
+  teamId: z.string(), // Renamed from partnerId
   types: z.array(z.string()).optional(),
   products: z.array(z.string()).optional(),
   audiences: z.array(z.string()).optional(),
   messagingStages: z.array(z.string()).optional(),
+  contentVisibility: z.array(z.string()).optional(), // Added content visibility filter
   search: z.string().optional(),
 });
 
@@ -80,10 +82,10 @@ export const adminLoginSchema = z.object({
   password: z.string().min(1, { message: "Password is required" }),
 });
 
-export const partnerAccessSchema = z.object({
-  partnerId: z.string().min(1, { message: "Partner ID is required" }),
+export const teamAccessSchema = z.object({ // Renamed from partnerAccessSchema
+  teamId: z.string().min(1, { message: "Team ID is required" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 
 export type AdminLogin = z.infer<typeof adminLoginSchema>;
-export type PartnerAccess = z.infer<typeof partnerAccessSchema>;
+export type TeamAccess = z.infer<typeof teamAccessSchema>; // Renamed from PartnerAccess
