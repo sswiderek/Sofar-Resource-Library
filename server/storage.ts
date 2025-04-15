@@ -31,6 +31,12 @@ export interface IStorage {
   deleteResource(id: number): Promise<boolean>;
   getFilteredResources(filter: ResourceFilter): Promise<Resource[]>;
   
+  // Resource usage tracking methods
+  incrementResourceViews(id: number): Promise<Resource | undefined>;
+  incrementResourceShares(id: number): Promise<Resource | undefined>;
+  incrementResourceDownloads(id: number): Promise<Resource | undefined>;
+  getPopularResources(limit?: number): Promise<Resource[]>;
+  
   // Partner methods (keeping for backward compatibility)
   getPartners(): Promise<Team[]>;
   getPartnerBySlug(slug: string): Promise<Team | undefined>;
@@ -341,6 +347,59 @@ export class MemStorage implements IStorage {
       this.savePartnersToFile();
     }
     return result;
+  }
+
+  // Resource usage tracking methods
+  async incrementResourceViews(id: number): Promise<Resource | undefined> {
+    const resource = this.resources.get(id);
+    if (!resource) return undefined;
+    
+    const updatedResource = { 
+      ...resource, 
+      viewCount: (resource.viewCount || 0) + 1 
+    };
+    
+    this.resources.set(id, updatedResource);
+    return updatedResource;
+  }
+
+  async incrementResourceShares(id: number): Promise<Resource | undefined> {
+    const resource = this.resources.get(id);
+    if (!resource) return undefined;
+    
+    const updatedResource = { 
+      ...resource, 
+      shareCount: (resource.shareCount || 0) + 1 
+    };
+    
+    this.resources.set(id, updatedResource);
+    return updatedResource;
+  }
+
+  async incrementResourceDownloads(id: number): Promise<Resource | undefined> {
+    const resource = this.resources.get(id);
+    if (!resource) return undefined;
+    
+    const updatedResource = { 
+      ...resource, 
+      downloadCount: (resource.downloadCount || 0) + 1 
+    };
+    
+    this.resources.set(id, updatedResource);
+    return updatedResource;
+  }
+
+  async getPopularResources(limit: number = 5): Promise<Resource[]> {
+    // Get all resources and sort by total usage (views + shares + downloads)
+    const resources = Array.from(this.resources.values());
+    
+    return resources
+      .sort((a, b) => {
+        const totalA = (a.viewCount || 0) + (a.shareCount || 0) + (a.downloadCount || 0);
+        const totalB = (b.viewCount || 0) + (b.shareCount || 0) + (b.downloadCount || 0);
+        return totalB - totalA; // Sort in descending order
+      })
+      .slice(0, limit);
   }
 }
 

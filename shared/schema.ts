@@ -33,6 +33,10 @@ export const resources = pgTable("resources", {
   detailedDescription: text("detailed_description"),
   notionId: text("notion_id").notNull().unique(),
   lastSynced: timestamp("last_synced").notNull(),
+  // Usage tracking fields
+  viewCount: integer("view_count").default(0).notNull(),
+  shareCount: integer("share_count").default(0).notNull(),
+  downloadCount: integer("download_count").default(0).notNull(),
 });
 
 export const insertResourceSchema = createInsertSchema(resources).omit({

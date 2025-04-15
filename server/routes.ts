@@ -75,6 +75,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Route to get popular resources
+  app.get("/api/resources/popular", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const popularResources = await storage.getPopularResources(limit);
+      
+      log(`Retrieved ${popularResources.length} popular resources`);
+      res.json(popularResources);
+    } catch (error) {
+      log(`Error retrieving popular resources: ${error instanceof Error ? error.message : String(error)}`);
+      return res.status(500).json({
+        message: "Failed to retrieve popular resources",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Route to track resource views
+  app.post("/api/resources/:id/view", async (req: Request, res: Response) => {
+    try {
+      const resourceId = parseInt(req.params.id);
+      if (isNaN(resourceId)) {
+        return res.status(400).json({ message: "Invalid resource ID" });
+      }
+      
+      const updatedResource = await storage.incrementResourceViews(resourceId);
+      if (!updatedResource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      
+      log(`Tracked view for resource ${resourceId}. New count: ${updatedResource.viewCount}`);
+      res.json({ success: true, viewCount: updatedResource.viewCount });
+    } catch (error) {
+      log(`Error tracking resource view: ${error instanceof Error ? error.message : String(error)}`);
+      return res.status(500).json({
+        message: "Failed to track resource view",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Route to track resource shares
+  app.post("/api/resources/:id/share", async (req: Request, res: Response) => {
+    try {
+      const resourceId = parseInt(req.params.id);
+      if (isNaN(resourceId)) {
+        return res.status(400).json({ message: "Invalid resource ID" });
+      }
+      
+      const updatedResource = await storage.incrementResourceShares(resourceId);
+      if (!updatedResource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      
+      log(`Tracked share for resource ${resourceId}. New count: ${updatedResource.shareCount}`);
+      res.json({ success: true, shareCount: updatedResource.shareCount });
+    } catch (error) {
+      log(`Error tracking resource share: ${error instanceof Error ? error.message : String(error)}`);
+      return res.status(500).json({
+        message: "Failed to track resource share",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Route to track resource downloads
+  app.post("/api/resources/:id/download", async (req: Request, res: Response) => {
+    try {
+      const resourceId = parseInt(req.params.id);
+      if (isNaN(resourceId)) {
+        return res.status(400).json({ message: "Invalid resource ID" });
+      }
+      
+      const updatedResource = await storage.incrementResourceDownloads(resourceId);
+      if (!updatedResource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      
+      log(`Tracked download for resource ${resourceId}. New count: ${updatedResource.downloadCount}`);
+      res.json({ success: true, downloadCount: updatedResource.downloadCount });
+    } catch (error) {
+      log(`Error tracking resource download: ${error instanceof Error ? error.message : String(error)}`);
+      return res.status(500).json({
+        message: "Failed to track resource download",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Route to get metadata from resources
   app.get("/api/resources/metadata", async (req: Request, res: Response) => {
     try {
