@@ -19,6 +19,7 @@ import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
+import PopularResources from "@/components/PopularResources";
 import { Resource } from "@shared/schema";
 import {
   ResourceFilters,
@@ -218,10 +219,19 @@ export default function Home() {
           </div>
         )}
         
-        {/* Sales Lead Callout removed */}
-
         {/* AI Question Box */}
         <QuestionBox resources={resources} />
+        
+        {/* Popular Resources */}
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold text-neutral-800 mb-3">
+            Usage Analytics
+          </h2>
+          <p className="text-neutral-600 mb-4">
+            Track the most popular resources based on views, shares, and downloads.
+          </p>
+          <PopularResources />
+        </div>
 
         {/* No Results Message */}
         {resources?.length === 0 && !isLoading && (
