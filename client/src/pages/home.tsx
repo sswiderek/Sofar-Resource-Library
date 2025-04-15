@@ -218,28 +218,7 @@ export default function Home() {
           </div>
         )}
         
-        {/* Sales Lead Callout - subtle version with close button */}
-        {showLeadsCallout && (
-          <div className="mb-6 bg-white/80 border border-neutral-200 rounded-md p-3 flex items-center text-sm relative">
-            <Mail className="h-4 w-4 text-neutral-500 mr-2 flex-shrink-0" />
-            <span className="text-neutral-600">
-              Have a customer interested in Sofar products? Forward leads to{" "}
-              <a 
-                href="mailto:sales@sofarocean.com" 
-                className="text-primary hover:text-primary-dark font-medium"
-              >
-                sales@sofarocean.com
-              </a>
-            </span>
-            <button 
-              onClick={() => setShowLeadsCallout(false)}
-              className="ml-2 text-neutral-400 hover:text-neutral-600 absolute right-2 top-2"
-              aria-label="Close"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        )}
+        {/* Sales Lead Callout removed */}
 
         {/* AI Question Box */}
         <QuestionBox resources={resources} />

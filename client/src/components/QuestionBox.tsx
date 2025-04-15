@@ -67,7 +67,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
     }
   };
 
-  // Find resources by IDs and limit to a maximum of 3
+  // Find resources by IDs (no longer limiting to just 3)
   const relevantResources = resources
     .filter(resource => aiAnswer?.relevantResourceIds?.includes(resource.id))
     // Sort by the order they appear in relevantResourceIds to maintain priority
@@ -75,9 +75,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
       const indexA = aiAnswer?.relevantResourceIds?.indexOf(a.id) ?? -1;
       const indexB = aiAnswer?.relevantResourceIds?.indexOf(b.id) ?? -1;
       return indexA - indexB;
-    })
-    // Limit to max 3 resources
-    .slice(0, 3);
+    });
 
   return (
     <Card className="w-full bg-white border border-primary/10 shadow-xs transition-all duration-300 mb-6 relative">
@@ -241,58 +239,73 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                     <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
                     Relevant Resources:
                   </h3>
-                  {aiAnswer.relevantResourceIds?.length > 3 && (
-                    <div className="text-xs text-muted-foreground">
-                      Showing top 3 of {aiAnswer.relevantResourceIds.length} resources
-                    </div>
-                  )}
+                  <div className="text-xs text-muted-foreground">
+                    {aiAnswer.relevantResourceIds?.length} resources found
+                  </div>
                 </div>
-                <ul className="space-y-3">
-                  {relevantResources.map((resource, index) => (
-                    <li key={resource.id} className="border border-primary/20 bg-primary/5 p-3 rounded-md text-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="font-medium text-primary flex-1">{resource.name}</div>
-                        <div className="flex items-center text-xs bg-primary/10 px-2 py-1 rounded-full">
-                          <span className="uppercase text-[10px]">{resource.type}</span>
-                        </div>
-                      </div>
+                <div className="max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                  <ul className="space-y-3">
+                    {relevantResources.map((resource, index) => {
+                      // Get the resource type to determine badge color
+                      const resourceType = resource.type;
                       
-                      <div className="text-xs mt-2 line-clamp-2 text-gray-700">
-                        {resource.description}
-                      </div>
+                      // Determine badge color based on resource type
+                      let badgeClass = "bg-gray-100 text-gray-700"; // Default
+                      if (resourceType.toLowerCase().includes('blog') || resourceType.toLowerCase() === 'blog') {
+                        badgeClass = "bg-blue-100 text-blue-700";
+                      } else if (resourceType.toLowerCase().includes('whitepaper') || resourceType.toLowerCase().includes('report')) {
+                        badgeClass = "bg-purple-100 text-purple-700";
+                      } else if (resourceType.toLowerCase().includes('research') || resourceType.toLowerCase().includes('paper')) {
+                        badgeClass = "bg-indigo-100 text-indigo-700";
+                      } else if (resourceType.toLowerCase().includes('webinar') || resourceType.toLowerCase().includes('video')) {
+                        badgeClass = "bg-red-100 text-red-700";
+                      } else if (resourceType.toLowerCase().includes('spec') || resourceType.toLowerCase().includes('guide')) {
+                        badgeClass = "bg-green-100 text-green-700";
+                      }
                       
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {resource.audience.map(aud => (
-                          <span key={aud} className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                            {aud}
-                          </span>
-                        ))}
-                      </div>
-                      
-                      <div className="mt-3 flex gap-2">
-                        {onShowResource ? (
-                          <Button 
-                            variant="default" 
-                            size="sm" 
-                            className="h-7 text-xs"
-                            onClick={() => onShowResource(resource.id)}
-                          >
-                            View Resource
-                          </Button>
-                        ) : (
-                          <a 
-                            href={resource.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
-                          >
-                            View Resource
-                          </a>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      return (
+                        <li key={resource.id} className="bg-white border border-gray-200 shadow-sm p-3 rounded-md text-sm hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between">
+                            <div className="font-medium text-primary flex-1 line-clamp-1">{resource.name}</div>
+                            <div className={`flex items-center text-xs ${badgeClass} px-2 py-1 rounded-full ml-2`}>
+                              <span className="uppercase text-[10px]">{resource.type}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center mt-1 text-[10px] text-gray-500">
+                            <span className="inline-block">{resource.date}</span>
+                          </div>
+                          
+                          <div className="text-xs mt-2 line-clamp-2 text-gray-700">
+                            {resource.description}
+                          </div>
+                          
+                          <div className="mt-3 flex gap-2">
+                            {onShowResource ? (
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={() => onShowResource(resource.id)}
+                              >
+                                View Resource
+                              </Button>
+                            ) : (
+                              <a 
+                                href={resource.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
+                              >
+                                View Resource
+                              </a>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               </div>
             )}
           </div>
