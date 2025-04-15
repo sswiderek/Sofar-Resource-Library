@@ -35,8 +35,10 @@ export default function FilterSidebar({
   const [search, setSearch] = useState(filter.search);
 
   // Get metadata for filling filter options
-  const { data, isLoading } = useQuery<Metadata>({
+  const { data, isLoading, isError } = useQuery<Metadata>({
     queryKey: ['/api/resources/metadata'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Ensure we have default values for the metadata
@@ -237,9 +239,9 @@ export default function FilterSidebar({
             <span className="w-3 h-3 bg-indigo-500 rounded-full mr-2"></span>
             Resource Type
           </h3>
-          {metadata.types && metadata.types.length > 0 ? (
-            <div className="space-y-2.5">
-              {metadata.types.map((type: string) => (
+          <div className="space-y-2.5">
+            {metadata.types && metadata.types.length > 0 ? (
+              metadata.types.map((type: string) => (
                 <div key={type} className="flex items-center">
                   <Checkbox
                     id={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
@@ -256,13 +258,17 @@ export default function FilterSidebar({
                     {type}
                   </Label>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-xs text-neutral-500 italic">
-              Loading types from Notion...
-            </div>
-          )}
+              ))
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 italic">
+                Loading types...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No resource types available
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Product Filter */}
@@ -271,9 +277,9 @@ export default function FilterSidebar({
             <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
             Sofar Product
           </h3>
-          {metadata.products && metadata.products.length > 0 ? (
-            <div className="space-y-2.5">
-              {metadata.products.map((product: string) => (
+          <div className="space-y-2.5">
+            {metadata.products && metadata.products.length > 0 ? (
+              metadata.products.map((product: string) => (
                 <div key={product} className="flex items-center">
                   <Checkbox
                     id={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
@@ -290,13 +296,17 @@ export default function FilterSidebar({
                     {product}
                   </Label>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-xs text-neutral-500 italic">
-              Loading products from Notion...
-            </div>
-          )}
+              ))
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 italic">
+                Loading products...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No products available
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Audience Filter */}
@@ -305,9 +315,9 @@ export default function FilterSidebar({
             <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
             Target Market
           </h3>
-          {metadata.audiences && metadata.audiences.length > 0 ? (
-            <div className="space-y-2.5">
-              {metadata.audiences.map((audience: string) => (
+          <div className="space-y-2.5">
+            {metadata.audiences && metadata.audiences.length > 0 ? (
+              metadata.audiences.map((audience: string) => (
                 <div key={audience} className="flex items-center">
                   <Checkbox
                     id={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
@@ -324,13 +334,17 @@ export default function FilterSidebar({
                     {audience}
                   </Label>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-xs text-neutral-500 italic">
-              Loading target markets from Notion...
-            </div>
-          )}
+              ))
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 italic">
+                Loading target markets...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No target markets available
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Buyer's Journey Filter */}
@@ -339,9 +353,9 @@ export default function FilterSidebar({
             <span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
             Buyer's Journey
           </h3>
-          {metadata.messagingStages && metadata.messagingStages.length > 0 ? (
-            <div className="space-y-2.5">
-              {metadata.messagingStages.map((stage: string) => (
+          <div className="space-y-2.5">
+            {metadata.messagingStages && metadata.messagingStages.length > 0 ? (
+              metadata.messagingStages.map((stage: string) => (
                 <div key={stage} className="flex items-center">
                   <Checkbox
                     id={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
@@ -358,13 +372,17 @@ export default function FilterSidebar({
                     {stage}
                   </Label>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-xs text-neutral-500 italic">
-              Loading journey stages from Notion...
-            </div>
-          )}
+              ))
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 italic">
+                Loading journey stages...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No journey stages available
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Bottom spacing */}
