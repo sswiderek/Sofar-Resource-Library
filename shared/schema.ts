@@ -76,6 +76,7 @@ export const resourceFilterSchema = z.object({
   contentVisibility: z.array(z.string()).optional(), // Maps to "Internal Use Only?" in Notion
   solutions: z.array(z.string()).optional(),        // Major product groupings (Wayfinder, Spotter, Smart Mooring)
   search: z.string().optional(),
+  sortBy: z.enum(["relevance", "popularity", "newest", "oldest"]).optional(),
 });
 
 export type ResourceFilter = z.infer<typeof resourceFilterSchema>;

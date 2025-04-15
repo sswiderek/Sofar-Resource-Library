@@ -149,6 +149,26 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4 mt-3 md:mt-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-neutral-600">Sort by:</span>
+              <select
+                className="h-10 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                value={filters.sortBy || "relevance"}
+                onChange={(e) => {
+                  const sortBy = e.target.value;
+                  handleFilterChange({
+                    ...filters,
+                    sortBy: sortBy === "relevance" ? undefined : sortBy,
+                  });
+                }}
+              >
+                <option value="relevance">Relevance</option>
+                <option value="popularity">Most Popular</option>
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </div>
+
             <Button
               variant="outline"
               size="default"
@@ -221,17 +241,6 @@ export default function Home() {
         
         {/* AI Question Box */}
         <QuestionBox resources={resources} />
-        
-        {/* Popular Resources */}
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold text-neutral-800 mb-3">
-            Usage Analytics
-          </h2>
-          <p className="text-neutral-600 mb-4">
-            Track the most popular resources based on views, shares, and downloads.
-          </p>
-          <PopularResources />
-        </div>
 
         {/* No Results Message */}
         {resources?.length === 0 && !isLoading && (
