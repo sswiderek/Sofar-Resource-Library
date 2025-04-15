@@ -13,48 +13,131 @@ import { getResourceTypeClasses } from '@/lib/resourceTypeColors';
 function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
   if (!text) return null;
   
-  // URL regex pattern to match URLs in text
-  const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+  // First, check if the text appears to contain resource entries like "RESOURCE: name"
+  const resourceEntryPattern = /(\d+\.\s*RESOURCE:[\s\S]*?(?=\d+\.\s*RESOURCE:|$))/g;
+  const hasResourceEntries = resourceEntryPattern.test(text);
   
-  // Split the text into parts based on the URLs
-  const parts = text.split(urlRegex);
-  
-  // Extract all URLs that match the pattern
-  const urls = text.match(urlRegex) || [];
-  
-  // Combine text and URL elements
-  const elements: React.ReactNode[] = [];
-  
-  // Process each part of the text
-  parts.forEach((part, index) => {
-    // For text parts, check if they contain resource names and link them
-    if (part) {
-      const linkedPart = addResourceLinks(part, resources);
-      elements.push(<Fragment key={`text-${index}`}>{linkedPart}</Fragment>);
-    }
+  if (hasResourceEntries) {
+    // Reset the RegExp lastIndex
+    resourceEntryPattern.lastIndex = 0;
     
-    // If there's a URL that follows this text part, add it as a link
-    if (urls[index]) {
-      const url = urls[index];
-      const label = url.replace(/^https?:\/\//, '').split('/')[0]; // Use domain as label
-      
+    // Parse resource entries
+    const resourceEntries = text.match(resourceEntryPattern) || [];
+    const introText = text.split(resourceEntryPattern)[0].trim();
+    
+    const elements: React.ReactNode[] = [];
+    
+    // Add the introduction text
+    if (introText) {
       elements.push(
-        <a 
-          key={`link-${index}`}
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
-        >
-          <ExternalLink className="h-3 w-3" />
-          <span className="underline">{label}</span>
-        </a>
+        <div key="intro" className="mb-4">
+          {addResourceLinks(introText, resources)}
+        </div>
       );
     }
-  });
-  
-  return elements;
-};
+    
+    // Add each resource entry with improved formatting
+    resourceEntries.forEach((entry, idx) => {
+      // Extract the resource name from the entry (assumed to be after "RESOURCE:")
+      const resourceNameMatch = entry.match(/RESOURCE:(.*?)(?=-|\n|$)/);
+      const resourceName = resourceNameMatch ? resourceNameMatch[1].trim() : '';
+      
+      // Extract description and link sections
+      const descMatch = entry.match(/- DESCRIPTION:([\s\S]*?)(?=- LINK:|$)/);
+      const description = descMatch ? descMatch[1].trim() : '';
+      
+      const linkMatch = entry.match(/- LINK:([\s\S]*?)$/);
+      const linkText = linkMatch ? linkMatch[1].trim() : '';
+      
+      // Process URLs in the link section
+      const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+      const urls = linkText.match(urlRegex) || [];
+      
+      elements.push(
+        <div key={`resource-entry-${idx}`} className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
+          <h4 className="font-medium text-primary mb-2">{idx + 1}. {resourceName}</h4>
+          
+          {description && (
+            <div className="mb-2 text-sm">
+              <span className="font-medium">Description:</span> {description}
+            </div>
+          )}
+          
+          {urls.length > 0 && (
+            <div className="mt-2 text-sm">
+              <span className="font-medium">Link:</span>{' '}
+              <a 
+                href={urls[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline"
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span>{urls[0]}</span>
+              </a>
+            </div>
+          )}
+        </div>
+      );
+    });
+    
+    // Add a closing paragraph if there is one after the last resource entry
+    const closingText = text.split(resourceEntryPattern).pop()?.trim();
+    if (closingText && closingText !== '') {
+      elements.push(
+        <div key="closing" className="mt-3">
+          {addResourceLinks(closingText, resources)}
+        </div>
+      );
+    }
+    
+    return elements;
+  } else {
+    // Standard text formatting for non-resource-entry responses
+    
+    // URL regex pattern to match URLs in text
+    const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+    
+    // Split the text into parts based on the URLs
+    const parts = text.split(urlRegex);
+    
+    // Extract all URLs that match the pattern
+    const urls = text.match(urlRegex) || [];
+    
+    // Combine text and URL elements
+    const elements: React.ReactNode[] = [];
+    
+    // Process each part of the text
+    parts.forEach((part, index) => {
+      // For text parts, check if they contain resource names and link them
+      if (part) {
+        const linkedPart = addResourceLinks(part, resources);
+        elements.push(<Fragment key={`text-${index}`}>{linkedPart}</Fragment>);
+      }
+      
+      // If there's a URL that follows this text part, add it as a link
+      if (urls[index]) {
+        const url = urls[index];
+        const label = url.replace(/^https?:\/\//, '').split('/')[0]; // Use domain as label
+        
+        elements.push(
+          <a 
+            key={`link-${index}`}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
+          >
+            <ExternalLink className="h-3 w-3" />
+            <span className="underline">{label}</span>
+          </a>
+        );
+      }
+    });
+    
+    return elements;
+  }
+}
 
 // Helper function to add links to resource names in text
 function addResourceLinks(text: string, resources: Resource[]) {
@@ -335,7 +418,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 <Sparkles className="h-5 w-5 mr-2 text-primary" />
                 <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
-              <div className="whitespace-pre-line text-sm prose prose-sm max-w-none">
+              <div className="text-sm prose prose-sm max-w-none">
                 {formatAnswerWithLinks(aiAnswer.answer, resources)}
               </div>
             </div>
