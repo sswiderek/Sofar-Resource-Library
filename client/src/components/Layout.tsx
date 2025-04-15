@@ -17,7 +17,7 @@ export default function Layout({ children }: LayoutProps) {
             />
             <div className="flex flex-col">
               <h1 className="text-xl font-bold text-[#0066CC]">
-                Sales Enablement Hub
+                Sofar Partner Portal
               </h1>
               <div className="h-0.5 w-full bg-gradient-to-r from-[#0066CC] to-[#00A7E1] rounded-full mt-0.5"></div>
             </div>

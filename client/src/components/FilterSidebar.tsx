@@ -91,15 +91,15 @@ export default function FilterSidebar({
 
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-40 bg-neutral-900 h-screen flex flex-col">
-        <div className="p-4 border-b border-neutral-700 flex justify-between items-center bg-black">
-          <h2 className="font-semibold text-white">Filters</h2>
+      <div className="fixed inset-0 z-40 bg-white h-screen flex flex-col">
+        <div className="p-4 border-b border-neutral-200 flex justify-between items-center bg-white">
+          <h2 className="font-semibold text-neutral-700">Filters</h2>
           <div className="flex gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={onClearFilters}
-              className="text-cyan-400 hover:text-cyan-300 hover:bg-neutral-800"
+              className="text-primary hover:text-primary-dark"
             >
               Clear all
             </Button>
@@ -108,7 +108,7 @@ export default function FilterSidebar({
                 variant="ghost"
                 size="sm"
                 onClick={onMobileClose}
-                className="md:hidden text-white hover:bg-neutral-800"
+                className="md:hidden"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -119,7 +119,7 @@ export default function FilterSidebar({
         <div className="p-4 overflow-y-auto flex-grow">
           {/* Search input */}
           <div className="mb-5">
-            <Label htmlFor="search" className="text-sm font-medium text-neutral-300 mb-1">
+            <Label htmlFor="search" className="text-sm font-medium text-neutral-500 mb-1">
               Search
             </Label>
             <div className="relative">
@@ -129,7 +129,7 @@ export default function FilterSidebar({
                 placeholder="Search resources..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-3 pr-10 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-400 focus-visible:ring-cyan-700 focus-visible:ring-offset-neutral-900"
+                className="pl-3 pr-10"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <Search className="h-4 w-4 text-neutral-400" />
@@ -145,14 +145,14 @@ export default function FilterSidebar({
   }
   
   return (
-    <div className="h-full flex flex-col bg-neutral-900 border-r border-neutral-800">
-      <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-black">
-        <h2 className="font-semibold text-white">Filters</h2>
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b border-neutral-200 flex justify-between items-center">
+        <h2 className="font-semibold text-neutral-700">Filters</h2>
         <Button
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-cyan-400 hover:text-cyan-300 hover:bg-neutral-800"
+          className="text-primary hover:text-primary-dark"
         >
           Clear all
         </Button>
@@ -161,7 +161,7 @@ export default function FilterSidebar({
       <div className="p-4 overflow-y-auto flex-grow">
         {/* Search input */}
         <div className="mb-5">
-          <Label htmlFor="search" className="text-sm font-medium text-neutral-300 mb-1">
+          <Label htmlFor="search" className="text-sm font-medium text-neutral-500 mb-1">
             Search
           </Label>
           <div className="relative">
@@ -171,7 +171,7 @@ export default function FilterSidebar({
               placeholder="Search resources..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-3 pr-10 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-400 focus-visible:ring-cyan-700 focus-visible:ring-offset-neutral-900"
+              className="pl-3 pr-10"
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <Search className="h-4 w-4 text-neutral-400" />
@@ -193,11 +193,11 @@ export default function FilterSidebar({
         <>
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="mb-5">
-              <Skeleton className="h-5 w-24 mb-2 bg-neutral-800" />
+              <Skeleton className="h-5 w-24 mb-2" />
               <div className="space-y-2">
-                <Skeleton className="h-4 w-full bg-neutral-800" />
-                <Skeleton className="h-4 w-full bg-neutral-800" />
-                <Skeleton className="h-4 w-full bg-neutral-800" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
               </div>
             </div>
           ))}
@@ -209,8 +209,8 @@ export default function FilterSidebar({
       <>
         {/* Content Visibility Filter */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
-            <span className="w-3 h-3 bg-cyan-500 rounded-full mr-2"></span>
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-primary rounded-full mr-2"></span>
             Content Type
           </h3>
           <div className="space-y-2.5">
@@ -222,11 +222,11 @@ export default function FilterSidebar({
                   onCheckedChange={(checked) => 
                     handleCheckboxChange('contentVisibility', visibility, checked as boolean)
                   }
-                  className="border-neutral-600 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600"
+                  className="data-[state=checked]:bg-primary"
                 />
                 <Label
                   htmlFor={`visibility-${visibility}`}
-                  className="ml-2 text-sm text-neutral-300"
+                  className="ml-2 text-sm text-neutral-700"
                 >
                   {visibility === 'internal' ? 'Internal Resources' : 'Customer-Facing'}
                 </Label>
@@ -237,7 +237,7 @@ export default function FilterSidebar({
         
         {/* Resource Type Filter - show even with empty data */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
             <span className="w-3 h-3 bg-indigo-500 rounded-full mr-2"></span>
             Resource Type
           </h3>
@@ -251,22 +251,22 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('types', type, checked as boolean)
                     }
-                    className="border-neutral-600 data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
+                    className="data-[state=checked]:bg-indigo-500"
                   />
                   <Label
                     htmlFor={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="ml-2 text-sm text-neutral-300"
+                    className="ml-2 text-sm text-neutral-700"
                   >
                     {type}
                   </Label>
                 </div>
               ))
             ) : isLoading ? (
-              <div className="text-xs text-neutral-400 italic">
+              <div className="text-xs text-neutral-500 italic">
                 Loading types...
               </div>
             ) : (
-              <div className="text-xs text-neutral-400">
+              <div className="text-xs text-neutral-500">
                 No resource types available
               </div>
             )}
@@ -275,7 +275,7 @@ export default function FilterSidebar({
 
         {/* Product Filter */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
             <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
             Sofar Product
           </h3>
@@ -289,22 +289,22 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('products', product, checked as boolean)
                     }
-                    className="border-neutral-600 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                    className="data-[state=checked]:bg-blue-500"
                   />
                   <Label
                     htmlFor={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="ml-2 text-sm text-neutral-300"
+                    className="ml-2 text-sm text-neutral-700"
                   >
                     {product}
                   </Label>
                 </div>
               ))
             ) : isLoading ? (
-              <div className="text-xs text-neutral-400 italic">
+              <div className="text-xs text-neutral-500 italic">
                 Loading products...
               </div>
             ) : (
-              <div className="text-xs text-neutral-400">
+              <div className="text-xs text-neutral-500">
                 No products available
               </div>
             )}
@@ -313,7 +313,7 @@ export default function FilterSidebar({
 
         {/* Audience Filter */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
             <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
             Target Market
           </h3>
@@ -327,22 +327,22 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('audiences', audience, checked as boolean)
                     }
-                    className="border-neutral-600 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                    className="data-[state=checked]:bg-green-500"
                   />
                   <Label
                     htmlFor={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="ml-2 text-sm text-neutral-300"
+                    className="ml-2 text-sm text-neutral-700"
                   >
                     {audience}
                   </Label>
                 </div>
               ))
             ) : isLoading ? (
-              <div className="text-xs text-neutral-400 italic">
+              <div className="text-xs text-neutral-500 italic">
                 Loading target markets...
               </div>
             ) : (
-              <div className="text-xs text-neutral-400">
+              <div className="text-xs text-neutral-500">
                 No target markets available
               </div>
             )}
@@ -351,7 +351,7 @@ export default function FilterSidebar({
 
         {/* Buyer's Journey Filter */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
             <span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
             Buyer's Journey
           </h3>
@@ -365,22 +365,22 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('messagingStages', stage, checked as boolean)
                     }
-                    className="border-neutral-600 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                    className="data-[state=checked]:bg-amber-500"
                   />
                   <Label
                     htmlFor={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="ml-2 text-sm text-neutral-300"
+                    className="ml-2 text-sm text-neutral-700"
                   >
                     {stage}
                   </Label>
                 </div>
               ))
             ) : isLoading ? (
-              <div className="text-xs text-neutral-400 italic">
+              <div className="text-xs text-neutral-500 italic">
                 Loading journey stages...
               </div>
             ) : (
-              <div className="text-xs text-neutral-400">
+              <div className="text-xs text-neutral-500">
                 No journey stages available
               </div>
             )}
@@ -389,7 +389,7 @@ export default function FilterSidebar({
 
         {/* Solutions Filter */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
             <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
             Solution
           </h3>
@@ -403,22 +403,22 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('solutions', solution, checked as boolean)
                     }
-                    className="border-neutral-600 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
+                    className="data-[state=checked]:bg-purple-500"
                   />
                   <Label
                     htmlFor={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="ml-2 text-sm text-neutral-300"
+                    className="ml-2 text-sm text-neutral-700"
                   >
                     {solution}
                   </Label>
                 </div>
               ))
             ) : isLoading ? (
-              <div className="text-xs text-neutral-400 italic">
+              <div className="text-xs text-neutral-500 italic">
                 Loading solutions...
               </div>
             ) : (
-              <div className="text-xs text-neutral-400">
+              <div className="text-xs text-neutral-500">
                 No solutions available
               </div>
             )}

@@ -269,13 +269,13 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
     });
 
   return (
-    <Card className="w-full bg-gradient-to-br from-black to-neutral-900 border border-neutral-700 shadow-md transition-all duration-300 mb-6 relative text-white">
-      <CardHeader className={`py-3 px-4 ${expanded ? 'border-b border-neutral-700' : ''}`}>
+    <Card className="w-full bg-white border border-primary/10 shadow-xs transition-all duration-300 mb-6 relative">
+      <CardHeader className={`py-3 px-4 ${expanded ? 'border-b' : ''}`}>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg flex items-center text-white">
-            <Sparkles className="h-5 w-5 mr-2 text-cyan-400" />
+          <CardTitle className="text-lg flex items-center">
+            <Sparkles className="h-5 w-5 mr-2 text-primary" />
             Ask about resources
-            <span className="ml-2 text-xs bg-indigo-900 text-indigo-300 font-medium px-1.5 py-0.5 rounded-sm">
+            <span className="ml-2 text-xs bg-purple-100 text-purple-800 font-medium px-1.5 py-0.5 rounded-sm">
               BETA
             </span>
           </CardTitle>
@@ -283,7 +283,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-7 w-7 p-0 rounded-full text-white hover:bg-neutral-700/50"
+              className="h-7 w-7 p-0 rounded-full"
               onClick={() => {
                 // Reset state and collapse the answer section completely
                 setExpanded(false);
@@ -297,7 +297,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           )}
         </div>
         {expanded && (
-          <CardDescription className="ml-7 mt-1 text-neutral-300">
+          <CardDescription className="ml-7 mt-1">
             Ask any question about the resources available to you
           </CardDescription>
         )}
@@ -309,28 +309,23 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
             placeholder="Ask a question about resources..."
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            className="flex-grow bg-neutral-800 border-neutral-600 text-white placeholder:text-neutral-400 focus:border-cyan-500"
+            className="flex-grow"
             onFocus={() => setExpanded(true)}
           />
-          <Button 
-            type="submit" 
-            size="sm" 
-            className="bg-cyan-600 hover:bg-cyan-700 text-white"
-            disabled={isPending || !question.trim()}
-          >
+          <Button type="submit" size="sm" disabled={isPending || !question.trim()}>
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>
         
         {expanded && !aiAnswer && !isPending && (
-          <div className="text-sm mt-3 p-3 bg-neutral-800 rounded-md border border-neutral-700">
+          <div className="text-sm mt-3 p-3 bg-gray-50 rounded-md border border-gray-100">
             <div className="flex items-center">
-              <Sparkles className="h-4 w-4 text-cyan-400 mr-1" />
-              <p className="font-medium text-white">Try asking:</p>
+              <Sparkles className="h-4 w-4 text-primary mr-1" />
+              <p className="font-medium">Try asking:</p>
             </div>
             <div className="mt-2 space-y-2">
               <button 
-                className="w-full text-left px-3 py-2 bg-neutral-900 rounded border border-neutral-700 hover:border-cyan-700 hover:bg-black transition-colors text-sm text-neutral-200" 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => {
                   const query = "What is a smart mooring?";
                   setQuestion(query);
@@ -340,7 +335,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 What is a smart mooring?
               </button>
               <button 
-                className="w-full text-left px-3 py-2 bg-neutral-900 rounded border border-neutral-700 hover:border-cyan-700 hover:bg-black transition-colors text-sm text-neutral-200" 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => {
                   const query = "How is Spotter data accessed and managed by users?";
                   setQuestion(query);
@@ -350,7 +345,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 How is Spotter data accessed and managed by users?
               </button>
               <button 
-                className="w-full text-left px-3 py-2 bg-neutral-900 rounded border border-neutral-700 hover:border-cyan-700 hover:bg-black transition-colors text-sm text-neutral-200" 
+                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => {
                   const query = "Which resources specifically reference dissolved oxygen?";
                   setQuestion(query);
@@ -367,31 +362,31 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           <div className="py-4 px-2">
             <div className="flex items-center justify-center">
               <div className="relative">
-                <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-4 w-4 bg-neutral-800 rounded-full flex items-center justify-center">
-                  {loadingStage === 1 && <Search className="h-3 w-3 text-cyan-400 animate-pulse" />}
-                  {loadingStage === 2 && <BookOpen className="h-3 w-3 text-cyan-400 animate-pulse" />}
-                  {loadingStage === 3 && <Lightbulb className="h-3 w-3 text-cyan-400 animate-pulse" />}
-                  {loadingStage === 4 && <Sparkles className="h-3 w-3 text-cyan-400 animate-pulse" />}
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-4 w-4 bg-white rounded-full flex items-center justify-center">
+                  {loadingStage === 1 && <Search className="h-3 w-3 text-primary animate-pulse" />}
+                  {loadingStage === 2 && <BookOpen className="h-3 w-3 text-primary animate-pulse" />}
+                  {loadingStage === 3 && <Lightbulb className="h-3 w-3 text-primary animate-pulse" />}
+                  {loadingStage === 4 && <Sparkles className="h-3 w-3 text-primary animate-pulse" />}
                 </div>
               </div>
             </div>
             <div className="mt-3 text-center">
-              <h4 className="text-sm font-medium text-cyan-400 mb-1">
+              <h4 className="text-sm font-medium text-primary mb-1">
                 {loadingStage === 1 && "Finding relevant resources..."}
                 {loadingStage === 2 && "Analyzing resource content..."}
                 {loadingStage === 3 && "Processing your question..."}
                 {loadingStage === 4 && "Crafting your answer..."}
               </h4>
               <div className="space-y-1">
-                <div className="relative h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden">
+                <div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                   <div 
-                    className="absolute top-0 bottom-0 left-0 bg-cyan-500 transition-all duration-300" 
+                    className="absolute top-0 bottom-0 left-0 bg-primary/60 transition-all duration-300" 
                     style={{ width: `${loadingStage * 25}%` }}
                   />
                 </div>
               </div>
-              <div className="mt-2 text-xs text-neutral-400 max-w-sm mx-auto">
+              <div className="mt-2 text-xs text-gray-500 max-w-sm mx-auto">
                 {loadingStage === 1 && (
                   <p className="italic">Searching for the most relevant resources that match your question...</p>
                 )}
@@ -410,7 +405,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
         )}
         
         {isError && (
-          <div className="bg-red-900/50 border border-red-800 text-red-200 p-3 rounded-md mt-3">
+          <div className="text-destructive bg-destructive/10 p-3 rounded-md mt-3">
             <p className="font-semibold">Error processing your question</p>
             <p className="text-sm">{error instanceof Error ? error.message : 'Please try again later'}</p>
           </div>
@@ -418,12 +413,12 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
         
         {aiAnswer && (
           <div className="mt-4">
-            <div className="bg-neutral-800 p-4 rounded-md border border-neutral-700">
+            <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
               <div className="flex items-center mb-3">
-                <Sparkles className="h-5 w-5 mr-2 text-cyan-400" />
-                <h3 className="font-semibold text-cyan-300">AI Answer</h3>
+                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+                <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
-              <div className="text-sm prose prose-sm max-w-none prose-invert prose-headings:text-cyan-300 prose-a:text-cyan-400">
+              <div className="text-sm prose prose-sm max-w-none">
                 {formatAnswerWithLinks(aiAnswer.answer, resources)}
               </div>
             </div>
@@ -431,11 +426,11 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
             {relevantResources.length > 0 && (
               <div className="mt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm mb-2 text-cyan-300">
-                    <Sparkles className="h-4 w-4 inline-block mr-1 text-cyan-400" />
+                  <h3 className="font-semibold text-sm mb-2">
+                    <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
                     Relevant Resources:
                   </h3>
-                  <div className="text-xs text-neutral-400">
+                  <div className="text-xs text-muted-foreground">
                     {aiAnswer.relevantResourceIds?.length} resources found
                   </div>
                 </div>
@@ -446,19 +441,19 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                       const badgeClass = getResourceTypeClasses(resource.type);
                       
                       return (
-                        <li key={resource.id} className="bg-neutral-800 border border-neutral-700 shadow-md p-3 rounded-md text-sm hover:shadow-lg transition-shadow">
+                        <li key={resource.id} className="bg-white border border-gray-200 shadow-sm p-3 rounded-md text-sm hover:shadow-md transition-shadow">
                           <div className="flex items-start justify-between">
-                            <div className="font-medium text-cyan-300 flex-1 line-clamp-1">{resource.name}</div>
+                            <div className="font-medium text-primary flex-1 line-clamp-1">{resource.name}</div>
                             <div className={`flex items-center text-xs ${badgeClass} px-2 py-1 rounded-full ml-2`}>
                               <span className="uppercase text-[10px]">{resource.type}</span>
                             </div>
                           </div>
                           
-                          <div className="flex items-center mt-1 text-[10px] text-neutral-400">
+                          <div className="flex items-center mt-1 text-[10px] text-gray-500">
                             <span className="inline-block">{resource.date}</span>
                           </div>
                           
-                          <div className="text-xs mt-2 line-clamp-2 text-neutral-300">
+                          <div className="text-xs mt-2 line-clamp-2 text-gray-700">
                             {resource.description}
                           </div>
                           
@@ -467,7 +462,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                               <Button 
                                 variant="default" 
                                 size="sm" 
-                                className="h-7 text-xs bg-cyan-600 hover:bg-cyan-700 text-white"
+                                className="h-7 text-xs"
                                 onClick={() => onShowResource(resource.id)}
                               >
                                 View Resource
@@ -477,7 +472,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                                 href={resource.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="bg-cyan-600 text-white text-xs px-3 py-1 rounded hover:bg-cyan-700 inline-flex items-center"
+                                className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
                               >
                                 View Resource
                               </a>

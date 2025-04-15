@@ -121,12 +121,12 @@ export default function Home() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-grow overflow-auto p-4 md:p-6 lg:p-8 bg-neutral-950">
+      <div className="flex-grow overflow-auto p-4 md:p-6 lg:p-8 bg-neutral-50">
         {/* Filter button for mobile */}
         <div className="md:hidden mb-6">
           <Button
             variant="outline"
-            className="w-full flex items-center justify-center bg-neutral-800 border-neutral-700 text-white hover:bg-neutral-700"
+            className="w-full flex items-center justify-center bg-white"
             onClick={toggleMobileFilters}
           >
             <Filter className="mr-2 h-4 w-4" />
@@ -137,11 +137,11 @@ export default function Home() {
         {/* View toggle and resource info */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div className="flex-grow">
-            <h2 className="text-2xl font-semibold text-white mb-1">
+            <h2 className="text-2xl font-semibold text-neutral-800 mb-1">
               Sales Resources
             </h2>
             {resources && (
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-neutral-600">
                 Showing {resources.length} resources
               </p>
             )}
@@ -152,17 +152,17 @@ export default function Home() {
               variant="outline"
               size="default"
               onClick={handleSync}
-              className="flex items-center bg-neutral-800 border-neutral-700 text-white hover:bg-neutral-700 hover:text-white"
+              className="flex items-center"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Sync
             </Button>
 
-            <div className="flex border border-neutral-700 rounded-md overflow-hidden h-10 bg-neutral-800">
+            <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
               <Button
                 variant={viewMode === "card" ? "default" : "ghost"}
                 size="default"
-                className={`rounded-none px-2 h-full ${viewMode === "card" ? "bg-cyan-700 text-white hover:bg-cyan-800" : "text-white hover:bg-neutral-700"}`}
+                className="rounded-none px-2 h-full"
                 onClick={() => setViewMode("card")}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -170,7 +170,7 @@ export default function Home() {
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="default"
-                className={`rounded-none px-2 h-full ${viewMode === "list" ? "bg-cyan-700 text-white hover:bg-cyan-800" : "text-white hover:bg-neutral-700"}`}
+                className="rounded-none px-2 h-full"
                 onClick={() => setViewMode("list")}
               >
                 <List className="h-4 w-4" />
@@ -181,25 +181,25 @@ export default function Home() {
 
         {/* Welcome Hero - show when showWelcome is true */}
         {showWelcome && (
-          <div className="mb-6 bg-gradient-to-r from-black/90 to-neutral-800 border border-neutral-700 rounded-lg overflow-hidden relative shadow-lg">
+          <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
             <div className="flex items-center p-6">
               <div className="flex-grow">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-xl font-semibold text-primary">
                   Welcome to the Sales Enablement Portal
                 </h2>
-                <p className="text-neutral-300 mt-1">
+                <p className="text-neutral-600 mt-1">
                   This portal provides access to Sofar Ocean resources to help you succeed.
                   Browse, search, or ask questions about any resource.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                     <LayoutGrid className="h-3 w-3 mr-1" /> Browse Resources
                   </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                     <Search className="h-3 w-3 mr-1" /> Search Content
                   </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-400">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                     <Sparkles className="h-3 w-3 mr-1" /> Ask AI Questions
                   </span>
                 </div>
@@ -209,10 +209,10 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 text-white hover:bg-neutral-700/50"
+                className="absolute top-2 right-2"
                 onClick={() => setShowWelcome(false)}
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 text-neutral-500" />
               </Button>
             </div>
           </div>
@@ -225,18 +225,15 @@ export default function Home() {
 
         {/* No Results Message */}
         {resources?.length === 0 && !isLoading && (
-          <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-lg shadow-sm text-center">
+          <div className="bg-white border border-neutral-200 p-6 rounded-lg shadow-sm text-center">
             <AlertCircle className="h-10 w-10 text-neutral-400 mx-auto mb-2" />
-            <h3 className="text-lg font-medium text-white mb-1">
+            <h3 className="text-lg font-medium text-neutral-700 mb-1">
               No Resources Found
             </h3>
-            <p className="text-neutral-400">
+            <p className="text-neutral-500">
               Try adjusting your filters or search terms
             </p>
-            <Button 
-              onClick={handleClearFilters} 
-              className="mt-4 bg-cyan-700 hover:bg-cyan-600 text-white"
-            >
+            <Button onClick={handleClearFilters} className="mt-4">
               Clear Filters
             </Button>
           </div>
