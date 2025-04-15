@@ -80,7 +80,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all resources
       const resources = await storage.getResources();
       
+      log(`Metadata endpoint: Got ${resources.length} resources`);
+      
       if (!resources || resources.length === 0) {
+        log('No resources found for metadata');
         return res.json({
           types: [],
           products: [],
@@ -99,11 +102,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messagingStagesSet = new Set(resources.map(r => r.messagingStage));
       const contentVisibilitySet = new Set(resources.map(r => r.contentVisibility || "both"));
       
-      const types = Array.from(typesSet);
-      const products = Array.from(productsSet);
-      const audiences = Array.from(audiencesSet);
-      const messagingStages = Array.from(messagingStagesSet);
-      const contentVisibility = Array.from(contentVisibilitySet);
+      const types = Array.from(typesSet).filter(Boolean);  // Remove empty values
+      const products = Array.from(productsSet).filter(Boolean);
+      const audiences = Array.from(audiencesSet).filter(Boolean);
+      const messagingStages = Array.from(messagingStagesSet).filter(Boolean);
+      const contentVisibility = Array.from(contentVisibilitySet).filter(Boolean);
+
+      log(`Metadata extracted: 
+        - ${types.length} types
+        - ${products.length} products
+        - ${audiences.length} audiences
+        - ${messagingStages.length} stages
+        - ${contentVisibility.length} visibility options`);
       
       res.json({
         types,
