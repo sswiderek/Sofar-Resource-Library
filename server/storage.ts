@@ -239,6 +239,16 @@ export class MemStorage implements IStorage {
         if (!hasMatchingProduct) return false;
       }
 
+      // Filter by solutions if specified
+      if (filter.solutions && filter.solutions.length > 0) {
+        // Check if any of the product tags match the solutions filter
+        // Solutions are major product groupings (Wayfinder, Spotter, Smart Mooring)
+        const hasMatchingSolution = resource.product.some(p => {
+          return filter.solutions?.some(solution => p.includes(solution));
+        });
+        if (!hasMatchingSolution) return false;
+      }
+
       // Filter by audience if specified
       if (filter.audiences && filter.audiences.length > 0) {
         const hasMatchingAudience = resource.audience.some(a => filter.audiences?.includes(a));

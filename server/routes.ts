@@ -43,6 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         audiences: req.query.audiences ? (req.query.audiences as string).split(',') : [],
         messagingStages: req.query.messagingStages ? (req.query.messagingStages as string).split(',') : [],
         contentVisibility: req.query.contentVisibility ? (req.query.contentVisibility as string).split(',') : [],
+        solutions: req.query.solutions ? (req.query.solutions as string).split(',') : [],
         search: req.query.search as string || '',
       };
 
