@@ -50,9 +50,9 @@ export async function processQuestion(
     // Step 3: Prepare context with the most relevant resources only
     const contextText = prepareResourcesContext(mostRelevantResources);
     
-    // Step 4: Generate answer using OpenAI
+    // Step 4: Generate answer using OpenAI (using 16k model for better context handling)
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo-16k",
       messages: [
         {
           role: "system",

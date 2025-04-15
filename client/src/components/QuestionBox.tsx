@@ -7,6 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Link } from 'wouter';
 import { Resource } from '@shared/schema';
+import { getResourceTypeClasses } from '@/lib/resourceTypeColors';
 
 // Helper function to format text with clickable links and resource references
 function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
@@ -353,22 +354,8 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 <div className="max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                   <ul className="space-y-3">
                     {relevantResources.map((resource, index) => {
-                      // Get the resource type to determine badge color
-                      const resourceType = resource.type;
-                      
-                      // Determine badge color based on resource type
-                      let badgeClass = "bg-gray-100 text-gray-700"; // Default
-                      if (resourceType.toLowerCase().includes('blog') || resourceType.toLowerCase() === 'blog') {
-                        badgeClass = "bg-blue-100 text-blue-700";
-                      } else if (resourceType.toLowerCase().includes('whitepaper') || resourceType.toLowerCase().includes('report')) {
-                        badgeClass = "bg-purple-100 text-purple-700";
-                      } else if (resourceType.toLowerCase().includes('research') || resourceType.toLowerCase().includes('paper')) {
-                        badgeClass = "bg-indigo-100 text-indigo-700";
-                      } else if (resourceType.toLowerCase().includes('webinar') || resourceType.toLowerCase().includes('video')) {
-                        badgeClass = "bg-red-100 text-red-700";
-                      } else if (resourceType.toLowerCase().includes('spec') || resourceType.toLowerCase().includes('guide')) {
-                        badgeClass = "bg-green-100 text-green-700";
-                      }
+                      // Get the resource type badge class using our utility function
+                      const badgeClass = getResourceTypeClasses(resource.type);
                       
                       return (
                         <li key={resource.id} className="bg-white border border-gray-200 shadow-sm p-3 rounded-md text-sm hover:shadow-md transition-shadow">
