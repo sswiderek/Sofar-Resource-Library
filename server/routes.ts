@@ -92,11 +92,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Extract unique values for each category
-      const types = [...new Set(resources.map(r => r.type))];
-      const products = [...new Set(resources.flatMap(r => r.product))];
-      const audiences = [...new Set(resources.flatMap(r => r.audience))];
-      const messagingStages = [...new Set(resources.map(r => r.messagingStage))];
-      const contentVisibility = [...new Set(resources.map(r => r.contentVisibility || "both"))];
+      // Using Array.from instead of spread operator to address TypeScript compatibility
+      const typesSet = new Set(resources.map(r => r.type));
+      const productsSet = new Set(resources.flatMap(r => r.product));
+      const audiencesSet = new Set(resources.flatMap(r => r.audience));
+      const messagingStagesSet = new Set(resources.map(r => r.messagingStage));
+      const contentVisibilitySet = new Set(resources.map(r => r.contentVisibility || "both"));
+      
+      const types = Array.from(typesSet);
+      const products = Array.from(productsSet);
+      const audiences = Array.from(audiencesSet);
+      const messagingStages = Array.from(messagingStagesSet);
+      const contentVisibility = Array.from(contentVisibilitySet);
       
       res.json({
         types,

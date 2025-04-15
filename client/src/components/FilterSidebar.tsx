@@ -201,138 +201,173 @@ export default function FilterSidebar({
       );
     }
     
-    if (!metadata.types.length && 
-        !metadata.products.length && 
-        !metadata.audiences.length && 
-        !metadata.messagingStages.length) {
-      return (
-        <div className="text-neutral-500 text-sm italic mt-4">
-          No filters available.
-        </div>
-      );
-    }
-    
     return (
       <>
         {/* Content Visibility Filter */}
-        <div className="mb-5">
-          <h3 className="text-sm font-medium text-neutral-500 mb-2">Content Type</h3>
-          {["internal", "external", "both"].map((visibility) => (
-            <div key={visibility} className="flex items-center mb-2">
-              <Checkbox
-                id={`visibility-${visibility}`}
-                checked={isSelected('contentVisibility', visibility)}
-                onCheckedChange={(checked) => 
-                  handleCheckboxChange('contentVisibility', visibility, checked as boolean)
-                }
-              />
-              <Label
-                htmlFor={`visibility-${visibility}`}
-                className="ml-2 text-sm text-neutral-600"
-              >
-                {visibility === 'internal' ? 'Internal Only' : 
-                 visibility === 'external' ? 'Customer-Facing' : 
-                 'All Content'}
-              </Label>
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-primary rounded-full mr-2"></span>
+            Content Type
+          </h3>
+          <div className="space-y-2.5">
+            {["internal", "external", "both"].map((visibility) => (
+              <div key={visibility} className="flex items-center">
+                <Checkbox
+                  id={`visibility-${visibility}`}
+                  checked={isSelected('contentVisibility', visibility)}
+                  onCheckedChange={(checked) => 
+                    handleCheckboxChange('contentVisibility', visibility, checked as boolean)
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+                <Label
+                  htmlFor={`visibility-${visibility}`}
+                  className="ml-2 text-sm text-neutral-700"
+                >
+                  {visibility === 'internal' ? 'Internal Resources' : 
+                   visibility === 'external' ? 'Customer-Facing' : 
+                   'All Content'}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Resource Type Filter - show even with empty data */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-indigo-500 rounded-full mr-2"></span>
+            Resource Type
+          </h3>
+          {metadata.types && metadata.types.length > 0 ? (
+            <div className="space-y-2.5">
+              {metadata.types.map((type: string) => (
+                <div key={type} className="flex items-center">
+                  <Checkbox
+                    id={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('types', type)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('types', type, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-indigo-500"
+                  />
+                  <Label
+                    htmlFor={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {type}
+                  </Label>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div className="text-xs text-neutral-500 italic">
+              Loading types from Notion...
+            </div>
+          )}
         </div>
 
-        {/* Resource Type Filter - only show if there are options */}
-        {metadata.types && metadata.types.length > 0 && (
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Resource Type</h3>
-            {metadata.types.map((type: string) => (
-              <div key={type} className="flex items-center mb-2">
-                <Checkbox
-                  id={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('types', type)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('types', type, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {type}
-                </Label>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Product Filter */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+            Sofar Product
+          </h3>
+          {metadata.products && metadata.products.length > 0 ? (
+            <div className="space-y-2.5">
+              {metadata.products.map((product: string) => (
+                <div key={product} className="flex items-center">
+                  <Checkbox
+                    id={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('products', product)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('products', product, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-blue-500"
+                  />
+                  <Label
+                    htmlFor={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {product}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs text-neutral-500 italic">
+              Loading products from Notion...
+            </div>
+          )}
+        </div>
 
-        {/* Product Filter - only show if there are options */}
-        {metadata.products && metadata.products.length > 0 && (
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Product</h3>
-            {metadata.products.map((product: string) => (
-              <div key={product} className="flex items-center mb-2">
-                <Checkbox
-                  id={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('products', product)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('products', product, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {product}
-                </Label>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Audience Filter */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+            Target Market
+          </h3>
+          {metadata.audiences && metadata.audiences.length > 0 ? (
+            <div className="space-y-2.5">
+              {metadata.audiences.map((audience: string) => (
+                <div key={audience} className="flex items-center">
+                  <Checkbox
+                    id={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('audiences', audience)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('audiences', audience, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-green-500"
+                  />
+                  <Label
+                    htmlFor={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {audience}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs text-neutral-500 italic">
+              Loading target markets from Notion...
+            </div>
+          )}
+        </div>
 
-        {/* Audience Filter - only show if there are options */}
-        {metadata.audiences && metadata.audiences.length > 0 && (
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Audience</h3>
-            {metadata.audiences.map((audience: string) => (
-              <div key={audience} className="flex items-center mb-2">
-                <Checkbox
-                  id={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('audiences', audience)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('audiences', audience, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {audience}
-                </Label>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Buyer's Journey Filter - only show if there are options */}
-        {metadata.messagingStages && metadata.messagingStages.length > 0 && (
-          <div className="mb-5">
-            <h3 className="text-sm font-medium text-neutral-500 mb-2">Buyer's Journey</h3>
-            {metadata.messagingStages.map((stage: string) => (
-              <div key={stage} className="flex items-center mb-2">
-                <Checkbox
-                  id={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
-                  checked={isSelected('messagingStages', stage)}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('messagingStages', stage, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="ml-2 text-sm text-neutral-600"
-                >
-                  {stage}
-                </Label>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Buyer's Journey Filter */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
+            Buyer's Journey
+          </h3>
+          {metadata.messagingStages && metadata.messagingStages.length > 0 ? (
+            <div className="space-y-2.5">
+              {metadata.messagingStages.map((stage: string) => (
+                <div key={stage} className="flex items-center">
+                  <Checkbox
+                    id={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('messagingStages', stage)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('messagingStages', stage, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-amber-500"
+                  />
+                  <Label
+                    htmlFor={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {stage}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs text-neutral-500 italic">
+              Loading journey stages from Notion...
+            </div>
+          )}
+        </div>
         
         {/* Bottom spacing */}
         <div className="h-4" />
