@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Send, Loader2, Sparkles, X, Search, Lightbulb, BookOpen } from 'lucide-react';
+import React, { useState, useEffect, Fragment } from 'react';
+import { Send, Loader2, Sparkles, X, Search, Lightbulb, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,49 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Link } from 'wouter';
 import { Resource } from '@shared/schema';
+
+// Helper function to format text with clickable links
+function formatAnswerWithLinks(text: string) {
+  if (!text) return null;
+  
+  // URL regex pattern to match URLs in text
+  const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+  
+  // Split the text into parts based on the URLs
+  const parts = text.split(urlRegex);
+  
+  // Extract all URLs that match the pattern
+  const urls = text.match(urlRegex) || [];
+  
+  // Combine text and URL elements
+  const elements: React.ReactNode[] = [];
+  
+  parts.forEach((part, index) => {
+    // Add the text part
+    elements.push(<Fragment key={`text-${index}`}>{part}</Fragment>);
+    
+    // If there's a URL that follows this text part, add it as a link
+    if (urls[index]) {
+      const url = urls[index];
+      const label = url.replace(/^https?:\/\//, '').split('/')[0]; // Use domain as label
+      
+      elements.push(
+        <a 
+          key={`link-${index}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
+        >
+          <ExternalLink className="h-3 w-3" />
+          <span className="underline">{label}</span>
+        </a>
+      );
+    }
+  });
+  
+  return elements;
+};
 
 interface QuestionBoxProps {
   onShowResource?: (resourceId: number) => void;
@@ -228,7 +271,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
               <div className="whitespace-pre-line text-sm prose prose-sm max-w-none">
-                {aiAnswer.answer}
+                {formatAnswerWithLinks(aiAnswer.answer)}
               </div>
             </div>
             
