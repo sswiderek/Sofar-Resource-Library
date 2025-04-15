@@ -1,4 +1,4 @@
-import { ArrowRight, Share2, Download } from "lucide-react";
+import { ArrowRight, Share2, Download, Eye } from "lucide-react";
 import { Resource } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { getResourceTypeClasses } from "@/lib/resourceTypeColors";
 import { useResourceTracking } from "@/hooks/use-resource-tracking";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import ResourcePreviewModal from "./ResourcePreviewModal";
 
 interface ResourceCardProps {
   resource: Resource;
@@ -16,6 +17,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
   const { trackView, trackShare, trackDownload } = useResourceTracking();
   const { toast } = useToast();
   const [viewCounted, setViewCounted] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Track view once when component is mounted
   useEffect(() => {
@@ -28,6 +30,11 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
     
     trackResourceView();
   }, [resource.id, trackView, viewCounted]);
+  
+  // Open the preview modal
+  const handlePreview = () => {
+    setIsPreviewOpen(true);
+  };
 
   // Handle resource sharing
   const handleShare = async () => {
