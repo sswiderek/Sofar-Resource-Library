@@ -13,6 +13,50 @@ export interface ResourceWithEmbedding {
   embedding: number[];
 }
 
+// Simple in-memory cache for query embeddings
+interface QueryEmbeddingCache {
+  [query: string]: {
+    embedding: number[];
+    timestamp: number;
+  }
+}
+
+// Cache for query embeddings (lasts for 24 hours)
+const queryEmbeddingCache: QueryEmbeddingCache = {};
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+// Function to get a cached embedding or generate a new one
+async function getCachedOrNewEmbedding(query: string): Promise<number[]> {
+  const now = Date.now();
+  const cacheKey = query.toLowerCase().trim();
+  
+  // Check if we have a cached embedding that's still valid
+  if (
+    queryEmbeddingCache[cacheKey] && 
+    now - queryEmbeddingCache[cacheKey].timestamp < CACHE_TTL
+  ) {
+    log(`Using cached embedding for query: ${query.substring(0, 30)}...`);
+    return queryEmbeddingCache[cacheKey].embedding;
+  }
+  
+  // No cache or expired cache, generate a new embedding
+  log(`Generating new embedding for query: ${query.substring(0, 30)}...`);
+  const queryEmbeddingResponse = await openai.embeddings.create({
+    model: "text-embedding-ada-002",
+    input: query,
+  });
+  
+  const embedding = queryEmbeddingResponse.data[0].embedding;
+  
+  // Cache the result
+  queryEmbeddingCache[cacheKey] = {
+    embedding,
+    timestamp: now
+  };
+  
+  return embedding;
+}
+
 /**
  * Creates embeddings for resources using OpenAI's embeddings API
  */
@@ -90,13 +134,8 @@ export async function findSimilarResources(
   topK: number = 10
 ): Promise<Resource[]> {
   try {
-    // Create embedding for the query
-    const queryEmbeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: query,
-    });
-    
-    const queryEmbedding = queryEmbeddingResponse.data[0].embedding;
+    // Use cached embedding or create a new one
+    const queryEmbedding = await getCachedOrNewEmbedding(query);
     
     // Calculate similarity scores
     const scoredResources = resourcesWithEmbeddings.map(resourceWithEmbedding => {

@@ -14,7 +14,7 @@ export default function ResourceList({ resource }: ResourceListProps) {
       <div className="p-4 sm:p-5 flex flex-col sm:flex-row">
         <div className="flex-1">
           <div className="flex items-center flex-wrap gap-2 mb-2">
-            <Badge variant="outline" className={`${getTypeBadgeClasses(resource.type)} border px-3 py-1 rounded-md text-xs font-medium`}>
+            <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-3 py-1 rounded-md text-xs font-medium`}>
               {resource.type}
             </Badge>
             <span className="text-xs text-neutral-500 font-medium">{resource.date}</span>
