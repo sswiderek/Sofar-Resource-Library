@@ -299,11 +299,11 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingPartners ? (
+              {isLoadingTeams ? (
                 <div className="flex justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
                 </div>
-              ) : partners.length === 0 ? (
+              ) : teams.length === 0 ? (
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>No teams found</AlertTitle>
@@ -324,12 +324,12 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {partners.map((partner) => (
-                        <tr key={partner.id} className="border-b hover:bg-neutral-50">
-                          <td className="py-3 px-4">{partner.name}</td>
-                          <td className="py-3 px-4">{partner.slug}</td>
+                      {teams.map((team) => (
+                        <tr key={team.id} className="border-b hover:bg-neutral-50">
+                          <td className="py-3 px-4">{team.name}</td>
+                          <td className="py-3 px-4">{team.slug}</td>
                           <td className="py-3 px-4">
-                            {partner.password ? (
+                            {team.password ? (
                               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                 <span className="h-1.5 w-1.5 rounded-full bg-green-700"></span>
                                 Password Set
@@ -342,17 +342,17 @@ export default function AdminPage() {
                             )}
                           </td>
                           <td className="py-3 px-4 text-neutral-600">
-                            {formatDate(partner.lastPasswordUpdate)}
+                            {formatDate(team.lastPasswordUpdate)}
                           </td>
                           <td className="py-3 px-4">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => openPasswordDialog(partner.id)}
+                              onClick={() => openPasswordDialog(team.id)}
                               className="flex items-center gap-1 border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-800"
                             >
                               <Key className="h-3.5 w-3.5" />
-                              {partner.password ? "Change Password" : "Set Password"}
+                              {team.password ? "Change Password" : "Set Password"}
                             </Button>
                           </td>
                         </tr>
@@ -373,7 +373,7 @@ export default function AdminPage() {
             <DialogTitle className="text-neutral-800 flex items-center gap-2">
               <Key className="h-5 w-5 text-neutral-600" />
               {selectedTeamId
-                ? partners.find((p) => p.id === selectedTeamId)?.password
+                ? teams.find((t) => t.id === selectedTeamId)?.password
                   ? "Change Team Password"
                   : "Set Team Password"
                 : "Update Password"}
@@ -381,7 +381,7 @@ export default function AdminPage() {
             <DialogDescription className="text-neutral-600">
               {selectedTeamId
                 ? `Enter a new password for ${
-                    partners.find((p) => p.id === selectedTeamId)?.name
+                    teams.find((t) => t.id === selectedTeamId)?.name
                   }`
                 : "Enter a new password for this team"}
             </DialogDescription>

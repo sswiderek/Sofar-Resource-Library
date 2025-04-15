@@ -16,13 +16,13 @@ import {
   X,
   Mail,
 } from "lucide-react";
-import PartnerSelector from "@/components/PartnerSelector";
+import TeamSelector from "@/components/TeamSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
 import PartnerPasswordModal from "@/components/PartnerPasswordModal";
-import { Resource, Partner } from "@shared/schema";
+import { Resource, Team } from "@shared/schema";
 import {
   ResourceFilters,
   initialFilters,
@@ -32,15 +32,13 @@ import { apiRequest } from "@/lib/queryClient";
 
 export default function Home() {
   // State
-  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [filters, setFilters] = useState<ResourceFilters>(initialFilters);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [selectedPartnerObj, setSelectedPartnerObj] = useState<Partner | null>(
-    null,
-  );
-  const [authorizedPartners, setAuthorizedPartners] = useState<string[]>([]);
+  const [selectedTeamObj, setSelectedTeamObj] = useState<Team | null>(null);
+  const [authorizedTeams, setAuthorizedTeams] = useState<string[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
   const [showLeadsCallout, setShowLeadsCallout] = useState(true);
 
@@ -48,84 +46,84 @@ export default function Home() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Fetch partners for the password modal
-  const { data: partners = [] } = useQuery<Partner[]>({
-    queryKey: ["/api/partners"],
+  // Fetch teams for the password modal
+  const { data: teams = [] } = useQuery<Team[]>({
+    queryKey: ["/api/teams"],
   });
 
-  // Handle partner selection change
-  const handlePartnerChange = (partnerId: string) => {
-    console.log("Partner changed to:", partnerId);
+  // Handle team selection change
+  const handleTeamChange = (teamId: string) => {
+    console.log("Team changed to:", teamId);
 
-    // Find the partner object for the password modal
-    const partnerObj = partners.find((p) => p.slug === partnerId) || null;
-    setSelectedPartnerObj(partnerObj);
+    // Find the team object for the password modal
+    const teamObj = teams.find((t) => t.slug === teamId) || null;
+    setSelectedTeamObj(teamObj);
 
-    // Reset welcome message and lead callout visibility when changing partners
+    // Reset welcome message and lead callout visibility when changing teams
     setShowWelcome(true);
     setShowLeadsCallout(true);
 
-    // Check if this partner is already authorized
-    if (authorizedPartners.includes(partnerId)) {
+    // Check if this team is already authorized
+    if (authorizedTeams.includes(teamId)) {
       // Already authorized, no need for password verification
-      setSelectedPartner(partnerId);
+      setSelectedTeam(teamId);
       setFilters({
         ...initialFilters,
-        partnerId: partnerId,
+        partnerId: teamId, // Still using partnerId for backward compatibility with API
       });
     } else {
       // Not authorized, show password modal
       setIsPasswordModalOpen(true);
-      // Don't set the selected partner yet until password is verified
+      // Don't set the selected team yet until password is verified
     }
   };
 
-  // Check if a partner is already authorized when the component mounts
+  // Check if a team is already authorized when the component mounts
   useEffect(() => {
-    const checkPartnerAuthorization = async () => {
-      if (selectedPartnerObj?.slug) {
+    const checkTeamAuthorization = async () => {
+      if (selectedTeamObj?.slug) {
         try {
           const response = await apiRequest(
             "GET",
-            `/api/partner-access/${selectedPartnerObj.slug}`,
+            `/api/team-access/${selectedTeamObj.slug}`,
           );
           const data = await response.json();
 
           if (data.authorized) {
             // If already authorized, add to the authorized list
-            setAuthorizedPartners((prev) =>
-              prev.includes(selectedPartnerObj.slug)
+            setAuthorizedTeams((prev) =>
+              prev.includes(selectedTeamObj.slug)
                 ? prev
-                : [...prev, selectedPartnerObj.slug],
+                : [...prev, selectedTeamObj.slug],
             );
           }
         } catch (error) {
-          console.error("Failed to check partner authorization:", error);
+          console.error("Failed to check team authorization:", error);
         }
       }
     };
 
-    checkPartnerAuthorization();
-  }, [selectedPartnerObj]);
+    checkTeamAuthorization();
+  }, [selectedTeamObj]);
 
   // Handle password verification
   const handlePasswordVerified = () => {
-    if (selectedPartnerObj?.slug) {
-      // Add to authorized partners list
-      setAuthorizedPartners((prev) =>
-        prev.includes(selectedPartnerObj.slug)
+    if (selectedTeamObj?.slug) {
+      // Add to authorized teams list
+      setAuthorizedTeams((prev) =>
+        prev.includes(selectedTeamObj.slug)
           ? prev
-          : [...prev, selectedPartnerObj.slug],
+          : [...prev, selectedTeamObj.slug],
       );
 
       // Close modal
       setIsPasswordModalOpen(false);
 
-      // Now set the selected partner to load resources
-      setSelectedPartner(selectedPartnerObj.slug);
+      // Now set the selected team to load resources
+      setSelectedTeam(selectedTeamObj.slug);
       setFilters({
         ...initialFilters,
-        partnerId: selectedPartnerObj.slug,
+        partnerId: selectedTeamObj.slug,
       });
     }
   };
@@ -135,7 +133,7 @@ export default function Home() {
 
   // Log the filter query for debugging
   console.log("Filter query:", filterQuery);
-  console.log("Selected partner:", selectedPartner);
+  console.log("Selected team:", selectedTeam);
   console.log("Filters:", filters);
 
   // Fetch resources based on filter
@@ -146,7 +144,7 @@ export default function Home() {
     refetch,
   } = useQuery<Resource[]>({
     queryKey: [`/api/resources?${filterQuery}`],
-    enabled: !!selectedPartner, // Only run query if partner is selected
+    enabled: !!selectedTeam, // Only run query if team is selected
     retry: 1, // Limit retries on failure
   });
 
@@ -183,7 +181,7 @@ export default function Home() {
   const handleClearFilters = () => {
     setFilters({
       ...initialFilters,
-      partnerId: selectedPartner,
+      partnerId: selectedTeam,
     });
   };
 
@@ -194,17 +192,17 @@ export default function Home() {
 
   return (
     <div className="flex flex-col md:flex-row overflow-hidden h-screen">
-      {/* Partner Password Modal */}
+      {/* Team Password Modal */}
       <PartnerPasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
-        partner={selectedPartnerObj}
+        partner={selectedTeamObj}
         onPasswordVerified={handlePasswordVerified}
       />
 
       {/* Filter Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col bg-white border-r border-neutral-200 w-64 flex-shrink-0">
-        {selectedPartner ? (
+        {selectedTeam ? (
           <FilterSidebar
             filter={filters}
             onFilterChange={handleFilterChange}
@@ -213,13 +211,13 @@ export default function Home() {
           />
         ) : (
           <div className="flex flex-grow items-center justify-center p-6 text-center text-neutral-400">
-            <p>Select a partner to view filters</p>
+            <p>Select a team to view filters</p>
           </div>
         )}
       </aside>
 
       {/* Mobile Filter Overlay */}
-      {showMobileFilters && selectedPartner && (
+      {showMobileFilters && selectedTeam && (
         <FilterSidebar
           filter={filters}
           onFilterChange={handleFilterChange}
@@ -231,11 +229,11 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-grow overflow-auto p-4 md:p-6 lg:p-8 bg-neutral-50">
-        {/* Partner Selector */}
+        {/* Team Selector */}
         <div className="md:hidden mb-6">
-          <PartnerSelector
-            selectedPartner={selectedPartner}
-            onPartnerChange={handlePartnerChange}
+          <TeamSelector
+            selectedTeam={selectedTeam}
+            onTeamChange={handleTeamChange}
           />
         </div>
 
@@ -260,16 +258,16 @@ export default function Home() {
             {resources && (
               <p className="text-sm text-neutral-600">
                 Showing {resources.length} resources relevant to your
-                partnership
+                team
               </p>
             )}
           </div>
 
           <div className="flex flex-col md:flex-row items-end md:items-center gap-4 mt-3 md:mt-0">
             <div className="hidden md:block md:self-center">
-              <PartnerSelector
-                selectedPartner={selectedPartner}
-                onPartnerChange={handlePartnerChange}
+              <TeamSelector
+                selectedTeam={selectedTeam}
+                onTeamChange={handleTeamChange}
               />
             </div>
 
@@ -306,12 +304,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Welcome Hero - show when partner is selected and showWelcome is true */}
-        {selectedPartner && partners.length > 0 && showWelcome && (
+        {/* Welcome Hero - show when team is selected and showWelcome is true */}
+        {selectedTeam && teams.length > 0 && showWelcome && (
           <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
             <div className="flex items-center p-6">
               <div className="flex-shrink-0 mr-6">
-                {selectedPartner === "pme" ? (
+                {selectedTeam === "pme" ? (
                   <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20 overflow-hidden">
                     <img
                       src="/pme-logo.png"
@@ -329,7 +327,7 @@ export default function Home() {
               <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-primary">
                   Welcome,{" "}
-                  {partners.find((p) => p.slug === selectedPartner)?.name || ""}
+                  {teams.find((t) => t.slug === selectedTeam)?.name || ""}
                   !
                 </h2>
                 <p className="text-neutral-600 mt-1">
@@ -365,7 +363,7 @@ export default function Home() {
         )}
         
         {/* Sales Lead Callout - subtle version with close button */}
-        {selectedPartner && showLeadsCallout && (
+        {selectedTeam && showLeadsCallout && (
           <div className="mb-6 bg-white/80 border border-neutral-200 rounded-md p-3 flex items-center text-sm relative">
             <Mail className="h-4 w-4 text-neutral-500 mr-2 flex-shrink-0" />
             <span className="text-neutral-600">
@@ -388,26 +386,26 @@ export default function Home() {
         )}
 
         {/* AI Question Box */}
-        {selectedPartner && (
-          <QuestionBox partnerId={selectedPartner} resources={resources} />
+        {selectedTeam && (
+          <QuestionBox partnerId={selectedTeam} resources={resources} />
         )}
 
-        {/* Partner Selection Warning */}
-        {!selectedPartner && (
+        {/* Team Selection Warning */}
+        {!selectedTeam && (
           <Alert className="bg-amber-50 border-amber-400 mb-6">
             <Info className="h-4 w-4 text-amber-500" />
             <AlertTitle className="text-amber-700">
-              Please select your partner organization
+              Please select your team
             </AlertTitle>
             <AlertDescription className="text-amber-700">
-              To view resources relevant to your organization, please select
-              your partner name from the dropdown menu above.
+              To view resources relevant to your team, please select
+              your team name from the dropdown menu above.
             </AlertDescription>
           </Alert>
         )}
 
         {/* No Results Message */}
-        {selectedPartner && resources?.length === 0 && !isLoading && (
+        {selectedTeam && resources?.length === 0 && !isLoading && (
           <div className="bg-white border border-neutral-200 p-6 rounded-lg shadow-sm text-center">
             <AlertCircle className="h-10 w-10 text-neutral-400 mx-auto mb-2" />
             <h3 className="text-lg font-medium text-neutral-700 mb-1">
