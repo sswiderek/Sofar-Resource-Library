@@ -7,13 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ResourceFilters } from "@/lib/resourceFilters";
-import { Partner } from "@shared/schema";
 
 interface Metadata {
   types: string[];
   products: string[];
   audiences: string[];
   messagingStages: string[];
+  contentVisibility: string[];
   lastSynced?: string;
 }
 
@@ -34,28 +34,18 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
   const [search, setSearch] = useState(filter.search);
 
-  // Get metadata for filling filter options with partner-specific data
+  // Get metadata for filling filter options
   const { data, isLoading } = useQuery<Metadata>({
-    queryKey: ['/api/resources/metadata', filter.partnerId ? { partnerId: filter.partnerId } : undefined],
-    enabled: !!filter.partnerId, // Only fetch metadata if a partner is selected
+    queryKey: ['/api/resources/metadata'],
   });
-  
-  // Get partner data
-  const { data: partners = [] } = useQuery<Partner[]>({
-    queryKey: ['/api/partners'],
-  });
-  
-  // Find the selected partner
-  const selectedPartner = filter.partnerId 
-    ? partners.find(p => p.slug === filter.partnerId)
-    : null;
 
   // Ensure we have default values for the metadata
   const metadata: Metadata = data || {
     types: [],
     products: [],
     audiences: [],
-    messagingStages: []
+    messagingStages: [],
+    contentVisibility: [],
   };
 
   // Handle search input with debounce
@@ -72,7 +62,7 @@ export default function FilterSidebar({
 
   // Type-safe checkbox change handler
   const handleCheckboxChange = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility',
     value: string,
     checked: boolean
   ) => {
@@ -89,7 +79,7 @@ export default function FilterSidebar({
 
   // Type-safe helper function to check if a value is selected
   const isSelected = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility',
     value: string
   ) => {
     return filter[category].includes(value);
@@ -211,20 +201,43 @@ export default function FilterSidebar({
       );
     }
     
-    if (filter.partnerId && 
-        !metadata.types.length && 
+    if (!metadata.types.length && 
         !metadata.products.length && 
         !metadata.audiences.length && 
         !metadata.messagingStages.length) {
       return (
         <div className="text-neutral-500 text-sm italic mt-4">
-          No additional filters available for this partner.
+          No filters available.
         </div>
       );
     }
     
     return (
       <>
+        {/* Content Visibility Filter */}
+        <div className="mb-5">
+          <h3 className="text-sm font-medium text-neutral-500 mb-2">Content Type</h3>
+          {["internal", "external", "both"].map((visibility) => (
+            <div key={visibility} className="flex items-center mb-2">
+              <Checkbox
+                id={`visibility-${visibility}`}
+                checked={isSelected('contentVisibility', visibility)}
+                onCheckedChange={(checked) => 
+                  handleCheckboxChange('contentVisibility', visibility, checked as boolean)
+                }
+              />
+              <Label
+                htmlFor={`visibility-${visibility}`}
+                className="ml-2 text-sm text-neutral-600"
+              >
+                {visibility === 'internal' ? 'Internal Only' : 
+                 visibility === 'external' ? 'Customer-Facing' : 
+                 'All Content'}
+              </Label>
+            </div>
+          ))}
+        </div>
+
         {/* Resource Type Filter - only show if there are options */}
         {metadata.types && metadata.types.length > 0 && (
           <div className="mb-5">

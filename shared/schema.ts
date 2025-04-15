@@ -24,9 +24,9 @@ export const resources = pgTable("resources", {
   type: text("type").notNull(),
   product: text("product").array().notNull(),
   audience: text("audience").array().notNull(),
-  teamRelevancy: text("team_relevancy").array().notNull(), // Renamed from partnerRelevancy
+  teamRelevancy: text("team_relevancy").array().notNull(), // Keeping for backwards compatibility
   messagingStage: text("messaging_stage").notNull(),
-  contentVisibility: text("content_visibility").notNull().default("internal"), // New field: "internal", "external", or "both"
+  contentVisibility: text("content_visibility").notNull().default("both"), // "internal", "external", or "both"
   date: text("date").notNull(),
   url: text("url").notNull(),
   description: text("description").notNull(),
@@ -42,7 +42,7 @@ export const insertResourceSchema = createInsertSchema(resources).omit({
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type Resource = typeof resources.$inferSelect;
 
-// Team schema (renamed from Partner)
+// Team schema (keeping for backward compatibility)
 export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -63,29 +63,28 @@ export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type Team = typeof teams.$inferSelect;
 export type UpdateTeamPassword = z.infer<typeof updateTeamPasswordSchema>;
 
-// Define a schema for the resource filtering
+// Updated schema for the resource filtering (no team dependency)
 export const resourceFilterSchema = z.object({
-  teamId: z.string(), // Renamed from partnerId
   types: z.array(z.string()).optional(),
   products: z.array(z.string()).optional(),
   audiences: z.array(z.string()).optional(),
   messagingStages: z.array(z.string()).optional(),
-  contentVisibility: z.array(z.string()).optional(), // Added content visibility filter
+  contentVisibility: z.array(z.string()).optional(), // Content visibility filter
   search: z.string().optional(),
 });
 
 export type ResourceFilter = z.infer<typeof resourceFilterSchema>;
 
-// Authentication schemas
+// Authentication schemas (keeping for backward compatibility)
 export const adminLoginSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 
-export const teamAccessSchema = z.object({ // Renamed from partnerAccessSchema
+export const teamAccessSchema = z.object({
   teamId: z.string().min(1, { message: "Team ID is required" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 
 export type AdminLogin = z.infer<typeof adminLoginSchema>;
-export type TeamAccess = z.infer<typeof teamAccessSchema>; // Renamed from PartnerAccess
+export type TeamAccess = z.infer<typeof teamAccessSchema>;

@@ -2,30 +2,27 @@ import { Resource } from "@shared/schema";
 
 // Interface for the filter state
 export interface ResourceFilters {
-  partnerId: string | null;
   types: string[];
   products: string[];
   audiences: string[];
   messagingStages: string[];
+  contentVisibility: string[]; // Add for internal/external filtering
   search: string;
 }
 
 // Initialize empty filters
 export const initialFilters: ResourceFilters = {
-  partnerId: null,
   types: [],
   products: [],
   audiences: [],
   messagingStages: [],
+  contentVisibility: [], // No default selection for content visibility
   search: '',
 };
 
 // Builds the URL query string from filter state
 export const buildFilterQueryString = (filters: ResourceFilters): string => {
-  if (!filters.partnerId) return '';
-
   const params = new URLSearchParams();
-  params.append('partnerId', filters.partnerId);
 
   if (filters.types.length > 0) {
     params.append('types', filters.types.join(','));
@@ -42,6 +39,10 @@ export const buildFilterQueryString = (filters: ResourceFilters): string => {
   if (filters.messagingStages.length > 0) {
     params.append('messagingStages', filters.messagingStages.join(','));
   }
+  
+  if (filters.contentVisibility.length > 0) {
+    params.append('contentVisibility', filters.contentVisibility.join(','));
+  }
 
   if (filters.search) {
     params.append('search', filters.search);
@@ -56,11 +57,13 @@ export const extractMetadata = (resources: Resource[]) => {
   const products = [...new Set(resources.flatMap(r => r.product))];
   const audiences = [...new Set(resources.flatMap(r => r.audience))];
   const messagingStages = [...new Set(resources.map(r => r.messagingStage))];
+  const contentVisibility = [...new Set(resources.map(r => r.contentVisibility || 'both'))];
   
   return {
     types,
     products,
     audiences,
-    messagingStages
+    messagingStages,
+    contentVisibility
   };
 };

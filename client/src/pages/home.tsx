@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  Info,
   AlertCircle,
   Filter,
   RefreshCw,
@@ -16,13 +15,11 @@ import {
   X,
   Mail,
 } from "lucide-react";
-import TeamSelector from "@/components/TeamSelector";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
-import PartnerPasswordModal from "@/components/PartnerPasswordModal";
-import { Resource, Team } from "@shared/schema";
+import { Resource } from "@shared/schema";
 import {
   ResourceFilters,
   initialFilters,
@@ -32,13 +29,9 @@ import { apiRequest } from "@/lib/queryClient";
 
 export default function Home() {
   // State
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [filters, setFilters] = useState<ResourceFilters>(initialFilters);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [selectedTeamObj, setSelectedTeamObj] = useState<Team | null>(null);
-  const [authorizedTeams, setAuthorizedTeams] = useState<string[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
   const [showLeadsCallout, setShowLeadsCallout] = useState(true);
 
@@ -46,94 +39,11 @@ export default function Home() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Fetch teams for the password modal
-  const { data: teams = [] } = useQuery<Team[]>({
-    queryKey: ["/api/teams"],
-  });
-
-  // Handle team selection change
-  const handleTeamChange = (teamId: string) => {
-    console.log("Team changed to:", teamId);
-
-    // Find the team object for the password modal
-    const teamObj = teams.find((t) => t.slug === teamId) || null;
-    setSelectedTeamObj(teamObj);
-
-    // Reset welcome message and lead callout visibility when changing teams
-    setShowWelcome(true);
-    setShowLeadsCallout(true);
-
-    // Check if this team is already authorized
-    if (authorizedTeams.includes(teamId)) {
-      // Already authorized, no need for password verification
-      setSelectedTeam(teamId);
-      setFilters({
-        ...initialFilters,
-        partnerId: teamId, // Still using partnerId for backward compatibility with API
-      });
-    } else {
-      // Not authorized, show password modal
-      setIsPasswordModalOpen(true);
-      // Don't set the selected team yet until password is verified
-    }
-  };
-
-  // Check if a team is already authorized when the component mounts
-  useEffect(() => {
-    const checkTeamAuthorization = async () => {
-      if (selectedTeamObj?.slug) {
-        try {
-          const response = await apiRequest(
-            "GET",
-            `/api/team-access/${selectedTeamObj.slug}`,
-          );
-          const data = await response.json();
-
-          if (data.authorized) {
-            // If already authorized, add to the authorized list
-            setAuthorizedTeams((prev) =>
-              prev.includes(selectedTeamObj.slug)
-                ? prev
-                : [...prev, selectedTeamObj.slug],
-            );
-          }
-        } catch (error) {
-          console.error("Failed to check team authorization:", error);
-        }
-      }
-    };
-
-    checkTeamAuthorization();
-  }, [selectedTeamObj]);
-
-  // Handle password verification
-  const handlePasswordVerified = () => {
-    if (selectedTeamObj?.slug) {
-      // Add to authorized teams list
-      setAuthorizedTeams((prev) =>
-        prev.includes(selectedTeamObj.slug)
-          ? prev
-          : [...prev, selectedTeamObj.slug],
-      );
-
-      // Close modal
-      setIsPasswordModalOpen(false);
-
-      // Now set the selected team to load resources
-      setSelectedTeam(selectedTeamObj.slug);
-      setFilters({
-        ...initialFilters,
-        partnerId: selectedTeamObj.slug,
-      });
-    }
-  };
-
   // Build query string for API request
   const filterQuery = buildFilterQueryString(filters);
 
   // Log the filter query for debugging
   console.log("Filter query:", filterQuery);
-  console.log("Selected team:", selectedTeam);
   console.log("Filters:", filters);
 
   // Fetch resources based on filter
@@ -144,8 +54,6 @@ export default function Home() {
     refetch,
   } = useQuery<Resource[]>({
     queryKey: [`/api/resources?${filterQuery}`],
-    enabled: !!selectedTeam, // Only run query if team is selected
-    retry: 1, // Limit retries on failure
   });
 
   // Force sync with Notion
@@ -181,7 +89,6 @@ export default function Home() {
   const handleClearFilters = () => {
     setFilters({
       ...initialFilters,
-      partnerId: selectedTeam,
     });
   };
 
@@ -192,32 +99,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-col md:flex-row overflow-hidden h-screen">
-      {/* Team Password Modal */}
-      <PartnerPasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-        partner={selectedTeamObj}
-        onPasswordVerified={handlePasswordVerified}
-      />
-
       {/* Filter Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col bg-white border-r border-neutral-200 w-64 flex-shrink-0">
-        {selectedTeam ? (
-          <FilterSidebar
-            filter={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-            isMobile={false}
-          />
-        ) : (
-          <div className="flex flex-grow items-center justify-center p-6 text-center text-neutral-400">
-            <p>Select a team to view filters</p>
-          </div>
-        )}
+        <FilterSidebar
+          filter={filters}
+          onFilterChange={handleFilterChange}
+          onClearFilters={handleClearFilters}
+          isMobile={false}
+        />
       </aside>
 
       {/* Mobile Filter Overlay */}
-      {showMobileFilters && selectedTeam && (
+      {showMobileFilters && (
         <FilterSidebar
           filter={filters}
           onFilterChange={handleFilterChange}
@@ -229,14 +122,6 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-grow overflow-auto p-4 md:p-6 lg:p-8 bg-neutral-50">
-        {/* Team Selector */}
-        <div className="md:hidden mb-6">
-          <TeamSelector
-            selectedTeam={selectedTeam}
-            onTeamChange={handleTeamChange}
-          />
-        </div>
-
         {/* Filter button for mobile */}
         <div className="md:hidden mb-6">
           <Button
@@ -253,87 +138,58 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div className="flex-grow">
             <h2 className="text-2xl font-semibold text-neutral-800 mb-1">
-              Resources
+              Sales Resources
             </h2>
             {resources && (
               <p className="text-sm text-neutral-600">
-                Showing {resources.length} resources relevant to your
-                team
+                Showing {resources.length} resources
               </p>
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row items-end md:items-center gap-4 mt-3 md:mt-0">
-            <div className="hidden md:block md:self-center">
-              <TeamSelector
-                selectedTeam={selectedTeam}
-                onTeamChange={handleTeamChange}
-              />
-            </div>
+          <div className="flex items-center gap-4 mt-3 md:mt-0">
+            <Button
+              variant="outline"
+              size="default"
+              onClick={handleSync}
+              className="flex items-center"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Sync
+            </Button>
 
-            <div className="flex items-center gap-2 self-end">
+            <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
               <Button
-                variant="outline"
+                variant={viewMode === "card" ? "default" : "ghost"}
                 size="default"
-                onClick={handleSync}
-                className="flex items-center"
+                className="rounded-none px-2 h-full"
+                onClick={() => setViewMode("card")}
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Sync
+                <LayoutGrid className="h-4 w-4" />
               </Button>
-
-              <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
-                <Button
-                  variant={viewMode === "card" ? "default" : "ghost"}
-                  size="default"
-                  className="rounded-none px-2 h-full"
-                  onClick={() => setViewMode("card")}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  size="default"
-                  className="rounded-none px-2 h-full"
-                  onClick={() => setViewMode("list")}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="default"
+                className="rounded-none px-2 h-full"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Welcome Hero - show when team is selected and showWelcome is true */}
-        {selectedTeam && teams.length > 0 && showWelcome && (
+        {/* Welcome Hero - show when showWelcome is true */}
+        {showWelcome && (
           <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
             <div className="flex items-center p-6">
-              <div className="flex-shrink-0 mr-6">
-                {selectedTeam === "pme" ? (
-                  <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20 overflow-hidden">
-                    <img
-                      src="/pme-logo.png"
-                      alt="PME Logo"
-                      className="h-10 w-10 object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-14 w-14 rounded-full bg-white shadow-sm flex items-center justify-center border border-primary/20">
-                    <Info className="h-8 w-8 text-primary" />
-                  </div>
-                )}
-              </div>
-
               <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-primary">
-                  Welcome,{" "}
-                  {teams.find((t) => t.slug === selectedTeam)?.name || ""}
-                  !
+                  Welcome to the Sales Enablement Portal
                 </h2>
                 <p className="text-neutral-600 mt-1">
-                  This portal provides exclusive access to Sofar Ocean resources
-                  tailored for your needs. Browse, search, or ask questions
-                  about any resource.
+                  This portal provides access to Sofar Ocean resources to help you succeed.
+                  Browse, search, or ask questions about any resource.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -363,7 +219,7 @@ export default function Home() {
         )}
         
         {/* Sales Lead Callout - subtle version with close button */}
-        {selectedTeam && showLeadsCallout && (
+        {showLeadsCallout && (
           <div className="mb-6 bg-white/80 border border-neutral-200 rounded-md p-3 flex items-center text-sm relative">
             <Mail className="h-4 w-4 text-neutral-500 mr-2 flex-shrink-0" />
             <span className="text-neutral-600">
@@ -386,26 +242,10 @@ export default function Home() {
         )}
 
         {/* AI Question Box */}
-        {selectedTeam && (
-          <QuestionBox partnerId={selectedTeam} resources={resources} />
-        )}
-
-        {/* Team Selection Warning */}
-        {!selectedTeam && (
-          <Alert className="bg-amber-50 border-amber-400 mb-6">
-            <Info className="h-4 w-4 text-amber-500" />
-            <AlertTitle className="text-amber-700">
-              Please select your team
-            </AlertTitle>
-            <AlertDescription className="text-amber-700">
-              To view resources relevant to your team, please select
-              your team name from the dropdown menu above.
-            </AlertDescription>
-          </Alert>
-        )}
+        <QuestionBox resources={resources} />
 
         {/* No Results Message */}
-        {selectedTeam && resources?.length === 0 && !isLoading && (
+        {resources?.length === 0 && !isLoading && (
           <div className="bg-white border border-neutral-200 p-6 rounded-lg shadow-sm text-center">
             <AlertCircle className="h-10 w-10 text-neutral-400 mx-auto mb-2" />
             <h3 className="text-lg font-medium text-neutral-700 mb-1">

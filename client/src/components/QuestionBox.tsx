@@ -9,7 +9,6 @@ import { Link } from 'wouter';
 import { Resource } from '@shared/schema';
 
 interface QuestionBoxProps {
-  partnerId: string | null;
   onShowResource?: (resourceId: number) => void;
   resources?: Resource[];
 }
@@ -19,7 +18,7 @@ interface AskResponse {
   relevantResourceIds: number[];
 }
 
-export default function QuestionBox({ partnerId, onShowResource, resources = [] }: QuestionBoxProps) {
+export default function QuestionBox({ onShowResource, resources = [] }: QuestionBoxProps) {
   const [question, setQuestion] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<AskResponse | null>(null);
@@ -30,7 +29,7 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
       const response = await apiRequest(
         'POST',
         '/api/ask',
-        { question, partnerId }
+        { question }
       );
       const result = await response.json();
       // Store result in component state
@@ -299,8 +298,6 @@ export default function QuestionBox({ partnerId, onShowResource, resources = [] 
           </div>
         )}
       </CardContent>
-      
-      {/* Footer removed as requested */}
     </Card>
   );
 }

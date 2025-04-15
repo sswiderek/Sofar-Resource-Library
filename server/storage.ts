@@ -1,16 +1,18 @@
-import { 
-  users, type User, type InsertUser,
-  resources, type Resource, type InsertResource,
-  partners, type Partner, type InsertPartner, type UpdatePartnerPassword,
-  type ResourceFilter
-} from "@shared/schema";
+import path from "path";
+import fs from "fs";
 import session from "express-session";
-import createMemoryStore from "memorystore";
-import fs from 'fs';
-import path from 'path';
+import MemoryStore from "memorystore";
+import {
+  User,
+  InsertUser,
+  Resource,
+  InsertResource,
+  Partner as Team, // Renamed but using Partner as Team for backward compatibility
+  InsertTeam,
+  ResourceFilter,
+  UpdateTeamPassword,
+} from "@shared/schema";
 
-// modify the interface with any CRUD methods
-// you might need
 export interface IStorage {
   // Session store
   sessionStore: session.Store;
@@ -29,12 +31,12 @@ export interface IStorage {
   deleteResource(id: number): Promise<boolean>;
   getFilteredResources(filter: ResourceFilter): Promise<Resource[]>;
   
-  // Partner methods
-  getPartners(): Promise<Partner[]>;
-  getPartnerBySlug(slug: string): Promise<Partner | undefined>;
-  getPartnerById(id: number): Promise<Partner | undefined>;
-  createPartner(partner: InsertPartner): Promise<Partner>;
-  updatePartnerPassword(id: number, passwordData: UpdatePartnerPassword): Promise<Partner | undefined>;
+  // Partner methods (keeping for backward compatibility)
+  getPartners(): Promise<Team[]>;
+  getPartnerBySlug(slug: string): Promise<Team | undefined>;
+  getPartnerById(id: number): Promise<Team | undefined>;
+  createPartner(partner: InsertTeam): Promise<Team>;
+  updatePartnerPassword(id: number, passwordData: UpdateTeamPassword): Promise<Team | undefined>;
   verifyPartnerPassword(slug: string, password: string): Promise<boolean>;
   deletePartner(id: number): Promise<boolean>;
 }
@@ -42,13 +44,13 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private resources: Map<number, Resource>;
-  private partners: Map<number, Partner>;
+  private partners: Map<number, Team>;
   currentUserId: number;
   currentResourceId: number;
   currentPartnerId: number;
   sessionStore: session.Store;
 
-  // File path for saving partner data
+  // Path for storing partners data (keeping for backward compatibility)
   private partnersFilePath: string = path.join(process.cwd(), 'partners-data.json');
 
   constructor() {
@@ -58,92 +60,111 @@ export class MemStorage implements IStorage {
     this.currentUserId = 1;
     this.currentResourceId = 1;
     this.currentPartnerId = 1;
-    
-    // Create memory store for sessions
-    const MemoryStore = createMemoryStore(session);
-    this.sessionStore = new MemoryStore({
+
+    // Create a memory store for sessions
+    const MemoryStoreFactory = MemoryStore(session);
+    this.sessionStore = new MemoryStoreFactory({
       checkPeriod: 86400000 // prune expired entries every 24h
     });
-    
-    // Load partners from file if it exists, otherwise initialize with defaults
-    this.loadPartnersFromFile();
+
+    // Initialize partners from file
+    this.initializePartners();
   }
 
-  // Save partners data to file
+  // Helper to save partners to JSON file
   private savePartnersToFile() {
     try {
-      const partnersData = {
-        partners: Array.from(this.partners.values()),
+      const partnersArray = Array.from(this.partners.values()).map(partner => ({
+        ...partner,
+        lastPasswordUpdate: partner.lastPasswordUpdate?.toISOString() || null
+      }));
+
+      const data = {
+        partners: partnersArray,
         currentPartnerId: this.currentPartnerId
       };
-      fs.writeFileSync(this.partnersFilePath, JSON.stringify(partnersData, null, 2));
-      console.log('Partners data saved to file');
+
+      fs.writeFileSync(this.partnersFilePath, JSON.stringify(data, null, 2));
+      console.log("Partners data saved to file");
     } catch (error) {
-      console.error('Error saving partners data to file:', error);
+      console.error("Error saving partners data to file:", error);
     }
   }
 
-  // Load partners data from file if exists
+  // Helper to load partners from JSON file
   private loadPartnersFromFile() {
     try {
-      if (fs.existsSync(this.partnersFilePath)) {
-        const fileData = fs.readFileSync(this.partnersFilePath, 'utf8');
-        
-        interface StoredData {
-          partners: Array<Partner & { lastPasswordUpdate: string | null }>;
-          currentPartnerId: number;
-        }
-        
-        const parsedData = JSON.parse(fileData) as StoredData;
-        
-        // Restore partners
-        if (parsedData.partners && Array.isArray(parsedData.partners)) {
-          parsedData.partners.forEach(partner => {
-            // Convert string lastPasswordUpdate back to Date if it exists
-            if (partner.lastPasswordUpdate) {
-              partner.lastPasswordUpdate = new Date(partner.lastPasswordUpdate);
-            }
-            this.partners.set(partner.id, partner as Partner);
-          });
-        }
-        
-        // Restore current ID counter
-        if (parsedData.currentPartnerId) {
-          this.currentPartnerId = parsedData.currentPartnerId;
-        }
-        
-        console.log(`Loaded ${this.partners.size} partners from file`);
-      } else {
-        // Initialize with default data if no file exists
-        this.initializePartners();
+      if (!fs.existsSync(this.partnersFilePath)) {
+        console.log("Partners file doesn't exist yet");
+        return null;
       }
+
+      const fileData = fs.readFileSync(this.partnersFilePath, 'utf8');
+      
+      // Define the structure of the stored data
+      interface StoredData {
+        partners: Array<Team & { lastPasswordUpdate: string | null }>;
+        currentPartnerId: number;
+      }
+
+      const data = JSON.parse(fileData) as StoredData;
+
+      // Parse dates from strings
+      const partners = data.partners.map(partner => ({
+        ...partner,
+        lastPasswordUpdate: partner.lastPasswordUpdate ? new Date(partner.lastPasswordUpdate) : null
+      }));
+
+      console.log(`Loaded ${partners.length} partners from file`);
+      return {
+        partners,
+        currentPartnerId: data.currentPartnerId
+      };
     } catch (error) {
-      console.error('Error loading partners data from file:', error);
-      // If there's an error loading, initialize with defaults
-      this.initializePartners();
+      console.error("Error loading partners data from file:", error);
+      return null;
     }
   }
 
-  // Initialize with common partners
+  // Initialize partners from file or create a default if none exists
   private initializePartners() {
-    const defaultPartners: InsertPartner[] = [
-      { name: "PME", slug: "pme" }
-    ];
-    
-    for (const partner of defaultPartners) {
-      this.createPartner(partner);
+    const data = this.loadPartnersFromFile();
+
+    if (data) {
+      // Use loaded data
+      this.currentPartnerId = data.currentPartnerId;
+      
+      // Populate the Map
+      data.partners.forEach(partner => {
+        this.partners.set(partner.id, partner);
+      });
+    } else {
+      // Create a default partner
+      const defaultPartner: Team = {
+        id: 1,
+        name: "PME",
+        slug: "pme",
+        password: "pme123",
+        lastPasswordUpdate: new Date()
+      };
+
+      this.partners.set(defaultPartner.id, defaultPartner);
+      this.currentPartnerId = 2;
+      this.savePartnersToFile();
     }
   }
 
-  // User methods (keeping existing ones)
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    for (const user of this.users.values()) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -153,7 +174,6 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  // Resource methods
   async getResources(): Promise<Resource[]> {
     return Array.from(this.resources.values());
   }
@@ -163,9 +183,12 @@ export class MemStorage implements IStorage {
   }
 
   async getResourceByNotionId(notionId: string): Promise<Resource | undefined> {
-    return Array.from(this.resources.values()).find(
-      (resource) => resource.notionId === notionId
-    );
+    for (const resource of this.resources.values()) {
+      if (resource.notionId === notionId) {
+        return resource;
+      }
+    }
+    return undefined;
   }
 
   async createResource(insertResource: InsertResource): Promise<Resource> {
@@ -194,23 +217,15 @@ export class MemStorage implements IStorage {
     const allResources = Array.from(this.resources.values());
     console.log(`Total resources before filtering: ${allResources.length}`);
     
-    // Log partner relevancy info for debugging
-    const partnerRelevancies = new Set<string>();
-    allResources.forEach(r => r.partnerRelevancy.forEach(p => partnerRelevancies.add(p)));
-    console.log(`Available partner relevancies:`, Array.from(partnerRelevancies));
-    
     const filtered = allResources.filter(resource => {
-      // Filter by partner relevancy first - ensure we convert the partnerId to lowercase
-      // since slugs might be in different case formats
-      const partnerIdLower = filter.partnerId.toLowerCase();
-      const partnerMatch = resource.partnerRelevancy.some(p => 
-        p.toLowerCase() === partnerIdLower
-      );
-      
-      console.log(`Resource: ${resource.name} | Partner relevancy: ${resource.partnerRelevancy.join(', ')} | Match for "${filter.partnerId}": ${partnerMatch}`);
-      
-      if (!partnerMatch) {
-        return false;
+      // Filter by content visibility if specified
+      if (filter.contentVisibility && filter.contentVisibility.length > 0) {
+        // If the resource doesn't have contentVisibility, default to "both"
+        const visibility = resource.contentVisibility || "both";
+        
+        // Check if the resource's visibility matches any of the requested ones
+        const visibilityMatch = filter.contentVisibility.includes(visibility);
+        if (!visibilityMatch) return false;
       }
 
       // Filter by type if specified
@@ -240,7 +255,8 @@ export class MemStorage implements IStorage {
         const searchTerm = filter.search.toLowerCase().trim();
         return (
           resource.name.toLowerCase().includes(searchTerm) ||
-          resource.description.toLowerCase().includes(searchTerm)
+          resource.description.toLowerCase().includes(searchTerm) ||
+          (resource.detailedDescription && resource.detailedDescription.toLowerCase().includes(searchTerm))
         );
       }
 
@@ -248,53 +264,51 @@ export class MemStorage implements IStorage {
     });
     
     console.log(`Filtered results count: ${filtered.length}`);
-    if (filtered.length > 0) {
-      console.log(`First result: ${filtered[0].name}`);
-    } else {
-      console.log('No matching resources found');
-    }
-    
     return filtered;
   }
 
-  // Partner methods
-  async getPartners(): Promise<Partner[]> {
+  // Team methods (previously Partner methods)
+  async getPartners(): Promise<Team[]> {
     return Array.from(this.partners.values());
   }
 
-  async getPartnerBySlug(slug: string): Promise<Partner | undefined> {
-    return Array.from(this.partners.values()).find(
-      (partner) => partner.slug === slug
-    );
+  async getPartnerBySlug(slug: string): Promise<Team | undefined> {
+    for (const partner of this.partners.values()) {
+      if (partner.slug === slug) {
+        return partner;
+      }
+    }
+    return undefined;
   }
-  
-  async getPartnerById(id: number): Promise<Partner | undefined> {
+
+  async getPartnerById(id: number): Promise<Team | undefined> {
     return this.partners.get(id);
   }
 
-  async createPartner(insertPartner: InsertPartner): Promise<Partner> {
+  async createPartner(insertPartner: InsertTeam): Promise<Team> {
     const id = this.currentPartnerId++;
-    const partner: Partner = { 
+    
+    const partner: Team = { 
       ...insertPartner, 
       id,
-      password: "",
-      lastPasswordUpdate: null 
+      lastPasswordUpdate: new Date()
     };
+    
     this.partners.set(id, partner);
     this.savePartnersToFile();
     return partner;
   }
-  
-  async updatePartnerPassword(id: number, passwordData: UpdatePartnerPassword): Promise<Partner | undefined> {
-    const partner = await this.getPartnerById(id);
-    if (!partner) return undefined;
-    
-    const updatedPartner: Partner = {
-      ...partner,
+
+  async updatePartnerPassword(id: number, passwordData: UpdateTeamPassword): Promise<Team | undefined> {
+    const existingPartner = this.partners.get(id);
+    if (!existingPartner) return undefined;
+
+    const updatedPartner: Team = {
+      ...existingPartner,
       password: passwordData.password,
       lastPasswordUpdate: new Date()
     };
-    
+
     this.partners.set(id, updatedPartner);
     this.savePartnersToFile();
     return updatedPartner;
