@@ -155,7 +155,7 @@ export default function Home() {
                 className="h-10 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 value={filters.sortBy || "relevance"}
                 onChange={(e) => {
-                  const sortBy = e.target.value;
+                  const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
                   handleFilterChange({
                     ...filters,
                     sortBy: sortBy === "relevance" ? undefined : sortBy,
