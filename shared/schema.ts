@@ -65,11 +65,12 @@ export type UpdateTeamPassword = z.infer<typeof updateTeamPasswordSchema>;
 
 // Updated schema for the resource filtering (no team dependency)
 export const resourceFilterSchema = z.object({
-  types: z.array(z.string()).optional(),
-  products: z.array(z.string()).optional(),
-  audiences: z.array(z.string()).optional(),
-  messagingStages: z.array(z.string()).optional(),
-  contentVisibility: z.array(z.string()).optional(), // Content visibility filter
+  types: z.array(z.string()).optional(),            // Maps to "Content Type" in Notion
+  products: z.array(z.string()).optional(),         // Maps to "Smart Mooring Sensor(s)" in Notion
+  audiences: z.array(z.string()).optional(),        // Maps to "Market Segment(s)" in Notion
+  messagingStages: z.array(z.string()).optional(),  // Maps to "Stage in Buyer's Journey" in Notion
+  contentVisibility: z.array(z.string()).optional(), // Maps to "Internal Use Only?" in Notion
+  solutions: z.array(z.string()).optional(),        // Major product groupings (Wayfinder, Spotter, Smart Mooring)
   search: z.string().optional(),
 });
 

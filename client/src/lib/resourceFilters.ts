@@ -2,11 +2,12 @@ import { Resource } from "@shared/schema";
 
 // Interface for the filter state
 export interface ResourceFilters {
-  types: string[];
-  products: string[];
-  audiences: string[];
-  messagingStages: string[];
-  contentVisibility: string[]; // Add for internal/external filtering
+  types: string[];            // Maps to "Content Type" in Notion
+  products: string[];         // Maps to "Smart Mooring Sensor(s)" in Notion
+  audiences: string[];        // Maps to "Market Segment(s)" in Notion
+  messagingStages: string[];  // Maps to "Stage in Buyer's Journey" in Notion
+  contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
+  solutions: string[];        // Maps to Solution in Notion (major product groupings)
   search: string;
 }
 
@@ -17,6 +18,7 @@ export const initialFilters: ResourceFilters = {
   audiences: [],
   messagingStages: [],
   contentVisibility: [], // No default selection for content visibility
+  solutions: [],
   search: '',
 };
 
@@ -43,6 +45,10 @@ export const buildFilterQueryString = (filters: ResourceFilters): string => {
   if (filters.contentVisibility.length > 0) {
     params.append('contentVisibility', filters.contentVisibility.join(','));
   }
+  
+  if (filters.solutions.length > 0) {
+    params.append('solutions', filters.solutions.join(','));
+  }
 
   if (filters.search) {
     params.append('search', filters.search);
@@ -59,11 +65,17 @@ export const extractMetadata = (resources: Resource[]) => {
   const messagingStages = [...new Set(resources.map(r => r.messagingStage))];
   const contentVisibility = [...new Set(resources.map(r => r.contentVisibility || 'both'))];
   
+  // Extract solutions from products (Wayfinder, Spotter, Smart Mooring)
+  const solutions = [...new Set(resources.flatMap(r => 
+    r.product.filter(p => p.includes('Wayfinder') || p.includes('Spotter') || p.includes('Smart Mooring'))
+  ))];
+  
   return {
     types,
     products,
     audiences,
     messagingStages,
-    contentVisibility
+    contentVisibility,
+    solutions
   };
 };
