@@ -72,7 +72,10 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
   };
 
   return (
-    <Card className="bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border border-neutral-200 hover:border-blue-200 h-full flex flex-col">
+    <Card 
+      className="bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border border-neutral-200 hover:border-blue-200 h-full flex flex-col cursor-pointer"
+      onClick={handlePreview}
+    >
       <CardContent className="p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3">
           <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-3 py-1 rounded-md text-xs font-medium`}>
@@ -97,10 +100,26 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
               variant="ghost" 
               size="sm" 
               className="text-neutral-600 hover:text-neutral-900" 
-              onClick={handleShare}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare();
+              }}
             >
               <Share2 className="h-4 w-4 mr-1" />
               Share
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-neutral-600 hover:text-neutral-900" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePreview();
+              }}
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              Preview
             </Button>
           </div>
           
@@ -108,13 +127,23 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
             variant="ghost"
             size="sm"
             className="inline-flex items-center text-sm font-medium text-[#0066CC] hover:text-[#004B95] transition-colors"
-            onClick={handleDownload}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownload();
+            }}
           >
             <Download className="h-4 w-4 mr-1" />
             Download
           </Button>
         </div>
       </CardContent>
+      
+      {/* Resource Preview Modal */}
+      <ResourcePreviewModal
+        resource={resource}
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+      />
     </Card>
   );
 }
