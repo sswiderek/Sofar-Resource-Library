@@ -1,10 +1,18 @@
 import { ReactNode } from "react";
+import { Link, useLocation } from "wouter";
+import { BarChart3, Home, Settings, User } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const [location] = useLocation();
+  
+  const isActive = (path: string) => {
+    return location === path;
+  };
+  
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
       <header className="bg-white shadow-sm border-b border-neutral-200">
@@ -22,6 +30,27 @@ export default function Layout({ children }: LayoutProps) {
               <div className="h-0.5 w-full bg-gradient-to-r from-[#0066CC] to-[#00A7E1] rounded-full mt-0.5"></div>
             </div>
           </div>
+          
+          <nav className="flex mt-4 md:mt-0">
+            <ul className="flex space-x-4">
+              <li>
+                <Link href="/">
+                  <a className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${isActive('/') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+                    <Home className="h-4 w-4 mr-1" />
+                    Home
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin/analytics">
+                  <a className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/analytics') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+                    <BarChart3 className="h-4 w-4 mr-1" />
+                    Analytics
+                  </a>
+                </Link>
+              </li>
+            </ul>
+          </nav>
         </div>
       </header>
 
