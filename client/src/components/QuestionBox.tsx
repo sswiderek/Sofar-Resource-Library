@@ -269,90 +269,83 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
     });
 
   return (
-    <Card className="w-full bg-white border border-primary/10 shadow-xs transition-all duration-300 mb-6 relative">
-      <CardHeader className={`py-3 px-4 ${expanded ? 'border-b' : ''}`}>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg flex items-center">
-            <Sparkles className="h-5 w-5 mr-2 text-primary" />
-            Ask about resources
-            <span className="ml-2 text-xs bg-purple-100 text-purple-800 font-medium px-1.5 py-0.5 rounded-sm">
-              BETA
-            </span>
-          </CardTitle>
-          {expanded && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 w-7 p-0 rounded-full"
-              onClick={() => {
-                // Reset state and collapse the answer section completely
-                setExpanded(false);
-                setQuestion('');
-                setAiAnswer(null); // Clear the AI answer data
-              }}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+    <Card className="w-full bg-white border border-neutral-200 shadow-sm transition-all duration-300 mb-4 relative">
+      <CardContent className="px-4 py-3">
+        <div className="flex flex-col">
+          <div className="flex items-center mb-2">
+            <div className="flex items-center flex-grow">
+              <Sparkles className="h-4 w-4 mr-2 text-primary" />
+              <span className="text-sm font-medium">Ask about resources</span>
+              <span className="ml-2 text-xs bg-primary/10 text-primary font-medium px-1.5 py-0.5 rounded-sm">
+                BETA
+              </span>
+            </div>
+            {expanded && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0 rounded-full"
+                onClick={() => {
+                  setExpanded(false);
+                  setQuestion('');
+                  setAiAnswer(null);
+                }}
+              >
+                <X className="h-3 w-3" />
+                <span className="sr-only">Close</span>
+              </Button>
+            )}
+          </div>
+          
+          <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+            <Input
+              placeholder="Ask a question about resources..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              className="flex-grow"
+              onFocus={() => setExpanded(true)}
+            />
+            <Button type="submit" size="sm" disabled={isPending || !question.trim()}>
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
-          )}
+          </form>
         </div>
-        {expanded && (
-          <CardDescription className="ml-7 mt-1">
-            Ask any question about the resources available to you
-          </CardDescription>
-        )}
-      </CardHeader>
-      
-      <CardContent className={`px-4 ${expanded ? 'py-3' : 'py-2'}`}>
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
-          <Input
-            placeholder="Ask a question about resources..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            className="flex-grow"
-            onFocus={() => setExpanded(true)}
-          />
-          <Button type="submit" size="sm" disabled={isPending || !question.trim()}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
-        </form>
         
         {expanded && !aiAnswer && !isPending && (
-          <div className="text-sm mt-3 p-3 bg-gray-50 rounded-md border border-gray-100">
+          <div className="text-xs mt-2 border-t pt-2 border-neutral-100">
             <div className="flex items-center">
-              <Sparkles className="h-4 w-4 text-primary mr-1" />
-              <p className="font-medium">Try asking:</p>
+              <p className="font-medium text-neutral-600">Try:</p>
             </div>
-            <div className="mt-2 space-y-2">
+            <div className="mt-1 flex gap-1 flex-wrap">
               <button 
-                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
+                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
                   const query = "What case studies demonstrate fuel savings with Wayfinder?";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                What case studies demonstrate fuel savings with Wayfinder?
+                Wayfinder fuel savings case studies
               </button>
               <button 
-                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
+                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
                   const query = "Compare the different sensors available for the Spotter Platform";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                Compare the different sensors available for the Spotter Platform
+                Spotter Platform sensors
               </button>
               <button 
-                className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
+                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
                   const query = "What resources would help me explain Sofar's technology to environmental researchers?";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                What resources would help me explain Sofar's technology to environmental researchers?
+                Resources for environmental researchers
               </button>
             </div>
           </div>

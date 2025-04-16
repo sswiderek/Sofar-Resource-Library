@@ -47,6 +47,9 @@ export default function Home() {
   console.log("Filter query:", filterQuery);
   console.log("Filters:", filters);
 
+  // State for sync loading indicator
+  const [isSyncing, setIsSyncing] = useState(false);
+  
   // Fetch resources based on filter
   const {
     data: resources = [],
@@ -59,9 +62,12 @@ export default function Home() {
 
   // Force sync with Notion
   const handleSync = async () => {
+    if (isSyncing) return; // Prevent multiple sync requests
+    
+    setIsSyncing(true);
     try {
       await apiRequest("POST", "/api/sync", {});
-      refetch();
+      await refetch();
       toast({
         title: "Sync completed",
         description: "Resources have been updated from Notion.",
@@ -73,6 +79,8 @@ export default function Home() {
           error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -147,41 +155,29 @@ export default function Home() {
           )}
         </div>
 
-        {/* Welcome Hero - show when showWelcome is true */}
+        {/* Welcome Hero - show when showWelcome is true - Condensed version */}
         {showWelcome && (
-          <div className="mb-6 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
-            <div className="flex items-center p-6">
+          <div className="mb-4 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
+            <div className="flex items-center p-3">
               <div className="flex-grow">
-                <h2 className="text-xl font-semibold text-primary">
-                  Welcome to the Sofar Resource Library
-                </h2>
-                <p className="text-neutral-600 mt-1">
-                  Your centralized hub for all Sofar product information, technical documentation, and customer success stories.
-                  Find exactly what you need through search, filters, or AI assistance.
-                </p>
-
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    <LayoutGrid className="h-3 w-3 mr-1" /> Browse Resources
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    <Search className="h-3 w-3 mr-1" /> Search Content
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    <Sparkles className="h-3 w-3 mr-1" /> Ask AI Questions
-                  </span>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-md font-semibold text-primary">
+                    Welcome to the Sofar Resource Library
+                  </h2>
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-full"
+                    onClick={() => setShowWelcome(false)}
+                  >
+                    <X className="h-3 w-3 text-neutral-500" />
+                  </Button>
                 </div>
+                <p className="text-neutral-600 text-sm mt-1">
+                  Find Sofar resources through search, filters, or AI assistance
+                </p>
               </div>
-
-              {/* Close button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2"
-                onClick={() => setShowWelcome(false)}
-              >
-                <X className="h-4 w-4 text-neutral-500" />
-              </Button>
             </div>
           </div>
         )}
@@ -194,7 +190,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <span className="text-sm text-neutral-600">Sort by:</span>
             <select
-              className="h-10 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-9 rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               value={filters.sortBy || "relevance"}
               onChange={(e) => {
                 const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
