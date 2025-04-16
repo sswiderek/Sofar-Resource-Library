@@ -229,21 +229,24 @@ export default function FilterSidebar({
             Publicly Shareable?
           </h3>
           <div className="space-y-2.5">
-            {["internal", "external"].map((visibility) => (
-              <div key={visibility} className="flex items-center">
+            {[
+              { value: "internal", label: "N" },
+              { value: "external", label: "Y" }
+            ].map((option) => (
+              <div key={option.value} className="flex items-center">
                 <Checkbox
-                  id={`visibility-${visibility}`}
-                  checked={isSelected('contentVisibility', visibility)}
+                  id={`visibility-${option.value}`}
+                  checked={isSelected('contentVisibility', option.value)}
                   onCheckedChange={(checked) => 
-                    handleCheckboxChange('contentVisibility', visibility, checked as boolean)
+                    handleCheckboxChange('contentVisibility', option.value, checked as boolean)
                   }
                   className="data-[state=checked]:bg-primary"
                 />
                 <Label
-                  htmlFor={`visibility-${visibility}`}
+                  htmlFor={`visibility-${option.value}`}
                   className="ml-2 text-sm text-neutral-700"
                 >
-                  {visibility === 'internal' ? 'Internal Resources' : 'Customer-Facing'}
+                  {option.label}
                 </Label>
               </div>
             ))}
