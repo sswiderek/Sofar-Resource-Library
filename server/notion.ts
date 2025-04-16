@@ -210,9 +210,11 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                        properties["Key Topic or Messaging Stage"]?.select?.name || 
                        "Unknown",
                        
-        // Map "Internal Use Only?" field to contentVisibility
-        contentVisibility: properties["Internal Use Only?"]?.select?.name === "Y" ? "internal" :
-                         properties["Internal Use Only?"]?.select?.name === "N" ? "external" :
+        // Map "Publicly Shareable?" field to contentVisibility
+        contentVisibility: properties["Publicly Shareable?"]?.select?.name === "N" ? "internal" :
+                         properties["Publicly Shareable?"]?.select?.name === "Y" ? "external" :
+                         properties["Internal Use Only?"]?.select?.name === "Y" ? "internal" : // For backward compatibility
+                         properties["Internal Use Only?"]?.select?.name === "N" ? "external" : // For backward compatibility
                          "both",
                        
         date: properties["Last Updated"]?.date?.start || 
