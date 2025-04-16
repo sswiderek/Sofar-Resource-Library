@@ -183,6 +183,16 @@ function addResourceLinks(text: string, resources: Resource[]) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-primary hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Track the view
+                  if (!viewedResources[resource.id]) {
+                    trackView(resource.id);
+                    setViewedResources(prev => ({...prev, [resource.id]: true}));
+                  }
+                  // Open in new tab
+                  window.open(resource.url, "_blank", "noopener,noreferrer");
+                }}
               >
                 {resourceName}
               </a>
@@ -215,6 +225,8 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
   const [expanded, setExpanded] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<AskResponse | null>(null);
   const [loadingStage, setLoadingStage] = useState(1);
+  const { trackView } = useResourceTracking();
+  const [viewedResources, setViewedResources] = useState<Record<number, boolean>>({});
   
   const { mutate, data, isPending, isError, error } = useMutation<AskResponse, Error, string>({
     mutationFn: async (question: string) => {
@@ -452,25 +464,26 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                           </div>
                           
                           <div className="mt-3 flex gap-2">
-                            {onShowResource ? (
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="h-7 text-xs"
-                                onClick={() => onShowResource(resource.id)}
-                              >
-                                View Resource
-                              </Button>
-                            ) : (
-                              <a 
-                                href={resource.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
-                              >
-                                View Resource
-                              </a>
-                            )}
+                            <a 
+                              href={resource.url}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                
+                                // Track the view if not already viewed
+                                if (!viewedResources[resource.id]) {
+                                  trackView(resource.id);
+                                  setViewedResources(prev => ({...prev, [resource.id]: true}));
+                                }
+                                
+                                // Open in new tab
+                                window.open(resource.url, "_blank", "noopener,noreferrer");
+                              }}
+                            >
+                              View Resource
+                            </a>
                           </div>
                         </li>
                       );
