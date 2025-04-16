@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, Loader2, Sparkles, X, Search, Lightbulb, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,7 +112,7 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
       // For text parts, check if they contain resource names and link them
       if (part) {
         const linkedPart = addResourceLinks(part, resources);
-        elements.push(<Fragment key={`text-${index}`}>{linkedPart}</Fragment>);
+        elements.push(<span key={`text-${index}`}>{linkedPart}</span>);
       }
       
       // If there's a URL that follows this text part, add it as a link
