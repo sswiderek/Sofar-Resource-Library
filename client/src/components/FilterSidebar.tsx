@@ -225,13 +225,13 @@ export default function FilterSidebar({
         {/* Publicly Shareable Filter (renamed from "Content Type") */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-primary rounded-full mr-2"></span>
+            <span className="w-3 h-3 bg-rose-600 rounded-full mr-2"></span>
             Publicly Shareable?
           </h3>
           <div className="space-y-2.5">
             {[
-              { value: "internal", label: "N" },
-              { value: "external", label: "Y" }
+              { value: "external", label: "Yes" },
+              { value: "internal", label: "No" }
             ].map((option) => (
               <div key={option.value} className="flex items-center">
                 <Checkbox
@@ -240,7 +240,7 @@ export default function FilterSidebar({
                   onCheckedChange={(checked) => 
                     handleCheckboxChange('contentVisibility', option.value, checked as boolean)
                   }
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-rose-600"
                 />
                 <Label
                   htmlFor={`visibility-${option.value}`}

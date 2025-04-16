@@ -224,10 +224,12 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                        "Unknown",
                        
         // Map "Publicly Shareable?" field to contentVisibility
-        contentVisibility: properties["Publicly Shareable?"]?.select?.name === "N" ? "internal" :
-                         properties["Publicly Shareable?"]?.select?.name === "Y" ? "external" :
-                         properties["Internal Use Only?"]?.select?.name === "Y" ? "internal" : // For backward compatibility
-                         properties["Internal Use Only?"]?.select?.name === "N" ? "external" : // For backward compatibility
+        contentVisibility: properties["Publicly Shareable?"]?.select?.name === "No" ? "internal" :
+                         properties["Publicly Shareable?"]?.select?.name === "Yes" ? "external" :
+                         properties["Publicly Shareable?"]?.select?.name === "N" ? "internal" : // For backward compatibility
+                         properties["Publicly Shareable?"]?.select?.name === "Y" ? "external" : // For backward compatibility
+                         properties["Internal Use Only?"]?.select?.name === "Yes" ? "internal" : // For backward compatibility
+                         properties["Internal Use Only?"]?.select?.name === "No" ? "external" : // For backward compatibility
                          "both",
                        
         date: properties["Last Updated"]?.date?.start || 

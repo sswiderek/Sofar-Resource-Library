@@ -327,32 +327,32 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => {
-                  const query = "What is a smart mooring?";
+                  const query = "What case studies demonstrate fuel savings with Wayfinder?";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                What is a smart mooring?
+                What case studies demonstrate fuel savings with Wayfinder?
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => {
-                  const query = "How is Spotter data accessed and managed by users?";
+                  const query = "Compare the different sensors available for the Spotter Platform";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                How is Spotter data accessed and managed by users?
+                Compare the different sensors available for the Spotter Platform
               </button>
               <button 
                 className="w-full text-left px-3 py-2 bg-white rounded border border-gray-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm" 
                 onClick={() => {
-                  const query = "Which resources specifically reference dissolved oxygen?";
+                  const query = "What resources would help me explain Sofar's technology to environmental researchers?";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                Which resources specifically reference dissolved oxygen?
+                What resources would help me explain Sofar's technology to environmental researchers?
               </button>
             </div>
           </div>
