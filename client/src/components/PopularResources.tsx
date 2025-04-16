@@ -104,6 +104,19 @@ export default function PopularResources() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex flex-col space-y-1 hover:bg-neutral-50 rounded-md p-2 -mx-2 transition-colors"
+                onClick={(e) => {
+                  // Prevent the default behavior temporarily
+                  e.preventDefault();
+                  
+                  // If we haven't tracked a view for this resource yet, do so
+                  if (!viewedResources[resource.id]) {
+                    trackView(resource.id);
+                    setViewedResources(prev => ({...prev, [resource.id]: true}));
+                  }
+                  
+                  // Open the URL in a new tab
+                  window.open(resource.url, "_blank", "noopener,noreferrer");
+                }}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-neutral-800 line-clamp-1 flex-grow">

@@ -8,6 +8,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { Link } from 'wouter';
 import { Resource } from '@shared/schema';
 import { getResourceTypeClasses } from '@/lib/resourceTypeColors';
+import { useResourceTracking } from '@/hooks/use-resource-tracking';
 
 // Helper function to format text with clickable links and resource references
 function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
