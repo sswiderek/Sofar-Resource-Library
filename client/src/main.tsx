@@ -3,6 +3,6 @@ import App from "./App";
 import "./index.css";
 
 // Update the page title
-document.title = "Sales Enablement Portal | Sofar Ocean";
+document.title = "Sofar Resource Library | Sofar Ocean";
 
 createRoot(document.getElementById("root")!).render(<App />);

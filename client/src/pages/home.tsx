@@ -135,69 +135,16 @@ export default function Home() {
           </Button>
         </div>
 
-        {/* View toggle and resource info */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div className="flex-grow">
-            <h2 className="text-2xl font-semibold text-neutral-800 mb-1">
-              Sales Resources
-            </h2>
-            {resources && (
-              <p className="text-sm text-neutral-600">
-                Showing {resources.length} resources
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4 mt-3 md:mt-0">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-neutral-600">Sort by:</span>
-              <select
-                className="h-10 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                value={filters.sortBy || "relevance"}
-                onChange={(e) => {
-                  const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
-                  handleFilterChange({
-                    ...filters,
-                    sortBy: sortBy === "relevance" ? undefined : sortBy,
-                  });
-                }}
-              >
-                <option value="relevance">Relevance</option>
-                <option value="popularity">Most Popular</option>
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-              </select>
-            </div>
-
-            <Button
-              variant="outline"
-              size="default"
-              onClick={handleSync}
-              className="flex items-center"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Sync
-            </Button>
-
-            <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
-              <Button
-                variant={viewMode === "card" ? "default" : "ghost"}
-                size="default"
-                className="rounded-none px-2 h-full"
-                onClick={() => setViewMode("card")}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="default"
-                className="rounded-none px-2 h-full"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+        {/* Resource header with just the title */}
+        <div className="mb-4">
+          <h2 className="text-2xl font-semibold text-neutral-800 mb-1">
+            Resource Library
+          </h2>
+          {resources && (
+            <p className="text-sm text-neutral-600">
+              Showing {resources.length} resources
+            </p>
+          )}
         </div>
 
         {/* Welcome Hero - show when showWelcome is true */}
@@ -206,11 +153,11 @@ export default function Home() {
             <div className="flex items-center p-6">
               <div className="flex-grow">
                 <h2 className="text-xl font-semibold text-primary">
-                  Welcome to the Sales Enablement Portal
+                  Welcome to the Sofar Resource Library
                 </h2>
                 <p className="text-neutral-600 mt-1">
-                  This portal provides access to Sofar Ocean resources to help you succeed.
-                  Browse, search, or ask questions about any resource.
+                  Your centralized hub for all Sofar product information, technical documentation, and customer success stories.
+                  Find exactly what you need through search, filters, or AI assistance.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -241,6 +188,60 @@ export default function Home() {
         
         {/* AI Question Box */}
         <QuestionBox resources={resources} />
+        
+        {/* View controls, sort and sync buttons */}
+        <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-neutral-600">Sort by:</span>
+            <select
+              className="h-10 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              value={filters.sortBy || "relevance"}
+              onChange={(e) => {
+                const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
+                handleFilterChange({
+                  ...filters,
+                  sortBy: sortBy === "relevance" ? undefined : sortBy,
+                });
+              }}
+            >
+              <option value="relevance">Relevance</option>
+              <option value="popularity">Most Popular</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="default"
+              onClick={handleSync}
+              className="flex items-center"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Sync
+            </Button>
+
+            <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
+              <Button
+                variant={viewMode === "card" ? "default" : "ghost"}
+                size="default"
+                className="rounded-none px-2 h-full"
+                onClick={() => setViewMode("card")}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="default"
+                className="rounded-none px-2 h-full"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* No Results Message */}
         {resources?.length === 0 && !isLoading && (
