@@ -192,10 +192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const audiencesSet = new Set(resources.flatMap(r => r.audience));
       const messagingStagesSet = new Set(resources.map(r => r.messagingStage));
       const contentVisibilitySet = new Set(resources.map(r => r.contentVisibility || "both"));
-      // Extract solution values from products for now since they're closely related
-      const solutionsSet = new Set(resources.flatMap(r => r.product.filter(p => 
-        p.includes('Wayfinder') || p.includes('Spotter') || p.includes('Smart Mooring')
-      )));
+      // Extract solutions from the dedicated solution field
+      const solutionsSet = new Set(resources.flatMap(r => r.solutions || []));
       
       const types = Array.from(typesSet).filter(Boolean);  // Remove empty values
       const products = Array.from(productsSet).filter(Boolean);

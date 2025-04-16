@@ -253,7 +253,7 @@ export default function FilterSidebar({
         {/* Solutions Filter - Moved to the top as requested */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+            <span className="w-3 h-3 bg-fuchsia-600 rounded-full mr-2"></span>
             Solution
           </h3>
           <div className="space-y-2.5">
@@ -266,7 +266,7 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('solutions', solution, checked as boolean)
                     }
-                    className="data-[state=checked]:bg-purple-500"
+                    className="data-[state=checked]:bg-fuchsia-600"
                   />
                   <Label
                     htmlFor={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
@@ -291,8 +291,8 @@ export default function FilterSidebar({
         {/* Resource Type Filter - show even with empty data */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-indigo-500 rounded-full mr-2"></span>
-            Resource Type
+            <span className="w-3 h-3 bg-indigo-600 rounded-full mr-2"></span>
+            Content Type
           </h3>
           <div className="space-y-2.5">
             {metadata.types && metadata.types.length > 0 ? (
@@ -304,7 +304,7 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('types', type, checked as boolean)
                     }
-                    className="data-[state=checked]:bg-indigo-500"
+                    className="data-[state=checked]:bg-indigo-600"
                   />
                   <Label
                     htmlFor={`type-${type.toLowerCase().replace(/\s+/g, '-')}`}
@@ -329,8 +329,8 @@ export default function FilterSidebar({
         {/* Product Filter */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-            Sofar Product
+            <span className="w-3 h-3 bg-cyan-600 rounded-full mr-2"></span>
+            Smart Mooring Sensor(s)
           </h3>
           <div className="space-y-2.5">
             {metadata.products && metadata.products.length > 0 ? (
@@ -342,7 +342,7 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('products', product, checked as boolean)
                     }
-                    className="data-[state=checked]:bg-blue-500"
+                    className="data-[state=checked]:bg-cyan-600"
                   />
                   <Label
                     htmlFor={`product-${product.toLowerCase().replace(/\s+/g, '-')}`}
@@ -367,8 +367,8 @@ export default function FilterSidebar({
         {/* Audience Filter */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-            Target Market
+            <span className="w-3 h-3 bg-emerald-600 rounded-full mr-2"></span>
+            Market Segment(s)
           </h3>
           <div className="space-y-2.5">
             {metadata.audiences && metadata.audiences.length > 0 ? (
@@ -380,7 +380,7 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('audiences', audience, checked as boolean)
                     }
-                    className="data-[state=checked]:bg-green-500"
+                    className="data-[state=checked]:bg-emerald-600"
                   />
                   <Label
                     htmlFor={`audience-${audience.toLowerCase().replace(/\s+/g, '-')}`}
@@ -405,8 +405,8 @@ export default function FilterSidebar({
         {/* Buyer's Journey Filter */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
-            Buyer's Journey
+            <span className="w-3 h-3 bg-amber-600 rounded-full mr-2"></span>
+            Stage in Buyer's Journey
           </h3>
           <div className="space-y-2.5">
             {metadata.messagingStages && metadata.messagingStages.length > 0 ? (
@@ -418,7 +418,7 @@ export default function FilterSidebar({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('messagingStages', stage, checked as boolean)
                     }
-                    className="data-[state=checked]:bg-amber-500"
+                    className="data-[state=checked]:bg-amber-600"
                   />
                   <Label
                     htmlFor={`stage-${stage.toLowerCase().replace(/\s+/g, '-')}`}

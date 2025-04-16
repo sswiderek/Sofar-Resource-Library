@@ -23,6 +23,7 @@ export const resources = pgTable("resources", {
   name: text("name").notNull(),
   type: text("type").notNull(),
   product: text("product").array().notNull(),
+  solutions: text("solutions").array(),  // Solution field from Notion
   audience: text("audience").array().notNull(),
   teamRelevancy: text("team_relevancy").array().notNull(), // Keeping for backwards compatibility
   messagingStage: text("messaging_stage").notNull(),

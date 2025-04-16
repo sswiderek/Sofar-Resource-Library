@@ -22,6 +22,7 @@ const mockResources: InsertResource[] = [
     name: "Spotter Master Sales Deck",
     type: "Slides",
     product: ["Dissolved Oxygen", "Hydrophone", "Temperature"],
+    solutions: ["Spotter Platform"],
     audience: ["Government & Defense", "Aquaculture", "Marine Construction"],
     teamRelevancy: ["pme"],
     messagingStage: "Awareness",
@@ -202,9 +203,11 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
               "Unknown",
               
         product: properties["Smart Mooring Sensor(s)"]?.multi_select?.map((p: any) => p.name) || 
-                 properties.Solution?.multi_select?.map((p: any) => p.name) || 
                  properties.Product?.multi_select?.map((p: any) => p.name) || 
                  [],
+                 
+        solutions: properties.Solution?.multi_select?.map((s: any) => s.name) || 
+                  [],
                 
         audience: properties["Market Segment(s)"]?.multi_select?.map((a: any) => a.name) || 
                  properties.Audience?.multi_select?.map((a: any) => a.name) || 
