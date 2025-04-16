@@ -11,7 +11,7 @@ import { getResourceTypeClasses } from '@/lib/resourceTypeColors';
 import { useResourceTracking } from '@/hooks/use-resource-tracking';
 
 // Helper function to format text with clickable links and resource references
-function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
+function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackViewFn?: (id: number) => Promise<any>, viewedResourcesMap?: Record<number, boolean>, setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void) {
   if (!text) return null;
   
   // First, check if the text appears to contain resource entries like "RESOURCE: name"
@@ -32,7 +32,7 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
     if (introText) {
       elements.push(
         <div key="intro" className="mb-4">
-          {addResourceLinks(introText, resources)}
+          {addResourceLinks(introText, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
         </div>
       );
     }
@@ -72,6 +72,10 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open(urls[0], "_blank", "noopener,noreferrer");
+                }}
               >
                 <ExternalLink className="h-3 w-3" />
                 <span>{urls[0]}</span>
@@ -87,7 +91,7 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
     if (closingText && closingText !== '') {
       elements.push(
         <div key="closing" className="mt-3">
-          {addResourceLinks(closingText, resources)}
+          {addResourceLinks(closingText, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
         </div>
       );
     }
@@ -112,7 +116,7 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
     parts.forEach((part, index) => {
       // For text parts, check if they contain resource names and link them
       if (part) {
-        const linkedPart = addResourceLinks(part, resources);
+        const linkedPart = addResourceLinks(part, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
         elements.push(<span key={`text-${index}`}>{linkedPart}</span>);
       }
       
@@ -141,7 +145,7 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = []) {
 }
 
 // Helper function to add links to resource names in text
-function addResourceLinks(text: string, resources: Resource[]) {
+function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id: number) => Promise<any>, viewedResourcesMap?: Record<number, boolean>, setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void) {
   if (!text || !resources || resources.length === 0) return text;
   
   let result: React.ReactNode[] = [text];
@@ -185,11 +189,15 @@ function addResourceLinks(text: string, resources: Resource[]) {
                 className="font-medium text-primary hover:underline"
                 onClick={(e) => {
                   e.preventDefault();
-                  // Track the view
-                  if (!viewedResources[resource.id]) {
-                    trackView(resource.id);
-                    setViewedResources(prev => ({...prev, [resource.id]: true}));
+                  
+                  // Track the view using passed functions if available
+                  if (trackViewFn && viewedResourcesMap && setViewedResourcesFn) {
+                    if (!viewedResourcesMap[resource.id]) {
+                      trackViewFn(resource.id);
+                      setViewedResourcesFn(prev => ({...prev, [resource.id]: true}));
+                    }
                   }
+                  
                   // Open in new tab
                   window.open(resource.url, "_blank", "noopener,noreferrer");
                 }}
@@ -425,7 +433,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
               <div className="text-sm prose prose-sm max-w-none">
-                {formatAnswerWithLinks(aiAnswer.answer, resources)}
+                {formatAnswerWithLinks(aiAnswer.answer, resources, trackView, viewedResources, setViewedResources)}
               </div>
             </div>
             
