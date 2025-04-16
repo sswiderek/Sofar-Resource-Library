@@ -210,18 +210,28 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              size="default"
+              size="sm"
               onClick={handleSync}
-              className="flex items-center"
+              className="flex items-center h-9"
+              disabled={isSyncing}
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Sync
+              {isSyncing ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Sync
+                </>
+              )}
             </Button>
 
-            <div className="flex border border-neutral-300 rounded-md overflow-hidden h-10">
+            <div className="flex border border-neutral-200 rounded-md overflow-hidden h-9">
               <Button
                 variant={viewMode === "card" ? "default" : "ghost"}
-                size="default"
+                size="sm"
                 className="rounded-none px-2 h-full"
                 onClick={() => setViewMode("card")}
               >
@@ -229,7 +239,7 @@ export default function Home() {
               </Button>
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
-                size="default"
+                size="sm"
                 className="rounded-none px-2 h-full"
                 onClick={() => setViewMode("list")}
               >
