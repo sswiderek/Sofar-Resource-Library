@@ -97,22 +97,30 @@ export default function ResourcePreviewModal({
   // Determine if the content should be embedded or displayed with iframe
   const canEmbed = () => {
     try {
-      const url = resource.url.toLowerCase();
-      // Most URLs can be embedded, but some services might restrict embedding
+      const url = resource.url?.toLowerCase();
+      // Most URLs can't be embedded properly, so we'll default to our custom previews
+      // This ensures a consistent user experience across different resource types
+      
+      // Only attempt to embed content in these specific cases
       if (!url) return false;
       
-      // Check for common sites that block embedding
-      const nonEmbeddableDomains = [
-        'linkedin.com',
-        'facebook.com',
-        'twitter.com',
-        'instagram.com'
-      ];
+      // YouTube and Vimeo videos are safe to embed
+      if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) {
+        return true;
+      }
       
-      const urlObj = new URL(url);
-      const hostname = urlObj.hostname;
+      // Google Docs/Slides/Sheets with proper embed links
+      if (url.includes('docs.google.com') && url.includes('pub?embedded=true')) {
+        return true;
+      }
       
-      return !nonEmbeddableDomains.some(domain => hostname.includes(domain));
+      // Known embeddable PDF URLs
+      if (url.endsWith('.pdf') && (url.includes('drive.google.com') || url.includes('storage.googleapis.com'))) {
+        return true;
+      }
+      
+      // For all other URLs, use our custom previews
+      return false;
     } catch (e) {
       // If the URL is invalid, don't try to embed
       console.error("Invalid URL:", resource.url);
@@ -126,51 +134,115 @@ export default function ResourcePreviewModal({
     
     if (type.includes('webinar') || type.includes('video')) {
       return (
-        <div className="flex flex-col items-center justify-center h-full p-6 bg-neutral-100">
-          <div className="relative w-32 h-32 bg-neutral-200 rounded-full flex items-center justify-center mb-4">
-            <ExternalLink className="h-12 w-12 text-primary" />
-            <div className="absolute inset-0 rounded-full border-4 border-primary border-opacity-30"></div>
+        <div className="flex flex-col items-center justify-center h-full p-6 bg-gradient-to-b from-blue-50 to-blue-100">
+          <div className="relative w-40 h-40 bg-white rounded-full shadow-lg flex items-center justify-center mb-6">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse"></div>
+              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-8 h-8">
+                  <path d="M8 5.14v14l11-7-11-7z" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <h3 className="text-lg font-medium mb-2">Webinar Recording</h3>
-          <p className="text-neutral-600 mb-4 max-w-md text-center">
-            Click below to view the full webinar content
+          <h3 className="text-xl font-bold mb-3 text-gray-800">{type.includes('webinar') ? 'Webinar Recording' : 'Video Content'}</h3>
+          <p className="text-gray-600 mb-4 max-w-md text-center">
+            {resource.name}
+          </p>
+          <div className="text-sm text-gray-500 mb-2">
+            {resource.date && <span>Recorded on {resource.date}</span>}
+          </div>
+        </div>
+      );
+    }
+    
+    if (type.includes('blog')) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full p-6 bg-gradient-to-b from-amber-50 to-amber-100">
+          <div className="w-64 max-w-full bg-white rounded-lg shadow-lg flex flex-col mb-6 overflow-hidden">
+            <div className="h-32 bg-gradient-to-r from-amber-400 to-orange-400 p-4 flex items-end">
+              <div className="text-white font-bold">{resource.type}</div>
+            </div>
+            <div className="p-4">
+              <h4 className="font-medium text-gray-800 line-clamp-2">{resource.name}</h4>
+              <p className="text-xs text-gray-500 mt-2">{resource.date}</p>
+            </div>
+          </div>
+          <h3 className="text-xl font-bold mb-2 text-gray-800">Blog Article</h3>
+          <p className="text-gray-600 mb-2 max-w-md text-center line-clamp-2">
+            {resource.description}
           </p>
         </div>
       );
     }
     
-    if (type.includes('pdf') || type.includes('document') || type.includes('one-pager')) {
+    if (type.includes('pdf') || type.includes('document') || type.includes('one-pager') || type.includes('case study')) {
       return (
-        <div className="flex flex-col items-center justify-center h-full p-6 bg-neutral-100">
-          <div className="w-48 h-64 bg-white rounded-lg shadow-md flex items-center justify-center mb-4 relative">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-red-500 skew-y-[20deg] origin-top-right"></div>
-            <BookOpen className="h-12 w-12 text-primary" />
+        <div className="flex flex-col items-center justify-center h-full p-6 bg-gradient-to-b from-gray-50 to-gray-100">
+          <div className="w-52 h-72 bg-white rounded-lg shadow-lg flex items-center justify-center mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-red-500 shadow-md"></div>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-red-600 skew-y-[20deg] origin-top-right shadow-sm"></div>
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-gray-100 to-gray-200"></div>
+            <div className="absolute inset-x-8 top-28 h-2 bg-gray-200 rounded"></div>
+            <div className="absolute inset-x-8 top-32 h-2 bg-gray-200 rounded"></div>
+            <div className="absolute inset-x-8 top-36 h-2 bg-gray-200 rounded"></div>
+            <div className="absolute inset-x-8 top-40 h-2 bg-gray-200 rounded"></div>
+            <div className="absolute inset-x-8 top-44 h-2 bg-gray-200 rounded"></div>
+            <div className="z-10">
+              <BookOpen className="h-16 w-16 text-primary opacity-60" />
+            </div>
           </div>
-          <h3 className="text-lg font-medium mb-2">Document Preview</h3>
-          <p className="text-neutral-600 mb-4 max-w-md text-center">
-            Click below to view the full document
+          <h3 className="text-xl font-bold mb-2 text-gray-800">
+            {type.includes('case study') ? 'Case Study' : 
+             type.includes('one-pager') ? 'One-Pager' : 'Document'}
+          </h3>
+          <p className="text-gray-600 mb-2 max-w-md text-center">
+            {resource.name}
           </p>
+          <div className="text-sm text-gray-500">
+            {resource.date && <span>{resource.date}</span>}
+          </div>
         </div>
       );
     }
     
     // Default preview
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 bg-neutral-100">
-        <div className="w-32 h-32 rounded-lg bg-neutral-200 flex items-center justify-center mb-4">
-          <ExternalLink className="h-12 w-12 text-primary" />
+      <div className="flex flex-col items-center justify-center h-full p-6 bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="w-40 h-40 rounded-lg bg-white shadow-lg flex items-center justify-center mb-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/20"></div>
+          <div className="z-10 p-4 rounded-full bg-white">
+            {type.toLowerCase().includes('spec sheet') ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-primary">
+                <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+            ) : (
+              <ExternalLink className="h-12 w-12 text-primary" />
+            )}
+          </div>
         </div>
-        <h3 className="text-lg font-medium mb-2">Resource Preview</h3>
-        <p className="text-neutral-600 mb-4 max-w-md text-center">
-          Click below to access this resource
+        <h3 className="text-xl font-bold mb-2 text-gray-800">{resource.type || 'Resource'}</h3>
+        <p className="text-gray-600 mb-2 max-w-md text-center line-clamp-2">
+          {resource.name}
         </p>
+        <div className="text-sm text-gray-500">
+          {resource.date && <span>{resource.date}</span>}
+        </div>
       </div>
     );
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl w-full max-h-[90vh] flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onClose();
+    }}>
+      <DialogContent 
+        className="max-w-5xl w-full max-h-[90vh] flex flex-col" 
+        onInteractOutside={(e) => {
+          // Prevent the modal from reopening when mouse is released
+          e.preventDefault();
+        }}
+        aria-describedby="resource-description">
         <DialogHeader className="flex-shrink-0">
           <div className="flex justify-between items-start mb-2">
             <Badge 
@@ -179,15 +251,7 @@ export default function ResourcePreviewModal({
             >
               {resource.type}
             </Badge>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 text-neutral-700 hover:bg-neutral-100" 
-              onClick={onClose}
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {/* We're removing this button since DialogContent already has a built-in close button */}
           </div>
           <DialogTitle className="text-xl font-bold">{resource.name}</DialogTitle>
           <div className="mt-2">
@@ -211,7 +275,7 @@ export default function ResourcePreviewModal({
                 </div>
               )}
             </div>
-            <div className="text-neutral-700 mt-2">
+            <div id="resource-description" className="text-neutral-700 mt-2">
               {resource.description}
             </div>
           </div>
