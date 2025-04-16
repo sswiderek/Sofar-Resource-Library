@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { Resource } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { EyeIcon, Share2, Download, TrendingUp } from "lucide-react";
+import { EyeIcon, TrendingUp, ArrowRight } from "lucide-react";
 import { getResourceTypeClasses } from "@/lib/resourceTypeColors";
-import { apiRequest } from "@/lib/queryClient";
 
 export default function PopularResources() {
   const [popularResources, setPopularResources] = useState<Resource[]>([]);
@@ -78,7 +77,7 @@ export default function PopularResources() {
         </CardHeader>
         <CardContent>
           <p className="text-neutral-600 text-sm">
-            No usage data available yet. Resources will appear here as they are viewed, shared, and downloaded.
+            No usage data available yet. Resources will appear here as they are viewed.
           </p>
         </CardContent>
       </Card>
@@ -112,18 +111,14 @@ export default function PopularResources() {
                   </Badge>
                 </div>
                 
-                <div className="flex items-center space-x-4 text-xs text-neutral-500">
+                <div className="flex items-center justify-between text-xs text-neutral-500">
                   <div className="flex items-center">
                     <EyeIcon className="h-3 w-3 mr-1" />
                     <span>{resource.viewCount || 0} views</span>
                   </div>
-                  <div className="flex items-center">
-                    <Share2 className="h-3 w-3 mr-1" />
-                    <span>{resource.shareCount || 0} shares</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Download className="h-3 w-3 mr-1" />
-                    <span>{resource.downloadCount || 0} downloads</span>
+                  <div className="flex items-center text-primary">
+                    <span>View</span>
+                    <ArrowRight className="h-3 w-3 ml-1" />
                   </div>
                 </div>
               </a>

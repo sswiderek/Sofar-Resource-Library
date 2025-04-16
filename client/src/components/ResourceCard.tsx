@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getResourceTypeClasses } from "@/lib/resourceTypeColors";
 import { useResourceTracking } from "@/hooks/use-resource-tracking";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface ResourceCardProps {
   resource: Resource;
