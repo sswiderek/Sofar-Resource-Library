@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EyeIcon, TrendingUp, ArrowRight } from "lucide-react";
 import { getResourceTypeClasses } from "@/lib/resourceTypeColors";
+import { useResourceTracking } from "@/hooks/use-resource-tracking";
 
 export default function PopularResources() {
   const [popularResources, setPopularResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { trackView } = useResourceTracking();
+  const [viewedResources, setViewedResources] = useState<Record<number, boolean>>({});
   
   // Use proper fetch directly
   useEffect(() => {
