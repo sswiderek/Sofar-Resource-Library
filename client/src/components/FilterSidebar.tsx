@@ -36,11 +36,26 @@ export default function FilterSidebar({
   const [search, setSearch] = useState(filter.search);
 
   // Get metadata for filling filter options
-  const { data, isLoading, isError } = useQuery<Metadata>({
+  const { data, isLoading, isError, refetch } = useQuery<Metadata>({
     queryKey: ['/api/resources/metadata'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    // Increase retry attempts for preview environments
+    retry: 3,
+    retryDelay: 1000,
   });
+
+  // Force a refetch if data is empty but should be available
+  useEffect(() => {
+    if (!isLoading && data && 
+        (data.types.length === 0 || 
+         data.products.length === 0 || 
+         data.audiences.length === 0)) {
+      // If data is empty after loading, try refetching once
+      console.log("Metadata appears empty, refetching...");
+      refetch();
+    }
+  }, [data, isLoading, refetch]);
 
   // Ensure we have default values for the metadata
   const metadata: Metadata = data || {
@@ -207,11 +222,11 @@ export default function FilterSidebar({
     
     return (
       <>
-        {/* Content Visibility Filter */}
+        {/* Publicly Shareable Filter (renamed from "Content Type") */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
             <span className="w-3 h-3 bg-primary rounded-full mr-2"></span>
-            Content Type
+            Publicly Shareable?
           </h3>
           <div className="space-y-2.5">
             {["internal", "external"].map((visibility) => (
@@ -232,6 +247,44 @@ export default function FilterSidebar({
                 </Label>
               </div>
             ))}
+          </div>
+        </div>
+        
+        {/* Solutions Filter - Moved to the top as requested */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+            Solution
+          </h3>
+          <div className="space-y-2.5">
+            {metadata.solutions && metadata.solutions.length > 0 ? (
+              metadata.solutions.map((solution: string) => (
+                <div key={solution} className="flex items-center">
+                  <Checkbox
+                    id={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('solutions', solution)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('solutions', solution, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-purple-500"
+                  />
+                  <Label
+                    htmlFor={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {solution}
+                  </Label>
+                </div>
+              ))
+            ) : isLoading ? (
+              <div className="text-xs text-neutral-500 italic">
+                Loading solutions...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No solutions available
+              </div>
+            )}
           </div>
         </div>
         
@@ -382,44 +435,6 @@ export default function FilterSidebar({
             ) : (
               <div className="text-xs text-neutral-500">
                 No journey stages available
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Solutions Filter */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
-            <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
-            Solution
-          </h3>
-          <div className="space-y-2.5">
-            {metadata.solutions && metadata.solutions.length > 0 ? (
-              metadata.solutions.map((solution: string) => (
-                <div key={solution} className="flex items-center">
-                  <Checkbox
-                    id={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
-                    checked={isSelected('solutions', solution)}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxChange('solutions', solution, checked as boolean)
-                    }
-                    className="data-[state=checked]:bg-purple-500"
-                  />
-                  <Label
-                    htmlFor={`solution-${solution.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="ml-2 text-sm text-neutral-700"
-                  >
-                    {solution}
-                  </Label>
-                </div>
-              ))
-            ) : isLoading ? (
-              <div className="text-xs text-neutral-500 italic">
-                Loading solutions...
-              </div>
-            ) : (
-              <div className="text-xs text-neutral-500">
-                No solutions available
               </div>
             )}
           </div>
