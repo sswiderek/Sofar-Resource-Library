@@ -320,22 +320,22 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
               <button 
                 className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
-                  const query = "What case studies demonstrate fuel savings with Wayfinder?";
+                  const query = "Can you recommend case studies that show how customers have achieved fuel savings using Wayfinder technology?";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                Wayfinder fuel savings case studies
+                Case studies about fuel savings with Wayfinder
               </button>
               <button 
                 className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
-                  const query = "Compare the different sensors available for the Spotter Platform";
+                  const query = "I'm preparing for a technical presentation. What materials do we have that explain how our Smart Mooring Sensors work?";
                   setQuestion(query);
                   mutate(query);
                 }}
               >
-                Spotter Platform sensors
+                Technical materials about Smart Mooring Sensors
               </button>
               <button 
                 className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
