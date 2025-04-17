@@ -293,7 +293,7 @@ export class MemStorage implements IStorage {
           break;
         case 'newest':
           filtered.sort((a, b) => {
-            // Parse dates and sort by newest first
+            // Parse dates and sort by newest first (using the "Last Updated" date from Notion)
             const aDate = new Date(a.date);
             const bDate = new Date(b.date);
             return bDate.getTime() - aDate.getTime(); // Descending order
@@ -301,7 +301,7 @@ export class MemStorage implements IStorage {
           break;
         case 'oldest':
           filtered.sort((a, b) => {
-            // Parse dates and sort by oldest first
+            // Parse dates and sort by oldest first (using the "Last Updated" date from Notion)
             const aDate = new Date(a.date);
             const bDate = new Date(b.date);
             return aDate.getTime() - bDate.getTime(); // Ascending order
