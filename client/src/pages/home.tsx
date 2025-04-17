@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -13,6 +22,10 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  TrendingUp,
+  CalendarDays,
 } from "lucide-react";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
@@ -233,29 +246,40 @@ export default function Home() {
         <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-neutral-600">Sort by:</span>
-            <div className="relative inline-block">
-              <select
-                className="h-9 appearance-none rounded-md border border-neutral-200 bg-white pl-3 pr-8 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/70"
-                value={filters.sortBy || "relevance"}
-                onChange={(e) => {
-                  const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
-                  handleFilterChange({
-                    ...filters,
-                    sortBy: sortBy === "relevance" ? undefined : sortBy,
-                  });
-                }}
-              >
-                <option value="relevance">Relevance</option>
-                <option value="popularity">Most Popular</option>
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-neutral-500">
-                <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                </svg>
-              </div>
-            </div>
+            <Select
+              value={filters.sortBy || "relevance"}
+              onValueChange={(value) => {
+                const sortBy = value as 'relevance' | 'popularity' | 'newest' | 'oldest';
+                handleFilterChange({
+                  ...filters,
+                  sortBy: sortBy === "relevance" ? undefined : sortBy,
+                });
+              }}
+            >
+              <SelectTrigger className="w-[180px] h-9 bg-white">
+                <SelectValue placeholder="Relevance" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="relevance" className="flex items-center">
+                    <ArrowDownAZ className="mr-2 h-4 w-4" />
+                    <span>Relevance</span>
+                  </SelectItem>
+                  <SelectItem value="popularity" className="flex items-center">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    <span>Most Popular</span>
+                  </SelectItem>
+                  <SelectItem value="newest" className="flex items-center">
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    <span>Newest First</span>
+                  </SelectItem>
+                  <SelectItem value="oldest" className="flex items-center">
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    <span>Oldest First</span>
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="flex items-center gap-3">

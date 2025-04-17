@@ -73,6 +73,11 @@ export default function ResourceList({ resource }: ResourceListProps) {
             className="px-4"
             onClick={(e) => {
               e.stopPropagation(); // Prevent double-firing the parent click
+              // We need to make sure we also track the view when the button is clicked directly
+              if (!viewCounted) {
+                trackView(resource.id);
+                setViewCounted(true);
+              }
               window.open(resource.url, "_blank", "noopener,noreferrer");
             }}
           >
