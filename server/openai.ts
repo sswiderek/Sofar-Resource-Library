@@ -50,9 +50,9 @@ export async function processQuestion(
     // Step 3: Prepare context with the most relevant resources only
     const contextText = prepareResourcesContext(mostRelevantResources);
     
-    // Step 4: Generate answer using OpenAI (using gpt-3.5-turbo for reliable responses)
+    // Step 4: Generate answer using OpenAI (using the latest gpt-4.1-nano model)
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Using a widely available model that works with all API keys
+      model: "gpt-4.1-nano", // Using the newest cost-effective GPT model with period in name
       messages: [
         {
           role: "system",
