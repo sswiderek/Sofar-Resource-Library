@@ -55,7 +55,7 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackVi
       const urls = linkText.match(urlRegex) || [];
       
       elements.push(
-        <div key={`resource-entry-${idx}`} className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
+        <div key={`resource-formatted-${idx}`} className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
           <h4 className="font-medium text-primary mb-2">{idx + 1}. {resourceName}</h4>
           
           {description && (
@@ -98,49 +98,118 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackVi
     
     return elements;
   } else {
-    // Standard text formatting for non-resource-entry responses
+    // Enhanced formatting for standard responses
+    // Let's improve the formatting with better visual structure
     
-    // URL regex pattern to match URLs in text
-    const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+    // First, try to detect if there are numbered points in the text
+    const numberedListPattern = /(\d+\.\s+[^\n]+)/g;
+    const hasNumberedList = numberedListPattern.test(text);
     
-    // Split the text into parts based on the URLs
-    const parts = text.split(urlRegex);
-    
-    // Extract all URLs that match the pattern
-    const urls = text.match(urlRegex) || [];
-    
-    // Combine text and URL elements
-    const elements: React.ReactNode[] = [];
-    
-    // Process each part of the text
-    parts.forEach((part, index) => {
-      // For text parts, check if they contain resource names and link them
-      if (part) {
-        const linkedPart = addResourceLinks(part, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
-        elements.push(<span key={`text-${index}`}>{linkedPart}</span>);
-      }
+    if (hasNumberedList) {
+      // Format text with numbered list styling
+      const parts = text.split(numberedListPattern);
+      const numberedItems = text.match(numberedListPattern) || [];
       
-      // If there's a URL that follows this text part, add it as a link
-      if (urls[index]) {
-        const url = urls[index];
-        const label = url.replace(/^https?:\/\//, '').split('/')[0]; // Use domain as label
-        
+      const elements: React.ReactNode[] = [];
+      
+      // Add introduction text if present
+      if (parts[0].trim()) {
         elements.push(
-          <a 
-            key={`link-${index}`}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
-          >
-            <ExternalLink className="h-3 w-3" />
-            <span className="underline">{label}</span>
-          </a>
+          <p key="intro-para" className="mb-3">
+            {addResourceLinks(parts[0].trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+          </p>
         );
       }
-    });
-    
-    return elements;
+      
+      // Add numbered items with better formatting
+      elements.push(
+        <div key="numbered-list" className="space-y-2 my-3">
+          {numberedItems.map((item, idx) => (
+            <div key={`numbered-item-${idx}`} className="flex">
+              <div className="font-semibold text-primary mr-2">{item.split('.')[0]}.</div>
+              <div>
+                {addResourceLinks(item.substring(item.indexOf('.') + 1).trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+      
+      // Add any conclusion text
+      // Check if the final part exists and isn't included in the numbered items
+      const finalPart = parts[parts.length - 1];
+      if (finalPart && !numberedItems.some((item: string) => item === finalPart)) {
+        elements.push(
+          <p key="conclusion" className="mt-3">
+            {addResourceLinks(parts[parts.length - 1].trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+          </p>
+        );
+      }
+      
+      return elements;
+    } else {
+      // Standard text formatting with URL highlighting
+      // URL regex pattern to match URLs in text
+      const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+      
+      // Split the text into parts based on the URLs
+      const parts = text.split(urlRegex);
+      
+      // Extract all URLs that match the pattern
+      const urls = text.match(urlRegex) || [];
+      
+      // Combine text and URL elements
+      const elements: React.ReactNode[] = [];
+      
+      // Process each part of the text
+      parts.forEach((part, index) => {
+        // For text parts, check if they contain resource names and link them
+        if (part) {
+          const linkedPart = addResourceLinks(part, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
+          elements.push(<span key={`text-part-${index}`}>{linkedPart}</span>);
+        }
+        
+        // If there's a URL that follows this text part, add it as a link
+        if (urls[index]) {
+          const url = urls[index];
+          const label = url.replace(/^https?:\/\//, '').split('/')[0]; // Use domain as label
+          
+          elements.push(
+            <a 
+              key={`link-url-${index}`}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
+            >
+              <ExternalLink className="h-3 w-3" />
+              <span className="underline">{label}</span>
+            </a>
+          );
+        }
+      });
+      
+      // Split the text by paragraphs for better visual formatting
+      if (elements.length === 1 && 
+          typeof elements[0] === 'object' && 
+          elements[0] !== null && 
+          'props' in elements[0] && 
+          elements[0].props && 
+          typeof elements[0].props.children === 'string') {
+        const paragraphs = elements[0].props.children.split('\n\n');
+        if (paragraphs.length > 1) {
+          return (
+            <div className="space-y-3">
+              {paragraphs.map((para: string, idx: number) => (
+                <p key={`para-${idx}`}>{para.trim()}</p>
+              ))}
+            </div>
+          );
+        }
+      }
+      
+      return elements;
+    }
   }
 }
 
@@ -528,7 +597,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
         )}
         
         {/* Show streaming answer as it comes in */}
-        {isStreaming && streamedAnswer && (
+        {isStreaming && (
           <div className="mt-4">
             <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
               <div className="flex items-center mb-3">
@@ -540,7 +609,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 </div>
               </div>
               <div className="text-sm prose prose-sm max-w-none">
-                {streamedAnswer}
+                {streamedAnswer || "Finding relevant resources for your question..."}
                 <span className="inline-block w-1 h-4 bg-primary animate-pulse ml-1"></span>
               </div>
             </div>
@@ -561,7 +630,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 <Sparkles className="h-5 w-5 mr-2 text-primary" />
                 <h3 className="font-semibold text-primary">AI Answer</h3>
               </div>
-              <div className="text-sm prose prose-sm max-w-none">
+              <div className="text-sm prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-2 prose-headings:mt-4 prose-li:my-1 prose-ul:my-2">
                 {formatAnswerWithLinks(aiAnswer.answer, resources, trackView, viewedResources, setViewedResources)}
               </div>
             </div>
@@ -578,16 +647,16 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                   </div>
                 </div>
                 <div className="max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                  <ul className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {relevantResources.map((resource, index) => {
                       // Get the resource type badge class using our utility function
                       const badgeClass = getResourceTypeClasses(resource.type);
                       
                       return (
-                        <li key={resource.id} className="bg-white border border-gray-200 shadow-sm p-3 rounded-md text-sm hover:shadow-md transition-shadow">
-                          <div className="flex items-start justify-between">
-                            <div className="font-medium text-primary flex-1 line-clamp-1">{resource.name}</div>
-                            <div className={`flex items-center text-xs ${badgeClass} px-2 py-1 rounded-full ml-2`}>
+                        <div key={`resource-${resource.id}`} className="bg-white border border-gray-200 shadow-sm p-3 rounded-md text-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                          <div className="flex items-start justify-between mb-1">
+                            <div className="font-medium text-primary flex-1 line-clamp-2 leading-tight">{resource.name}</div>
+                            <div className={`flex items-center text-xs ${badgeClass} px-2 py-1 rounded-full ml-2 shrink-0`}>
                               <span className="uppercase text-[10px]">{resource.type}</span>
                             </div>
                           </div>
@@ -596,16 +665,16 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                             <span className="inline-block">{resource.date}</span>
                           </div>
                           
-                          <div className="text-xs mt-2 line-clamp-2 text-gray-700">
+                          <div className="text-xs mt-2 line-clamp-2 text-gray-700 flex-grow">
                             {resource.description}
                           </div>
                           
-                          <div className="mt-3 flex gap-2">
+                          <div className="mt-auto pt-3 flex gap-2">
                             <a 
                               href={resource.url}
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="bg-primary text-white text-xs px-3 py-1 rounded hover:bg-primary/90 inline-flex items-center"
+                              className="bg-primary text-white text-xs px-3 py-1.5 rounded hover:bg-primary/90 inline-flex items-center gap-1.5 w-full justify-center"
                               onClick={(e) => {
                                 e.preventDefault();
                                 
@@ -619,13 +688,14 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                                 window.open(resource.url, "_blank", "noopener,noreferrer");
                               }}
                             >
+                              <ExternalLink className="h-3 w-3" />
                               View Resource
                             </a>
                           </div>
-                        </li>
+                        </div>
                       );
                     })}
-                  </ul>
+                  </div>
                 </div>
               </div>
             )}

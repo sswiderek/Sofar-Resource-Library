@@ -72,8 +72,14 @@ Format for RELEVANT_RESOURCES: ["Resource Name 1", "Resource Name 2", ...]`;
     
     // If streaming is requested, use the stream option
     if (streamHandler) {
+      // Send initial searching message to improve user experience
+      streamHandler("Searching for relevant resources to answer your question...\n\n", false);
+      
       // For streaming, we'll collect the full response text as it comes in
       let fullResponseText = '';
+      
+      // After finding resources, update the user
+      streamHandler(`Found ${mostRelevantResources.length} potentially relevant resources. Analyzing content to answer your question...\n\n`, false);
       
       const stream = await openai.chat.completions.create({
         model: "gpt-4.1-nano", // Using the newest cost-effective GPT model with period in name
