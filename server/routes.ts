@@ -352,9 +352,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { question } = parseResult.data;
       
-      // For question answering, we DO need to wait for embeddings to be up to date
+      // Only wait for embeddings if needed for question answering
       if (resourcesNeedEmbeddingUpdate) {
-        await updateResourceEmbeddings();
+        // Set a reasonable timeout limit to prevent excessive waiting
+        const embeddingPromise = updateResourceEmbeddings();
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Embedding generation timeout exceeded")), 15000);
+        });
+        
+        try {
+          // Wait for either embeddings to complete or timeout to occur
+          await Promise.race([embeddingPromise, timeoutPromise]);
+        } catch (error) {
+          // Type-safe error handling
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          log(`Warning: ${errorMessage}, proceeding with available resources`);
+          // Continue with existing resources even if embeddings aren't complete
+        }
       }
       
       // Get all resources (no team filtering)

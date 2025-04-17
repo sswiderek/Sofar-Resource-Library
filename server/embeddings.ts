@@ -59,42 +59,68 @@ async function getCachedOrNewEmbedding(query: string): Promise<number[]> {
 
 /**
  * Creates embeddings for resources using OpenAI's embeddings API
+ * Optimized to process resources in batches for better performance
  */
 export async function createResourceEmbeddings(resources: Resource[]): Promise<ResourceWithEmbedding[]> {
   const resourcesWithEmbeddings: ResourceWithEmbedding[] = [];
+  const batchSize = 20; // Process 20 resources at a time to improve performance
   
-  log(`Creating embeddings for ${resources.length} resources...`);
+  log(`Creating embeddings for ${resources.length} resources in batches of ${batchSize}...`);
   
-  for (const resource of resources) {
-    try {
-      // Combine all relevant fields into a single text for embedding
-      const content = [
-        resource.name,
-        resource.detailedDescription || resource.description,
-        resource.type,
-        resource.product.join(' '),
-        resource.audience.join(' '),
-        resource.messagingStage
-      ].filter(Boolean).join(' ');
-      
-      // Create embedding using OpenAI
-      const response = await openai.embeddings.create({
-        model: "text-embedding-ada-002",
-        input: content,
+  // Split resources into batches
+  for (let i = 0; i < resources.length; i += batchSize) {
+    const batch = resources.slice(i, i + batchSize);
+    log(`Processing batch ${Math.floor(i/batchSize) + 1} of ${Math.ceil(resources.length/batchSize)}`);
+    
+    // Process each batch in parallel with a slight delay to avoid rate limits
+    const batchPromises = batch.map((resource, index) => {
+      return new Promise<ResourceWithEmbedding | null>(async (resolve) => {
+        // Add a slight delay for each resource to avoid rate limits
+        setTimeout(async () => {
+          try {
+            // Combine all relevant fields into a single text for embedding
+            const content = [
+              resource.name,
+              resource.detailedDescription || resource.description,
+              resource.type,
+              resource.product.join(' '),
+              resource.audience.join(' '),
+              resource.messagingStage
+            ].filter(Boolean).join(' ');
+            
+            // Create embedding using OpenAI
+            const response = await openai.embeddings.create({
+              model: "text-embedding-ada-002",
+              input: content,
+            });
+            
+            resolve({
+              resource,
+              embedding: response.data[0].embedding,
+            });
+          } catch (error) {
+            log(`Error creating embedding for resource "${resource.name}": ${error instanceof Error ? error.message : String(error)}`);
+            // Return null for failed resources
+            resolve(null);
+          }
+        }, index * 100); // Stagger requests slightly (100ms between each resource in a batch)
       });
-      
-      resourcesWithEmbeddings.push({
-        resource,
-        embedding: response.data[0].embedding,
-      });
-      
-    } catch (error) {
-      log(`Error creating embedding for resource "${resource.name}": ${error instanceof Error ? error.message : String(error)}`);
-      // Continue with other resources even if one fails
+    });
+    
+    // Wait for all embeddings in this batch to complete
+    const batchResults = await Promise.all(batchPromises);
+    
+    // Add successful embeddings to the result array
+    resourcesWithEmbeddings.push(...batchResults.filter(Boolean) as ResourceWithEmbedding[]);
+    
+    // Add a small delay between batches to avoid rate limits
+    if (i + batchSize < resources.length) {
+      log(`Batch complete. Waiting briefly before processing next batch...`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
   
-  log(`Created embeddings for ${resourcesWithEmbeddings.length} resources`);
+  log(`Created embeddings for ${resourcesWithEmbeddings.length} out of ${resources.length} resources`);
   return resourcesWithEmbeddings;
 }
 
