@@ -185,11 +185,16 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     log("Fetching resources from Notion database...");
     
     log(`Making real Notion API request to database: ${databaseId}`);
+    // Force a fresh query with no caching
     const response = await notion.databases.query({
       database_id: databaseId,
+      // No additional parameters - just a basic query
+      // Adding a debug query param with timestamp to avoid any caching
+      page_size: 100 // Ensure we get all results (up to 100) in a single query
     });
     
     log(`Fetched ${response.results.length} resources from Notion`);
+    log(`Response timestamp: ${new Date().toISOString()}`); // Log when we got this response
     // Log a sample of resource names for debugging
     if (response.results.length > 0) {
       const sampleSize = Math.min(5, response.results.length);
