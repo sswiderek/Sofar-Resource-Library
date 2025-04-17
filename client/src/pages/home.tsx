@@ -258,25 +258,55 @@ export default function Home() {
               }}
             >
               <SelectTrigger className="w-[180px] h-9 bg-white">
-                <SelectValue placeholder="Relevance" />
+                <SelectValue placeholder="Relevance">
+                  {filters.sortBy === "relevance" || !filters.sortBy ? (
+                    <div className="flex items-center">
+                      <ArrowDownAZ className="mr-2 h-4 w-4" />
+                      <span>Relevance</span>
+                    </div>
+                  ) : filters.sortBy === "popularity" ? (
+                    <div className="flex items-center">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      <span>Most Popular</span>
+                    </div>
+                  ) : filters.sortBy === "newest" ? (
+                    <div className="flex items-center">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <span>Newest First</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <span>Oldest First</span>
+                    </div>
+                  )}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="relevance" className="flex items-center">
-                    <ArrowDownAZ className="mr-2 h-4 w-4" />
-                    <span>Relevance</span>
+                  <SelectItem value="relevance">
+                    <div className="flex items-center">
+                      <ArrowDownAZ className="mr-2 h-4 w-4" />
+                      <span>Relevance</span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="popularity" className="flex items-center">
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    <span>Most Popular</span>
+                  <SelectItem value="popularity">
+                    <div className="flex items-center">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      <span>Most Popular</span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="newest" className="flex items-center">
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    <span>Newest First</span>
+                  <SelectItem value="newest">
+                    <div className="flex items-center">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <span>Newest First</span>
+                    </div>
                   </SelectItem>
-                  <SelectItem value="oldest" className="flex items-center">
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    <span>Oldest First</span>
+                  <SelectItem value="oldest">
+                    <div className="flex items-center">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <span>Oldest First</span>
+                    </div>
                   </SelectItem>
                 </SelectGroup>
               </SelectContent>

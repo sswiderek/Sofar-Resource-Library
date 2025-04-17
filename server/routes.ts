@@ -380,8 +380,27 @@ async function syncResourcesWithNotion() {
     const notionResources = await fetchResourcesFromNotion();
     log(`Fetched ${notionResources.length} resources from Notion`);
     
+    // Get all existing resources to check for deleted ones
+    const existingResources = await storage.getResources();
+    
+    // Create a map of Notion IDs from the latest fetch
+    const notionResourceMap = new Map();
+    notionResources.forEach(resource => {
+      notionResourceMap.set(resource.notionId, resource);
+    });
+    
     // Keep track of whether any resources were updated
     let resourcesUpdated = false;
+    
+    // Check for resources that exist in storage but not in Notion (deleted)
+    for (const existingResource of existingResources) {
+      if (!notionResourceMap.has(existingResource.notionId)) {
+        // Resource was deleted in Notion, remove it from storage
+        await storage.deleteResource(existingResource.id);
+        log(`Deleted resource: ${existingResource.name} (no longer in Notion)`);
+        resourcesUpdated = true;
+      }
+    }
     
     // Process each resource from Notion
     for (const resource of notionResources) {
@@ -406,7 +425,7 @@ async function syncResourcesWithNotion() {
       }
     }
     
-    // Only update embeddings if resources were added or updated
+    // Only update embeddings if resources were added, updated, or removed
     if (resourcesUpdated) {
       resourcesNeedEmbeddingUpdate = true;
       
