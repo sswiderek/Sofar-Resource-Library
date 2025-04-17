@@ -250,10 +250,28 @@ export class MemStorage implements IStorage {
   async getFilteredResources(filter: ResourceFilter): Promise<Resource[]> {
     console.log(`Filtering resources with filter:`, JSON.stringify(filter, null, 2));
     
+    // Hard-coded list of resource names to exclude (temporarily while waiting for Notion to update)
+    const excludedResources = [
+      "Spotter Spec Sheet (Temperature Sensor)",
+      "Spotter Spec Sheet (Pressure Sensor)",
+      "Spotter Spec Sheet (All spec sheets in one)",
+      "Spotter Spec Sheet (Smart Mooring)",
+      "Spotter Spec Sheet (Current Meter)",
+      "Spotter Spec Sheet (Dissolved Oxygen)",
+      "Spotter Spec Sheet (Hydrophone)",
+      "Spotter Spec Sheet (Core)"
+    ];
+    
     const allResources = Array.from(this.resources.values());
     console.log(`Total resources before filtering: ${allResources.length}`);
     
     const filtered = allResources.filter(resource => {
+      // Filter out resources that have been manually flagged for exclusion
+      if (excludedResources.includes(resource.name)) {
+        console.log(`Filtering out excluded resource: ${resource.name}`);
+        return false;
+      }
+    
       // Filter by content visibility if specified
       if (filter.contentVisibility && filter.contentVisibility.length > 0) {
         // If the resource doesn't have contentVisibility, default to "both"
