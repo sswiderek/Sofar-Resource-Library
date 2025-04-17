@@ -24,6 +24,10 @@ const questionSchema = z.object({
 // Track when we last synced with Notion
 let lastSyncTime: Date | null = null;
 
+// Flag to track if resources need embedding update and if we're currently processing
+let resourcesNeedEmbeddingUpdate = false;
+let isGeneratingEmbeddings = false;
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
   // prefix all routes with /api
@@ -42,8 +46,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await syncResourcesWithNotion();
       }
       
-      // Check if we need to update embeddings (will only run if needed)
-      await updateResourceEmbeddings();
+      // Start embedding generation in the background if needed but don't wait for it
+      // This allows faster initial page load
+      if (resourcesNeedEmbeddingUpdate && !isGeneratingEmbeddings) {
+        updateResourceEmbeddings().catch(err => {
+          log(`Background embedding generation error: ${err.message}`);
+        });
+      }
       
       // Parse and validate filter parameters
       const filter = {
@@ -335,8 +344,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { question } = parseResult.data;
       
-      // Ensure embeddings are up to date before using them for search
-      await updateResourceEmbeddings();
+      // For question answering, we DO need to wait for embeddings to be up to date
+      if (resourcesNeedEmbeddingUpdate) {
+        await updateResourceEmbeddings();
+      }
       
       // Get all resources (no team filtering)
       const resources = await storage.getResources();
@@ -358,8 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return server;
 }
 
-// Track which resources have been updated since last embeddings creation
-let resourcesNeedEmbeddingUpdate = false;
+// Continue with functions below
 
 // Helper function to sync resources with Notion - optimized to track changes
 async function syncResourcesWithNotion() {
@@ -423,7 +433,15 @@ async function syncResourcesWithNotion() {
 
 // Helper function to update resource embeddings only when needed
 async function updateResourceEmbeddings() {
-  if (resourcesNeedEmbeddingUpdate) {
+  // If we're already generating embeddings or don't need to update, skip
+  if (!resourcesNeedEmbeddingUpdate || isGeneratingEmbeddings) {
+    return;
+  }
+  
+  try {
+    // Set flag to prevent multiple concurrent generations
+    isGeneratingEmbeddings = true;
+    
     // Refresh resources after updates
     const updatedResources = await storage.getResources();
     
@@ -432,9 +450,15 @@ async function updateResourceEmbeddings() {
     // Create embeddings for all resources
     await createResourceEmbeddings(updatedResources);
     
-    // Reset the flag
+    // Reset the flag after completion
     resourcesNeedEmbeddingUpdate = false;
     
     log("Resource embeddings updated");
+  } catch (error) {
+    log(`Error creating embeddings: ${error instanceof Error ? error.message : String(error)}`);
+    // Don't reset the resourcesNeedEmbeddingUpdate flag on error, so we'll try again later
+  } finally {
+    // Always reset the generation flag when done
+    isGeneratingEmbeddings = false;
   }
 }
