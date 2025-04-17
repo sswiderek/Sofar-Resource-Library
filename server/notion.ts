@@ -155,38 +155,22 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     // Check if we have Notion API Key
     const apiKey = process.env.NOTION_API_KEY;
     
-    // If no API key, return mock data only if this is development or testing
+    // If no API key, return empty array to ensure we only show accurate data
     if (!apiKey) {
-      log("No Notion API key found. Using mock resource data for development only.");
-      
-      // Force production mode to properly sync with Notion and avoid mock data
-      const isProduction = true;
-      
-      // In production, return empty array to ensure we show accurate data
-      if (isProduction) {
-        log("Production environment detected. Returning empty array instead of mock data.");
-        return [];
-      }
-      
-      return mockResources;
+      log("IMPORTANT: No Notion API key found. Returning empty array.");
+      log("Please set NOTION_API_KEY in your environment variables.");
+      log("See notion-connection-guide.md for setup instructions.");
+      return [];
     }
     
     const notion = getNotionClient();
     let databaseId = process.env.NOTION_DATABASE_ID;
     
     if (!databaseId) {
-      log("No Notion database ID found. Using mock resource data for development only.");
-      
-      // Force production mode to properly sync with Notion and avoid mock data
-      const isProduction = true;
-      
-      // In production, return empty array
-      if (isProduction) {
-        log("Production environment detected. Returning empty array instead of mock data.");
-        return [];
-      }
-      
-      return mockResources;
+      log("IMPORTANT: No Notion database ID found. Returning empty array.");
+      log("Please set NOTION_DATABASE_ID in your environment variables.");
+      log("See notion-connection-guide.md for setup instructions.");
+      return [];
     }
     
     // Format database ID if it doesn't have hyphens
@@ -301,17 +285,11 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       log("Unexpected error. Please check the error message above for details.");
     }
     
-    // Force production mode to properly sync with Notion and avoid mock data
-    const isProduction = true;
-    
-    // In production, return empty array to ensure we show accurate data
-    if (isProduction) {
-      log("Production environment detected. Returning empty array instead of mock data.");
-      return [];
-    }
-    
-    log("Development environment detected. Using mock resource data for development only.");
-    return mockResources;
+    // ALWAYS return empty array instead of mock data to ensure we show accurate data
+    log("IMPORTANT: Returning empty array because Notion API failed.");
+    log("Please check your Notion API key and database ID to ensure they are correct.");
+    log("See notion-connection-guide.md for setup instructions.");
+    return [];
   }
 }
 
