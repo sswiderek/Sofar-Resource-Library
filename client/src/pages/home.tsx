@@ -10,16 +10,14 @@ import {
   RefreshCw,
   LayoutGrid,
   List,
-  Search,
-  Sparkles,
   X,
-  Mail,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
-import PopularResources from "@/components/PopularResources";
 import { Resource } from "@shared/schema";
 import {
   ResourceFilters,
@@ -28,20 +26,33 @@ import {
 } from "@/lib/resourceFilters";
 import { apiRequest } from "@/lib/queryClient";
 
+// Interface for paginated response
+interface PaginatedResourcesResponse {
+  resources: Resource[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export default function Home() {
   // State
   const [filters, setFilters] = useState<ResourceFilters>(initialFilters);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [showLeadsCallout, setShowLeadsCallout] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 30; // Resources per page
 
   // Hooks
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
   // Build query string for API request
-  const filterQuery = buildFilterQueryString(filters);
+  const filterQuery = buildFilterQueryString(filters) + 
+    `&page=${currentPage}&limit=${limit}`;
 
   // Log the filter query for debugging
   console.log("Filter query:", filterQuery);
@@ -50,15 +61,25 @@ export default function Home() {
   // State for sync loading indicator
   const [isSyncing, setIsSyncing] = useState(false);
   
-  // Fetch resources based on filter
+  // Fetch resources based on filter with pagination
   const {
-    data: resources = [],
+    data,
     isLoading,
     error,
     refetch,
-  } = useQuery<Resource[]>({
+  } = useQuery<PaginatedResourcesResponse>({
     queryKey: [`/api/resources?${filterQuery}`],
   });
+
+  // Extract resources and pagination info
+  const resources = data?.resources || [];
+  const pagination = data?.pagination || { page: 1, limit, total: 0, totalPages: 1 };
+  
+  // Navigate between pages
+  const handlePageChange = (newPage: number) => {
+    window.scrollTo(0, 0); // Scroll to top on page change
+    setCurrentPage(newPage);
+  };
 
   // Force sync with Notion
   const handleSync = async () => {
@@ -88,6 +109,8 @@ export default function Home() {
   const handleFilterChange = (
     newFilters: ResourceFilters,
   ) => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
     setFilters((prevFilters) => ({
       ...prevFilters,
       ...newFilters,
@@ -96,6 +119,7 @@ export default function Home() {
 
   // Clear all filters
   const handleClearFilters = () => {
+    setCurrentPage(1);
     setFilters({
       ...initialFilters,
     });
@@ -298,6 +322,43 @@ export default function Home() {
             {resources.map((resource: Resource) => (
               <ResourceList key={resource.id} resource={resource} />
             ))}
+          </div>
+        )}
+
+        {/* Pagination UI */}
+        {!isLoading && pagination && pagination.totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
+                disabled={pagination.page === 1}
+                className="px-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous</span>
+              </Button>
+              
+              <div className="text-sm text-neutral-600">
+                Page {pagination.page} of {pagination.totalPages}
+                <span className="mx-2">·</span>
+                <span className="text-neutral-500">
+                  {pagination.total} resources total
+                </span>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
+                disabled={pagination.page === pagination.totalPages}
+                className="px-2"
+              >
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next</span>
+              </Button>
+            </div>
           </div>
         )}
       </div>

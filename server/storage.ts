@@ -30,6 +30,7 @@ export interface IStorage {
   updateResource(id: number, resource: Partial<InsertResource>): Promise<Resource | undefined>;
   deleteResource(id: number): Promise<boolean>;
   getFilteredResources(filter: ResourceFilter): Promise<Resource[]>;
+  getFilteredResourcesPaginated(filter: ResourceFilter, page: number, limit: number): Promise<{resources: Resource[], total: number}>;
   
   // Resource usage tracking methods
   incrementResourceViews(id: number): Promise<Resource | undefined>;
@@ -217,6 +218,27 @@ export class MemStorage implements IStorage {
     return this.resources.delete(id);
   }
 
+  // Get filtered resources with the options to paginate
+  async getFilteredResourcesPaginated(
+    filter: ResourceFilter,
+    page: number = 1,
+    limit: number = 30
+  ): Promise<{resources: Resource[], total: number}> {
+    // Get all filtered resources first
+    const allFilteredResources = await this.getFilteredResources(filter);
+    
+    // Calculate pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedResources = allFilteredResources.slice(startIndex, endIndex);
+    
+    return {
+      resources: paginatedResources,
+      total: allFilteredResources.length
+    };
+  }
+
+  // Keep the existing implementation for non-paginated filtering
   async getFilteredResources(filter: ResourceFilter): Promise<Resource[]> {
     console.log(`Filtering resources with filter:`, JSON.stringify(filter, null, 2));
     

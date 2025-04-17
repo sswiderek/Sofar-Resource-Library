@@ -28,11 +28,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
   // prefix all routes with /api
 
-  // Route to get resources based on filter criteria
+  // Route to get resources based on filter criteria with pagination
   app.get("/api/resources", async (req: Request, res: Response) => {
     try {
-      // Try to sync with Notion, but don't fail if we can't
-      if (shouldSyncResources(lastSyncTime)) {
+      // Only sync with Notion if explicitly requested or first time loading (don't sync on every page load)
+      if (req.query.sync === 'true' && shouldSyncResources(lastSyncTime)) {
         await syncResourcesWithNotion();
       }
       
@@ -47,6 +47,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: req.query.search as string || '',
       };
 
+      // Get pagination parameters
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 30;
+
       // Validate the filter using our schema
       const parseResult = resourceFilterSchema.safeParse(filter);
       
@@ -58,12 +62,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const resources = await storage.getFilteredResources(parseResult.data);
+      // Get total count and paginated resources
+      const { resources, total } = await storage.getFilteredResourcesPaginated(parseResult.data, page, limit);
       
       // Log filter and result count
-      log(`Filtered resources. Found ${resources.length} matching resources`);
+      log(`Filtered resources. Found ${total} matching resources, serving page ${page} with ${resources.length} resources`);
       
-      res.json(resources);
+      // Return both resources and pagination metadata
+      res.json({
+        resources,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
     } catch (error) {
       log(`Error handling resources request: ${error instanceof Error ? error.message : String(error)}`);
       
@@ -311,7 +325,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { question } = parseResult.data;
       
-      // Get all resources for now (no team filtering)
+      // Ensure embeddings are up to date before using them for search
+      await updateResourceEmbeddings();
+      
+      // Get all resources (no team filtering)
       const resources = await storage.getResources();
       
       // Process the question using our OpenAI utility
@@ -331,7 +348,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return server;
 }
 
-// Helper function to sync resources with Notion
+// Track which resources have been updated since last embeddings creation
+let resourcesNeedEmbeddingUpdate = false;
+
+// Helper function to sync resources with Notion - optimized to track changes
 async function syncResourcesWithNotion() {
   try {
     log("Syncing resources with Notion...");
@@ -340,8 +360,8 @@ async function syncResourcesWithNotion() {
     const notionResources = await fetchResourcesFromNotion();
     log(`Fetched ${notionResources.length} resources from Notion`);
     
-    // Get existing resources from storage
-    const existingResources = await storage.getResources();
+    // Keep track of whether any resources were updated
+    let resourcesUpdated = false;
     
     // Process each resource from Notion
     for (const resource of notionResources) {
@@ -349,24 +369,38 @@ async function syncResourcesWithNotion() {
       const existingResource = await storage.getResourceByNotionId(resource.notionId);
       
       if (existingResource) {
-        // Update existing resource
-        await storage.updateResource(existingResource.id, resource);
-        log(`Updated resource: ${resource.name}`);
+        // Check if anything changed before updating
+        const hasChanged = JSON.stringify(existingResource) !== JSON.stringify({...existingResource, ...resource});
+        
+        if (hasChanged) {
+          // Update existing resource
+          await storage.updateResource(existingResource.id, resource);
+          log(`Updated resource: ${resource.name}`);
+          resourcesUpdated = true;
+        }
       } else {
         // Create new resource
         await storage.createResource(resource);
         log(`Created new resource: ${resource.name}`);
+        resourcesUpdated = true;
       }
     }
     
-    // Update all resources embeddings for search (could be optimized to only update changed resources)
-    log(`Creating embeddings for ${notionResources.length} resources...`);
-    
-    // Refresh resources after updates
-    const updatedResources = await storage.getResources();
-    
-    // Create embeddings for all resources
-    await createResourceEmbeddings(updatedResources);
+    // Only update embeddings if resources were added or updated
+    if (resourcesUpdated) {
+      resourcesNeedEmbeddingUpdate = true;
+      
+      // Create embeddings immediately if this is a manual sync
+      // For background syncs, embeddings will be created when needed
+      if (lastSyncTime) { // If lastSyncTime exists, this isn't first load
+        log(`Resources were updated. Marking for embedding update.`);
+      } else {
+        // This is first load, create embeddings immediately
+        await updateResourceEmbeddings();
+      }
+    } else {
+      log(`No resources were changed. Skipping embeddings update.`);
+    }
     
     // Update last sync time
     lastSyncTime = new Date();
@@ -374,5 +408,23 @@ async function syncResourcesWithNotion() {
   } catch (error) {
     log(`Error syncing resources: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
+  }
+}
+
+// Helper function to update resource embeddings only when needed
+async function updateResourceEmbeddings() {
+  if (resourcesNeedEmbeddingUpdate) {
+    // Refresh resources after updates
+    const updatedResources = await storage.getResources();
+    
+    log(`Creating embeddings for ${updatedResources.length} resources...`);
+    
+    // Create embeddings for all resources
+    await createResourceEmbeddings(updatedResources);
+    
+    // Reset the flag
+    resourcesNeedEmbeddingUpdate = false;
+    
+    log("Resource embeddings updated");
   }
 }
