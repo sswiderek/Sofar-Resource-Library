@@ -155,9 +155,22 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     // Check if we have Notion API Key
     const apiKey = process.env.NOTION_API_KEY;
     
-    // If no API key, return mock data
+    // If no API key, return mock data only if this is development or testing
     if (!apiKey) {
-      log("No Notion API key found. Using mock resource data for demonstration.");
+      log("No Notion API key found. Using mock resource data for development only.");
+      
+      // Check if we're in a production environment by looking for specific flags or hosts
+      const isProduction = 
+        process.env.NODE_ENV === 'production' || 
+        process.env.REPL_SLUG || 
+        process.env.REPLIT_WORKSPACE_ID;
+      
+      // In production, return empty array to ensure we show accurate data
+      if (isProduction) {
+        log("Production environment detected. Returning empty array instead of mock data.");
+        return [];
+      }
+      
       return mockResources;
     }
     
@@ -165,7 +178,20 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     let databaseId = process.env.NOTION_DATABASE_ID;
     
     if (!databaseId) {
-      log("No Notion database ID found. Using mock resource data for demonstration.");
+      log("No Notion database ID found. Using mock resource data for development only.");
+      
+      // Check if we're in a production environment
+      const isProduction = 
+        process.env.NODE_ENV === 'production' || 
+        process.env.REPL_SLUG || 
+        process.env.REPLIT_WORKSPACE_ID;
+      
+      // In production, return empty array
+      if (isProduction) {
+        log("Production environment detected. Returning empty array instead of mock data.");
+        return [];
+      }
+      
       return mockResources;
     }
     
@@ -255,7 +281,7 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     
     return resources;
   } catch (error) {
-    // Log the error but return mock data so the app can still function
+    // Log the error but don't return mock data for production
     const errorMessage = error instanceof Error ? error.message : String(error);
     log(`Error fetching resources from Notion: ${errorMessage}`);
     
@@ -269,7 +295,19 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       log("Unexpected error. Please check the error message above for details.");
     }
     
-    log("Using mock resource data for demonstration until the Notion connection is fixed.");
+    // Check if we're in a production environment
+    const isProduction = 
+      process.env.NODE_ENV === 'production' || 
+      process.env.REPL_SLUG || 
+      process.env.REPLIT_WORKSPACE_ID;
+    
+    // In production, return empty array to ensure we show accurate data
+    if (isProduction) {
+      log("Production environment detected. Returning empty array instead of mock data.");
+      return [];
+    }
+    
+    log("Development environment detected. Using mock resource data for development only.");
     return mockResources;
   }
 }
