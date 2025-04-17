@@ -14,8 +14,8 @@ export default function Layout({ children }: LayoutProps) {
   };
   
   return (
-    <div className="flex flex-col min-h-screen max-h-screen bg-neutral-50">
-      <header className="bg-white shadow-sm border-b border-neutral-200 flex-shrink-0">
+    <div className="flex flex-col min-h-screen bg-neutral-50">
+      <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="py-4 flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-4">
           <div className="flex items-center">
             <img 
@@ -54,9 +54,9 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto overflow-hidden">{children}</main>
+      <main className="flex-grow max-w-7xl w-full mx-auto">{children}</main>
 
-      <footer className="bg-white border-t border-neutral-200 py-5 flex-shrink-0">
+      <footer className="bg-white border-t border-neutral-200 py-5 mt-auto">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-neutral-600">

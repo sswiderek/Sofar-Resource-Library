@@ -141,9 +141,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row">
+    <div className="flex md:flex-row">
       {/* Filter Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col bg-white border-r border-neutral-200 w-64 flex-shrink-0 overflow-y-auto">
+      <aside className="hidden md:block bg-white border-r border-neutral-200 w-64 sticky top-0 h-screen overflow-y-auto">
         <FilterSidebar
           filter={filters}
           onFilterChange={handleFilterChange}
@@ -154,17 +154,27 @@ export default function Home() {
 
       {/* Mobile Filter Overlay */}
       {showMobileFilters && (
-        <FilterSidebar
-          filter={filters}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-          isMobile={true}
-          onMobileClose={() => setShowMobileFilters(false)}
-        />
+        <div 
+          className="fixed inset-0 z-50 bg-black/50"
+          onClick={() => setShowMobileFilters(false)}
+        >
+          <div 
+            className="absolute left-0 top-0 h-full w-80 max-w-full bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FilterSidebar
+              filter={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={handleClearFilters}
+              isMobile={true}
+              onMobileClose={() => setShowMobileFilters(false)}
+            />
+          </div>
+        </div>
       )}
 
       {/* Main Content Area */}
-      <div className="flex-grow w-full bg-neutral-50 p-4 md:p-6 lg:p-8 overflow-y-auto">
+      <div className="flex-1 bg-neutral-50 p-4 md:p-6 lg:p-8">
         {/* Filter button for mobile */}
         <div className="md:hidden mb-6">
           <Button
