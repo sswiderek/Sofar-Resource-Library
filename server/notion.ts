@@ -200,11 +200,23 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     
     log("Fetching resources from Notion database...");
     
+    log(`Making real Notion API request to database: ${databaseId}`);
     const response = await notion.databases.query({
       database_id: databaseId,
     });
     
     log(`Fetched ${response.results.length} resources from Notion`);
+    // Log a sample of resource names for debugging
+    if (response.results.length > 0) {
+      const sampleSize = Math.min(5, response.results.length);
+      const sampleResources = response.results.slice(0, sampleSize).map(page => {
+        const properties = page.properties;
+        return properties.Title?.title?.[0]?.text?.content || 
+              properties.Name?.title?.[0]?.text?.content || 
+              "Untitled Resource";
+      });
+      log(`Sample resource names from Notion: ${sampleResources.join(', ')}`);
+    }
     
     // Transform Notion response into our Resource schema
     const resources: InsertResource[] = response.results.map((page: any) => {

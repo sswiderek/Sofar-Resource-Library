@@ -29,6 +29,7 @@ export interface IStorage {
   createResource(resource: InsertResource): Promise<Resource>;
   updateResource(id: number, resource: Partial<InsertResource>): Promise<Resource | undefined>;
   deleteResource(id: number): Promise<boolean>;
+  deleteAllResources(): Promise<boolean>;
   getFilteredResources(filter: ResourceFilter): Promise<Resource[]>;
   getFilteredResourcesPaginated(filter: ResourceFilter, page: number, limit: number): Promise<{resources: Resource[], total: number}>;
   
@@ -216,6 +217,13 @@ export class MemStorage implements IStorage {
 
   async deleteResource(id: number): Promise<boolean> {
     return this.resources.delete(id);
+  }
+  
+  async deleteAllResources(): Promise<boolean> {
+    this.resources.clear();
+    this.currentResourceId = 1; // Reset ID counter
+    console.log("Deleted all resources and reset ID counter");
+    return true;
   }
 
   // Get filtered resources with the options to paginate

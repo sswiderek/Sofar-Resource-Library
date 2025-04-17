@@ -386,10 +386,8 @@ async function syncResourcesWithNotion() {
     
     log(`Performing complete refresh: Deleting all ${existingResources.length} existing resources`);
     
-    // Delete all existing resources
-    for (const existingResource of existingResources) {
-      await storage.deleteResource(existingResource.id);
-    }
+    // Delete all resources with our new method that also resets the ID counter
+    await storage.deleteAllResources();
     
     // Resources were deleted, mark for update
     let resourcesUpdated = true;
