@@ -382,12 +382,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
         
+        // Log the start of streaming
+        log(`Starting streaming response for question: ${question.substring(0, 50)}...`);
+        
+        // Create a variable to track if the connection was closed early
+        let connectionClosed = false;
+        
+        // Handle client disconnect
+        req.on('close', () => {
+          connectionClosed = true;
+          log('Client closed connection before streaming completed');
+        });
+        
         // Start streaming chunks
         let fullAnswer = '';
         let relevantResourceIds: number[] = [];
         
         // Create a stream handler
         const streamHandler = (chunk: string, done: boolean) => {
+          // Skip if connection was closed
+          if (connectionClosed) return;
+          
           if (done) {
             // Send the final event with complete data
             res.write(`event: done\ndata: ${JSON.stringify({ 
@@ -397,6 +412,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // End the response
             res.end();
+            
+            log('Streaming completed successfully');
           } else {
             // Send the chunk
             res.write(`event: chunk\ndata: ${JSON.stringify({ content: chunk })}\n\n`);
@@ -406,11 +423,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         };
         
-        // Process with streaming
-        const result = await processQuestion(question, resources, streamHandler);
-        
-        // Store relevant resource IDs for final response
-        relevantResourceIds = result.relevantResourceIds;
+        try {
+          // Process with streaming
+          const result = await processQuestion(question, resources, streamHandler);
+          
+          // Store relevant resource IDs for final response
+          relevantResourceIds = result.relevantResourceIds;
+          
+          // If we get here, the streaming has completed successfully
+          if (!connectionClosed && !res.writableEnded) {
+            log('Streaming completed, but response was not ended. Ensuring response is ended.');
+            res.end();
+          }
+        } catch (error) {
+          // Handle errors during streaming
+          log(`Error during streaming: ${error instanceof Error ? error.message : String(error)}`);
+          
+          if (!connectionClosed && !res.writableEnded) {
+            // Send error event to client
+            res.write(`event: error\ndata: ${JSON.stringify({ 
+              error: error instanceof Error ? error.message : String(error) 
+            })}\n\n`);
+            res.end();
+          }
+        }
       }
       // Otherwise, process normally and return full response
       else {

@@ -238,21 +238,19 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
   const { trackView } = useResourceTracking();
   const [viewedResources, setViewedResources] = useState<Record<number, boolean>>({});
   
-  // Regular non-streaming mutation
+  // Mutation for handling questions with streaming support
   const { mutate, data, isPending, isError, error } = useMutation<AskResponse, Error, string>({
     mutationFn: async (question: string) => {
-      // Determine if we should use streaming or normal response
-      const useStreaming = true; // Always use streaming for a better UX
+      // Always use streaming for a better UX
+      const useStreaming = true;
       
       if (useStreaming) {
         // Reset streaming state
         setStreamedAnswer('');
         setIsStreaming(true);
         
-        // Setup request headers for EventSource
+        // Create the request with streaming enabled
         const body = JSON.stringify({ question, stream: true });
-        
-        // Setup request options for fetch
         const fetchOptions = {
           method: 'POST',
           headers: {
@@ -261,119 +259,100 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           body
         };
         
-        // Manually create an EventSource by making a POST request
-        // This is needed because native EventSource only supports GET requests
+        // Make the request
         const response = await fetch('/api/ask', fetchOptions);
         
         if (!response.ok) {
+          setIsStreaming(false);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Create a ReadableStream from the response body
+        // Get a reader for the response stream
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
         
         if (!reader) {
+          setIsStreaming(false);
           throw new Error('Failed to get response stream reader');
         }
         
-        // Manual processing of the stream
+        // Process the SSE stream
         let buffer = '';
         
-        const processStream = async () => {
-          while (true) {
-            const { done, value } = await reader.read();
+        while (true) {
+          // Read the next chunk
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            break;
+          }
+          
+          // Decode the chunk and add it to the buffer
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+          
+          // Process complete SSE messages
+          const messages = buffer.split('\n\n');
+          buffer = messages.pop() || ''; // Keep any incomplete message in the buffer
+          
+          // Process each complete message
+          for (const message of messages) {
+            if (!message) continue;
             
-            if (done) {
-              break;
-            }
+            // Parse the SSE format
+            const lines = message.split('\n');
+            const eventLine = lines.find(line => line.startsWith('event:'));
+            const dataLine = lines.find(line => line.startsWith('data:'));
             
-            // Decode the chunk
-            const chunk = decoder.decode(value, { stream: true });
-            buffer += chunk;
+            if (!eventLine || !dataLine) continue;
             
-            // Process complete SSE messages
-            const messages = buffer.split('\n\n');
-            buffer = messages.pop() || ''; // Keep the last incomplete message in buffer
+            const eventType = eventLine.substring(6).trim();
+            const data = dataLine.substring(5).trim();
             
-            for (const message of messages) {
-              if (!message) continue;
-              
-              const lines = message.split('\n');
-              const eventType = lines[0].startsWith('event:') ? lines[0].substring(6).trim() : 'message';
-              const data = lines[1].startsWith('data:') ? lines[1].substring(5).trim() : '';
-              
-              if (eventType === 'chunk') {
-                try {
-                  const parsedData = JSON.parse(data);
-                  setStreamedAnswer(prev => prev + (parsedData.content || ''));
-                } catch (error) {
-                  console.error('Error parsing streaming chunk:', error);
-                }
-              } else if (eventType === 'done') {
-                try {
-                  const result = JSON.parse(data) as AskResponse;
-                  setAiAnswer(result);
-                  setIsStreaming(false);
-                  return result;
-                } catch (error) {
-                  console.error('Error parsing final result:', error);
-                  throw error;
-                }
+            // Handle the different event types
+            if (eventType === 'chunk') {
+              try {
+                const parsedData = JSON.parse(data);
+                setStreamedAnswer(prev => prev + (parsedData.content || ''));
+              } catch (err) {
+                console.error('Error parsing streaming chunk:', err);
+              }
+            } else if (eventType === 'done') {
+              try {
+                const result = JSON.parse(data) as AskResponse;
+                setAiAnswer(result);
+                setIsStreaming(false);
+                return result;
+              } catch (err) {
+                console.error('Error parsing final result:', err);
+                setIsStreaming(false);
+                throw new Error('Failed to parse completion data');
+              }
+            } else if (eventType === 'error') {
+              try {
+                const errorData = JSON.parse(data);
+                setIsStreaming(false);
+                throw new Error(errorData.error || 'Error during streaming');
+              } catch (err) {
+                console.error('Error handling error event:', err);
+                setIsStreaming(false);
+                throw new Error('Failed during streaming');
               }
             }
           }
-          
-          // If we get here without a 'done' event, handle as error
-          throw new Error('Stream ended without completion signal');
-        };
+        }
         
-        return processStream();
-        
-        return new Promise<AskResponse>((resolve, reject) => {
-          // Listen for chunk events
-          eventSource.addEventListener('chunk', (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              setStreamedAnswer(prev => prev + (data.content || ''));
-            } catch (error) {
-              console.error('Error parsing streaming chunk:', error);
-            }
-          });
-          
-          // Listen for completion event
-          eventSource.addEventListener('done', (event) => {
-            try {
-              const result = JSON.parse(event.data) as AskResponse;
-              // Set the final result
-              setAiAnswer(result);
-              setIsStreaming(false);
-              resolve(result);
-              eventSource.close();
-            } catch (error) {
-              console.error('Error parsing final result:', error);
-              reject(error);
-              eventSource.close();
-            }
-          });
-          
-          // Handle errors
-          eventSource.onerror = (error) => {
-            console.error('EventSource error:', error);
-            setIsStreaming(false);
-            reject(new Error('Stream error occurred'));
-            eventSource.close();
-          };
-        });
+        // If we reach here without a 'done' event, it's an error
+        setIsStreaming(false);
+        throw new Error('Stream ended without completion signal');
       } else {
-        // Non-streaming approach (fallback)
+        // Fallback to non-streaming approach
         const response = await apiRequest(
           'POST',
           '/api/ask',
           { question, stream: false }
         );
         const result = await response.json();
-        // Store result in component state
         setAiAnswer(result);
         return result;
       }
