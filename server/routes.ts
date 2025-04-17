@@ -36,18 +36,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/resources", async (req: Request, res: Response) => {
     try {
       // Get all resources to check if we need to sync
-      const allResources = await storage.getResources();
+      let allResources = await storage.getResources();
       
-      // Only sync with Notion if:
-      // 1. Explicitly requested via sync=true parameter, OR
-      // 2. First time loading (no resources), OR
-      // 3. It's been a while since last sync
+      // Trigger background sync with Notion if needed, but don't wait for it to complete
+      // This allows faster initial page load
       if ((req.query.sync === 'true' || allResources.length === 0) && shouldSyncResources(lastSyncTime)) {
-        await syncResourcesWithNotion();
+        // Fork a background process for sync so we can return resources immediately
+        syncResourcesWithNotion().catch(err => {
+          log(`Background sync error: ${err.message}`);
+        });
+        
+        // On first load with no resources, wait briefly for initial data
+        if (allResources.length === 0) {
+          log("First load with no resources, waiting briefly for initial data...");
+          await new Promise(resolve => setTimeout(resolve, 500));
+          allResources = await storage.getResources();
+        }
       }
       
-      // Start embedding generation in the background if needed but don't wait for it
-      // This allows faster initial page load
+      // Always trigger embedding generation in the background if needed
+      // Users will still see resources while embeddings are being generated
       if (resourcesNeedEmbeddingUpdate && !isGeneratingEmbeddings) {
         updateResourceEmbeddings().catch(err => {
           log(`Background embedding generation error: ${err.message}`);
@@ -402,13 +410,14 @@ async function syncResourcesWithNotion() {
     // Always update embeddings after a full refresh
     resourcesNeedEmbeddingUpdate = true;
     
-    // Create embeddings immediately if this is a manual sync
-    // For background syncs, embeddings will be created when needed
-    if (lastSyncTime) { // If lastSyncTime exists, this isn't first load
-      log(`Resources were updated. Marking for embedding update.`);
-    } else {
-      // This is first load, create embeddings immediately
-      await updateResourceEmbeddings();
+    // Always mark for embedding update, but don't block initial page load
+    log(`Resources were updated. Marking for embedding update.`);
+    
+    // Start the embedding process asynchronously without awaiting
+    if (!isGeneratingEmbeddings) {
+      updateResourceEmbeddings().catch(err => {
+        log(`Background embedding generation error: ${err.message}`);
+      });
     }
     
     // Update last sync time
