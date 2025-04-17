@@ -52,7 +52,7 @@ export default function Home() {
 
   // Build query string for API request
   const filterQuery = buildFilterQueryString(filters) + 
-    `&page=${currentPage}&limit=${limit}&sync=true`;
+    `&page=${currentPage}&limit=${limit}`;
 
   // Log the filter query for debugging
   console.log("Filter query:", filterQuery);
@@ -61,6 +61,9 @@ export default function Home() {
   // State for sync loading indicator
   const [isSyncing, setIsSyncing] = useState(false);
   
+  // Check if this is the initial load
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
   // Fetch resources based on filter with pagination
   const {
     data,
@@ -68,7 +71,9 @@ export default function Home() {
     error,
     refetch,
   } = useQuery<PaginatedResourcesResponse>({
-    queryKey: [`/api/resources?${filterQuery}&sync=true`], // Add sync=true for initial loading
+    queryKey: [`/api/resources?${filterQuery}${isInitialLoad ? '&sync=true' : ''}`],
+    // Once data is fetched, we're no longer in the initial load
+    onSuccess: () => setIsInitialLoad(false),
   });
 
   // Extract resources and pagination info
