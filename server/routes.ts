@@ -380,70 +380,42 @@ async function syncResourcesWithNotion() {
     const notionResources = await fetchResourcesFromNotion();
     log(`Fetched ${notionResources.length} resources from Notion`);
     
-    // Get all existing resources to check for deleted ones
+    // HARD RESET: Delete all existing resources and recreate them from Notion
+    // This ensures we don't have any stale data
     const existingResources = await storage.getResources();
     
-    // Create a map of Notion IDs from the latest fetch
-    const notionResourceMap = new Map();
-    notionResources.forEach(resource => {
-      notionResourceMap.set(resource.notionId, resource);
-    });
+    log(`Performing complete refresh: Deleting all ${existingResources.length} existing resources`);
     
-    // Keep track of whether any resources were updated
-    let resourcesUpdated = false;
-    
-    // Check for resources that exist in storage but not in Notion (deleted)
+    // Delete all existing resources
     for (const existingResource of existingResources) {
-      if (!notionResourceMap.has(existingResource.notionId)) {
-        // Resource was deleted in Notion, remove it from storage
-        await storage.deleteResource(existingResource.id);
-        log(`Deleted resource: ${existingResource.name} (no longer in Notion)`);
-        resourcesUpdated = true;
-      }
+      await storage.deleteResource(existingResource.id);
     }
     
-    // Process each resource from Notion
+    // Resources were deleted, mark for update
+    let resourcesUpdated = true;
+    
+    // Add all resources from Notion as new
     for (const resource of notionResources) {
-      // Check if resource already exists (by Notion ID)
-      const existingResource = await storage.getResourceByNotionId(resource.notionId);
-      
-      if (existingResource) {
-        // Check if anything changed before updating
-        const hasChanged = JSON.stringify(existingResource) !== JSON.stringify({...existingResource, ...resource});
-        
-        if (hasChanged) {
-          // Update existing resource
-          await storage.updateResource(existingResource.id, resource);
-          log(`Updated resource: ${resource.name}`);
-          resourcesUpdated = true;
-        }
-      } else {
-        // Create new resource
-        await storage.createResource(resource);
-        log(`Created new resource: ${resource.name}`);
-        resourcesUpdated = true;
-      }
+      // Create as new resource
+      await storage.createResource(resource);
+      log(`Created new resource: ${resource.name}`);
     }
     
-    // Only update embeddings if resources were added, updated, or removed
-    if (resourcesUpdated) {
-      resourcesNeedEmbeddingUpdate = true;
-      
-      // Create embeddings immediately if this is a manual sync
-      // For background syncs, embeddings will be created when needed
-      if (lastSyncTime) { // If lastSyncTime exists, this isn't first load
-        log(`Resources were updated. Marking for embedding update.`);
-      } else {
-        // This is first load, create embeddings immediately
-        await updateResourceEmbeddings();
-      }
+    // Always update embeddings after a full refresh
+    resourcesNeedEmbeddingUpdate = true;
+    
+    // Create embeddings immediately if this is a manual sync
+    // For background syncs, embeddings will be created when needed
+    if (lastSyncTime) { // If lastSyncTime exists, this isn't first load
+      log(`Resources were updated. Marking for embedding update.`);
     } else {
-      log(`No resources were changed. Skipping embeddings update.`);
+      // This is first load, create embeddings immediately
+      await updateResourceEmbeddings();
     }
     
     // Update last sync time
     lastSyncTime = new Date();
-    log("Resources sync completed");
+    log("Resources sync completed with full refresh");
   } catch (error) {
     log(`Error syncing resources: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
