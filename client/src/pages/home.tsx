@@ -141,7 +141,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="flex flex-col md:flex-row">
       {/* Filter Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col bg-white border-r border-neutral-200 w-64 flex-shrink-0 overflow-y-auto">
         <FilterSidebar
@@ -164,7 +164,7 @@ export default function Home() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-grow overflow-y-auto bg-neutral-50 p-4 md:p-6 lg:p-8">
+      <div className="flex-grow w-full bg-neutral-50 p-4 md:p-6 lg:p-8 overflow-y-auto">
         {/* Filter button for mobile */}
         <div className="md:hidden mb-6">
           <Button
