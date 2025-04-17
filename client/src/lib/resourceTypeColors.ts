@@ -45,6 +45,8 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
       return "text-sky-700";
     } else if (typeKey.includes('spec')) {
       return "text-green-700";
+    } else if (typeKey.includes('booklet') || typeKey === 'booklet') {
+      return "text-indigo-700 font-medium";
     } else {
       return "text-neutral-700";
     }
@@ -85,6 +87,8 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
     return "bg-sky-100 text-sky-700 border-sky-200";
   } else if (typeKey.includes('spec')) {
     return "bg-green-100 text-green-700 border-green-200";
+  } else if (typeKey.includes('booklet') || typeKey === 'booklet') {
+    return "bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 text-indigo-700 border-indigo-200 font-medium";
   } else {
     return "bg-neutral-100 text-neutral-700 border-neutral-200";
   }

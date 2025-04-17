@@ -230,25 +230,32 @@ export default function Home() {
         <QuestionBox resources={resources} />
         
         {/* View controls, sort and sync buttons */}
-        <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200 shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-600">Sort by:</span>
-            <select
-              className="h-9 rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              value={filters.sortBy || "relevance"}
-              onChange={(e) => {
-                const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
-                handleFilterChange({
-                  ...filters,
-                  sortBy: sortBy === "relevance" ? undefined : sortBy,
-                });
-              }}
-            >
-              <option value="relevance">Relevance</option>
-              <option value="popularity">Most Popular</option>
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-            </select>
+        <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-neutral-600">Sort by:</span>
+            <div className="relative inline-block">
+              <select
+                className="h-9 appearance-none rounded-md border border-neutral-200 bg-white pl-3 pr-8 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/70"
+                value={filters.sortBy || "relevance"}
+                onChange={(e) => {
+                  const sortBy = e.target.value as 'relevance' | 'popularity' | 'newest' | 'oldest';
+                  handleFilterChange({
+                    ...filters,
+                    sortBy: sortBy === "relevance" ? undefined : sortBy,
+                  });
+                }}
+              >
+                <option value="relevance">Relevance</option>
+                <option value="popularity">Most Popular</option>
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-neutral-500">
+                <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center gap-3">
