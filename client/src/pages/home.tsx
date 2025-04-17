@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -72,9 +72,14 @@ export default function Home() {
     refetch,
   } = useQuery<PaginatedResourcesResponse>({
     queryKey: [`/api/resources?${filterQuery}${isInitialLoad ? '&sync=true' : ''}`],
-    // Once data is fetched, we're no longer in the initial load
-    onSuccess: () => setIsInitialLoad(false),
   });
+  
+  // After first successful load, mark as non-initial
+  useEffect(() => {
+    if (data && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [data, isInitialLoad]);
 
   // Extract resources and pagination info
   const resources = data?.resources || [];
@@ -136,9 +141,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row overflow-hidden h-screen">
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
       {/* Filter Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col bg-white border-r border-neutral-200 w-64 flex-shrink-0">
+      <aside className="hidden md:flex flex-col bg-white border-r border-neutral-200 w-64 flex-shrink-0 overflow-y-auto">
         <FilterSidebar
           filter={filters}
           onFilterChange={handleFilterChange}
@@ -159,7 +164,7 @@ export default function Home() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-grow overflow-auto p-4 md:p-6 lg:p-8 bg-neutral-50">
+      <div className="flex-grow overflow-y-auto bg-neutral-50 p-4 md:p-6 lg:p-8">
         {/* Filter button for mobile */}
         <div className="md:hidden mb-6">
           <Button
