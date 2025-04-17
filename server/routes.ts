@@ -31,10 +31,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Route to get resources based on filter criteria with pagination
   app.get("/api/resources", async (req: Request, res: Response) => {
     try {
-      // Only sync with Notion if explicitly requested or first time loading (don't sync on every page load)
-      if (req.query.sync === 'true' && shouldSyncResources(lastSyncTime)) {
+      // Get all resources to check if we need to sync
+      const allResources = await storage.getResources();
+      
+      // Only sync with Notion if:
+      // 1. Explicitly requested via sync=true parameter, OR
+      // 2. First time loading (no resources), OR
+      // 3. It's been a while since last sync
+      if ((req.query.sync === 'true' || allResources.length === 0) && shouldSyncResources(lastSyncTime)) {
         await syncResourcesWithNotion();
       }
+      
+      // Check if we need to update embeddings (will only run if needed)
+      await updateResourceEmbeddings();
       
       // Parse and validate filter parameters
       const filter = {
@@ -45,6 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         contentVisibility: req.query.contentVisibility ? (req.query.contentVisibility as string).split(',') : [],
         solutions: req.query.solutions ? (req.query.solutions as string).split(',') : [],
         search: req.query.search as string || '',
+        sortBy: req.query.sortBy as 'popularity' | 'newest' | 'oldest' | undefined,
       };
 
       // Get pagination parameters

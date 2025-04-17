@@ -52,7 +52,7 @@ export default function Home() {
 
   // Build query string for API request
   const filterQuery = buildFilterQueryString(filters) + 
-    `&page=${currentPage}&limit=${limit}`;
+    `&page=${currentPage}&limit=${limit}&sync=true`;
 
   // Log the filter query for debugging
   console.log("Filter query:", filterQuery);
@@ -68,7 +68,7 @@ export default function Home() {
     error,
     refetch,
   } = useQuery<PaginatedResourcesResponse>({
-    queryKey: [`/api/resources?${filterQuery}`],
+    queryKey: [`/api/resources?${filterQuery}&sync=true`], // Add sync=true for initial loading
   });
 
   // Extract resources and pagination info
