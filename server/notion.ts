@@ -159,11 +159,8 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     if (!apiKey) {
       log("No Notion API key found. Using mock resource data for development only.");
       
-      // Check if we're in a production environment by looking for specific flags or hosts
-      const isProduction = 
-        process.env.NODE_ENV === 'production' || 
-        process.env.REPL_SLUG || 
-        process.env.REPLIT_WORKSPACE_ID;
+      // Force production mode to properly sync with Notion and avoid mock data
+      const isProduction = true;
       
       // In production, return empty array to ensure we show accurate data
       if (isProduction) {
@@ -180,11 +177,8 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     if (!databaseId) {
       log("No Notion database ID found. Using mock resource data for development only.");
       
-      // Check if we're in a production environment
-      const isProduction = 
-        process.env.NODE_ENV === 'production' || 
-        process.env.REPL_SLUG || 
-        process.env.REPLIT_WORKSPACE_ID;
+      // Force production mode to properly sync with Notion and avoid mock data
+      const isProduction = true;
       
       // In production, return empty array
       if (isProduction) {
@@ -295,11 +289,8 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       log("Unexpected error. Please check the error message above for details.");
     }
     
-    // Check if we're in a production environment
-    const isProduction = 
-      process.env.NODE_ENV === 'production' || 
-      process.env.REPL_SLUG || 
-      process.env.REPLIT_WORKSPACE_ID;
+    // Force production mode to properly sync with Notion and avoid mock data
+    const isProduction = true;
     
     // In production, return empty array to ensure we show accurate data
     if (isProduction) {
