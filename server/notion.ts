@@ -78,16 +78,31 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
     
     log(`Fetched ${response.results.length} resources from Notion`);
     log(`Response timestamp: ${new Date().toISOString()}`); // Log when we got this response
-    // Log a sample of resource names for debugging
+    // Log ALL resource names for troubleshooting
     if (response.results.length > 0) {
-      const sampleSize = Math.min(5, response.results.length);
-      const sampleResources = response.results.slice(0, sampleSize).map(page => {
+      // Get all resource names for thorough debugging
+      const allResources = response.results.map(page => {
         const properties = page.properties;
         return properties.Title?.title?.[0]?.text?.content || 
               properties.Name?.title?.[0]?.text?.content || 
               "Untitled Resource";
       });
-      log(`Sample resource names from Notion: ${sampleResources.join(', ')}`);
+      
+      // Log all resources for thorough debugging
+      log(`All resource names from Notion API (${allResources.length} total):`);
+      for (let i = 0; i < allResources.length; i++) {
+        log(`${i+1}. ${allResources[i]}`);
+      }
+      
+      // Special check for problematic resources
+      const problematicResources = allResources.filter(name => 
+        name.includes("Temperature Sensor") || 
+        name.includes("Spec Sheet")
+      );
+      
+      if (problematicResources.length > 0) {
+        log(`IMPORTANT - Found these problematic resources from Notion API: ${problematicResources.join(', ')}`);
+      }
     }
     
     // Transform Notion response into our Resource schema
