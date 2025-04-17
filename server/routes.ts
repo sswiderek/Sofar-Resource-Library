@@ -19,6 +19,7 @@ import { z } from 'zod';
 // Schema for question validation
 const questionSchema = z.object({
   question: z.string().min(3).max(500),
+  stream: z.boolean().optional().default(false), // Optional streaming parameter
 });
 
 // Track when we last synced with Notion
@@ -350,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const { question } = parseResult.data;
+      const { question, stream } = parseResult.data;
       
       // Only wait for embeddings if needed for question answering
       if (resourcesNeedEmbeddingUpdate) {
@@ -374,10 +375,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all resources (no team filtering)
       const resources = await storage.getResources();
       
-      // Process the question using our OpenAI utility
-      const result = await processQuestion(question, resources);
-      
-      res.json(result);
+      // If streaming is requested, set up SSE response
+      if (stream) {
+        // Set headers for Server-Sent Events
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        
+        // Start streaming chunks
+        let fullAnswer = '';
+        let relevantResourceIds: number[] = [];
+        
+        // Create a stream handler
+        const streamHandler = (chunk: string, done: boolean) => {
+          if (done) {
+            // Send the final event with complete data
+            res.write(`event: done\ndata: ${JSON.stringify({ 
+              answer: fullAnswer,
+              relevantResourceIds
+            })}\n\n`);
+            
+            // End the response
+            res.end();
+          } else {
+            // Send the chunk
+            res.write(`event: chunk\ndata: ${JSON.stringify({ content: chunk })}\n\n`);
+            
+            // Accumulate the answer
+            fullAnswer += chunk;
+          }
+        };
+        
+        // Process with streaming
+        const result = await processQuestion(question, resources, streamHandler);
+        
+        // Store relevant resource IDs for final response
+        relevantResourceIds = result.relevantResourceIds;
+      }
+      // Otherwise, process normally and return full response
+      else {
+        // Process the question using our OpenAI utility
+        const result = await processQuestion(question, resources);
+        
+        // Return normal JSON response
+        res.json(result);
+      }
     } catch (error) {
       res.status(500).json({ 
         message: "Error processing question",

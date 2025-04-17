@@ -232,21 +232,151 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
   const [question, setQuestion] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<AskResponse | null>(null);
+  const [streamedAnswer, setStreamedAnswer] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const [loadingStage, setLoadingStage] = useState(1);
   const { trackView } = useResourceTracking();
   const [viewedResources, setViewedResources] = useState<Record<number, boolean>>({});
   
+  // Regular non-streaming mutation
   const { mutate, data, isPending, isError, error } = useMutation<AskResponse, Error, string>({
     mutationFn: async (question: string) => {
-      const response = await apiRequest(
-        'POST',
-        '/api/ask',
-        { question }
-      );
-      const result = await response.json();
-      // Store result in component state
-      setAiAnswer(result);
-      return result;
+      // Determine if we should use streaming or normal response
+      const useStreaming = true; // Always use streaming for a better UX
+      
+      if (useStreaming) {
+        // Reset streaming state
+        setStreamedAnswer('');
+        setIsStreaming(true);
+        
+        // Setup request headers for EventSource
+        const body = JSON.stringify({ question, stream: true });
+        
+        // Setup request options for fetch
+        const fetchOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body
+        };
+        
+        // Manually create an EventSource by making a POST request
+        // This is needed because native EventSource only supports GET requests
+        const response = await fetch('/api/ask', fetchOptions);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Create a ReadableStream from the response body
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        
+        if (!reader) {
+          throw new Error('Failed to get response stream reader');
+        }
+        
+        // Manual processing of the stream
+        let buffer = '';
+        
+        const processStream = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              break;
+            }
+            
+            // Decode the chunk
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+            
+            // Process complete SSE messages
+            const messages = buffer.split('\n\n');
+            buffer = messages.pop() || ''; // Keep the last incomplete message in buffer
+            
+            for (const message of messages) {
+              if (!message) continue;
+              
+              const lines = message.split('\n');
+              const eventType = lines[0].startsWith('event:') ? lines[0].substring(6).trim() : 'message';
+              const data = lines[1].startsWith('data:') ? lines[1].substring(5).trim() : '';
+              
+              if (eventType === 'chunk') {
+                try {
+                  const parsedData = JSON.parse(data);
+                  setStreamedAnswer(prev => prev + (parsedData.content || ''));
+                } catch (error) {
+                  console.error('Error parsing streaming chunk:', error);
+                }
+              } else if (eventType === 'done') {
+                try {
+                  const result = JSON.parse(data) as AskResponse;
+                  setAiAnswer(result);
+                  setIsStreaming(false);
+                  return result;
+                } catch (error) {
+                  console.error('Error parsing final result:', error);
+                  throw error;
+                }
+              }
+            }
+          }
+          
+          // If we get here without a 'done' event, handle as error
+          throw new Error('Stream ended without completion signal');
+        };
+        
+        return processStream();
+        
+        return new Promise<AskResponse>((resolve, reject) => {
+          // Listen for chunk events
+          eventSource.addEventListener('chunk', (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              setStreamedAnswer(prev => prev + (data.content || ''));
+            } catch (error) {
+              console.error('Error parsing streaming chunk:', error);
+            }
+          });
+          
+          // Listen for completion event
+          eventSource.addEventListener('done', (event) => {
+            try {
+              const result = JSON.parse(event.data) as AskResponse;
+              // Set the final result
+              setAiAnswer(result);
+              setIsStreaming(false);
+              resolve(result);
+              eventSource.close();
+            } catch (error) {
+              console.error('Error parsing final result:', error);
+              reject(error);
+              eventSource.close();
+            }
+          });
+          
+          // Handle errors
+          eventSource.onerror = (error) => {
+            console.error('EventSource error:', error);
+            setIsStreaming(false);
+            reject(new Error('Stream error occurred'));
+            eventSource.close();
+          };
+        });
+      } else {
+        // Non-streaming approach (fallback)
+        const response = await apiRequest(
+          'POST',
+          '/api/ask',
+          { question, stream: false }
+        );
+        const result = await response.json();
+        // Store result in component state
+        setAiAnswer(result);
+        return result;
+      }
     },
   });
 
@@ -372,7 +502,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           </div>
         )}
         
-        {isPending && (
+        {isPending && !isStreaming && (
           <div className="py-4 px-2">
             <div className="flex items-center justify-center">
               <div className="relative">
@@ -413,6 +543,26 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 {loadingStage === 4 && (
                   <p className="italic">Almost there! Formulating a comprehensive answer tailored to your needs...</p>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Show streaming answer as it comes in */}
+        {isStreaming && streamedAnswer && (
+          <div className="mt-4">
+            <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
+              <div className="flex items-center mb-3">
+                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+                <h3 className="font-semibold text-primary">AI Answer</h3>
+                <div className="ml-auto flex items-center">
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  <span className="text-xs text-primary/70">Thinking...</span>
+                </div>
+              </div>
+              <div className="text-sm prose prose-sm max-w-none">
+                {streamedAnswer}
+                <span className="inline-block w-1 h-4 bg-primary animate-pulse ml-1"></span>
               </div>
             </div>
           </div>
