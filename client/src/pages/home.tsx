@@ -31,6 +31,7 @@ import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
+import { ResourceLoadingGrid, ResourceLoadingList } from "@/components/LoadingSkeleton";
 import { Resource } from "@shared/schema";
 import {
   ResourceFilters,
@@ -340,11 +341,15 @@ export default function Home() {
           </div>
         )}
 
-        {/* Loading State */}
+        {/* Loading State - Using skeleton placeholders for better UX */}
         {isLoading && (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
+          <>
+            {viewMode === "card" ? (
+              <ResourceLoadingGrid count={12} />
+            ) : (
+              <ResourceLoadingList count={6} />
+            )}
+          </>
         )}
 
         {/* Error State */}
