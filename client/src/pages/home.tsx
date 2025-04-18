@@ -365,7 +365,7 @@ export default function Home() {
             <p className="text-neutral-500">
               Try adjusting your filters or search terms
             </p>
-            <Button onClick={handleClearFilters} className="mt-4">
+            <Button onClick={handleClearFilters} className="mt-4 bg-blue-600 hover:bg-blue-700">
               Clear Filters
             </Button>
           </div>

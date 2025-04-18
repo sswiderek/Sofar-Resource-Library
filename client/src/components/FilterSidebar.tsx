@@ -115,7 +115,7 @@ export default function FilterSidebar({
               variant="ghost" 
               size="sm" 
               onClick={onClearFilters}
-              className="text-primary hover:text-primary-dark"
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
             >
               Clear all
             </Button>
@@ -145,10 +145,10 @@ export default function FilterSidebar({
                 placeholder="Search resources..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-3 pr-10"
+                className="pl-3 pr-10 border-blue-300 focus-visible:ring-blue-500"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Search className="h-4 w-4 text-neutral-400" />
+                <Search className="h-4 w-4 text-blue-500" />
               </div>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function FilterSidebar({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-primary hover:text-primary-dark"
+          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
         >
           Clear all
         </Button>
