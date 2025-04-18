@@ -217,8 +217,8 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackVi
             const content = item.substring(item.indexOf('.') + 1).trim();
             
             return (
-              <div key={`numbered-item-${idx}`} className="flex items-start group">
-                <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-semibold text-xs mr-3">
+              <div key={`numbered-item-${idx}`} className="flex items-start group rounded-lg hover:bg-primary/5 p-2 -ml-2 transition-colors">
+                <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-semibold text-xs mr-3">
                   {number}
                 </div>
                 <div className="flex-1 pt-0.5">
@@ -501,6 +501,8 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
   const [loadingStage, setLoadingStage] = useState(1);
   const { trackView } = useResourceTracking();
   const [viewedResources, setViewedResources] = useState<Record<number, boolean>>({});
+  const [feedbackGiven, setFeedbackGiven] = useState<'positive' | 'negative' | null>(null);
+  const [showFollowUp, setShowFollowUp] = useState(false);
   
   // Mutation for handling questions with streaming support
   const { mutate, data, isPending, isError, error } = useMutation<AskResponse, Error, string>({
@@ -924,6 +926,85 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 {formatAnswerWithLinks(aiAnswer.answer, resources, trackView, viewedResources, setViewedResources)}
               </div>
             </div>
+            
+            {/* Feedback section */}
+            {!feedbackGiven && aiAnswer && (
+              <div className="mt-4 bg-neutral-50 p-3 rounded-md border border-neutral-100">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-neutral-600">Was this answer helpful?</div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        setFeedbackGiven('positive');
+                        // Here you could implement API call to track positive feedback
+                      }}
+                      className="text-xs px-3 py-1 rounded-full bg-green-50 text-green-600 border border-green-200 hover:bg-green-100 transition-colors flex items-center gap-1"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-current">
+                        <path d="M7 11L12 16L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(180deg)', transformOrigin: 'center' }}/>
+                      </svg>
+                      Yes
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setFeedbackGiven('negative');
+                        setShowFollowUp(true);
+                        // Here you could implement API call to track negative feedback
+                      }}
+                      className="text-xs px-3 py-1 rounded-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-current">
+                        <path d="M7 11L12 16L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      No
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Follow-up for negative feedback */}
+                {showFollowUp && (
+                  <div className="mt-3 pt-3 border-t border-neutral-200">
+                    <div className="flex flex-wrap gap-2">
+                      <button 
+                        onClick={() => {
+                          const query = "Show me more specific resources about " + question.split(" ").slice(0, 5).join(" ") + "...";
+                          setQuestion(query);
+                          mutate(query);
+                          setShowFollowUp(false);
+                        }}
+                        className="text-xs px-3 py-1 bg-white rounded border border-neutral-300 hover:border-primary/30 hover:bg-primary/5 transition-colors"
+                      >
+                        Show more specific resources
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setQuestion("Can you explain more about " + question.split(" ").slice(0, 5).join(" ") + "...");
+                          setShowFollowUp(false);
+                        }}
+                        className="text-xs px-3 py-1 bg-white rounded border border-neutral-300 hover:border-primary/30 hover:bg-primary/5 transition-colors"
+                      >
+                        Ask for more details
+                      </button>
+                      <button 
+                        onClick={() => setShowFollowUp(false)}
+                        className="text-xs px-3 py-1 bg-white rounded border border-neutral-300 hover:border-neutral-400 transition-colors"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Show thank you message after feedback */}
+            {feedbackGiven && (
+              <div className="mt-4 bg-neutral-50 p-3 rounded-md border border-neutral-100 text-center">
+                <div className="text-xs text-neutral-600">
+                  {feedbackGiven === 'positive' ? 'Thank you for your feedback! We\'re glad this was helpful.' : 'Thank you for your feedback! We\'ll use it to improve our answers.'}
+                </div>
+              </div>
+            )}
             
             {relevantResources.length > 0 && (
               <div className="mt-4">
