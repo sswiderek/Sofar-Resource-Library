@@ -929,7 +929,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           </div>
         )}
         
-        {isPending && !isStreaming && (
+        {isPending && (streamedAnswer === '' || !isStreaming) && (
           <div className="py-4 px-2">
             <div className="flex items-center justify-center">
               <div className="relative">
