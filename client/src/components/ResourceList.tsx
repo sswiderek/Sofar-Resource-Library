@@ -33,11 +33,11 @@ export default function ResourceList({ resource }: ResourceListProps) {
     >
       <div className="p-4 sm:p-5 flex flex-col sm:flex-row">
         <div className="flex-1">
-          <div className="flex items-center flex-wrap gap-2 mb-2">
-            <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-3 py-1 rounded-md text-xs font-medium`}>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[200px] truncate`}>
               {resource.type}
             </Badge>
-            <span className="text-xs text-neutral-500 font-medium">{resource.date}</span>
+            <span className="text-xs text-neutral-500 font-medium shrink-0">{resource.date}</span>
           </div>
           
           <h3 className="text-lg font-semibold text-neutral-700 leading-tight">

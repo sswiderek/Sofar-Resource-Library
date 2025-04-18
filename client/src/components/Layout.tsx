@@ -15,36 +15,33 @@ export default function Layout({ children }: LayoutProps) {
   
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
-      <header className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="py-4 flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-4">
+      <header className="bg-[#1e5bb0] shadow-md">
+        <div className="py-3 flex items-center justify-between max-w-7xl mx-auto px-4">
           <div className="flex items-center">
             <img 
               src="/sofar-logo.png" 
               alt="Sofar Logo" 
-              className="h-9 w-auto mr-3"
+              className="h-8 w-auto mr-3 bg-white rounded-md p-1"
             />
-            <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-[#0066CC]">
-                Sofar Resource Library
-              </h1>
-              <div className="h-0.5 w-full bg-gradient-to-r from-[#0066CC] to-[#00A7E1] rounded-full mt-0.5"></div>
-            </div>
+            <h1 className="text-xl font-semibold text-white">
+              Sofar Resource Library
+            </h1>
           </div>
           
-          <nav className="flex mt-4 md:mt-0">
-            <ul className="flex space-x-4">
+          <nav className="flex">
+            <ul className="flex space-x-6">
               <li>
                 <Link href="/">
-                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${isActive('/') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
-                    <Home className="h-4 w-4 mr-1" />
+                  <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
+                    <Home className="h-4 w-4 mr-1.5" />
                     Home
                   </span>
                 </Link>
               </li>
               <li>
                 <Link href="/admin/analytics">
-                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${isActive('/admin/analytics') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
-                    <BarChart3 className="h-4 w-4 mr-1" />
+                  <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
+                    <BarChart3 className="h-4 w-4 mr-1.5" />
                     Analytics
                   </span>
                 </Link>
