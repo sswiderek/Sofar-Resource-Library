@@ -454,14 +454,14 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
         );
         
         if (matchedResource) {
-          // Add as a link
+          // Add as a more visually distinct link with external icon
           parts.push(
             <a 
               key={`resource-quote-${matchedResource.id}-${match.index}`}
               href={matchedResource.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline"
+              className="inline-flex items-center font-medium text-primary hover:underline group bg-primary/5 px-0.5 rounded"
               onClick={(e) => {
                 e.preventDefault();
                 
@@ -477,7 +477,8 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
                 window.open(matchedResource.url, "_blank", "noopener,noreferrer");
               }}
             >
-              {innerText}
+              <span className="border-b border-primary/30 group-hover:border-primary">{innerText}</span>
+              <ExternalLink className="h-3 w-3 ml-0.5 inline-block flex-shrink-0" />
             </a>
           );
         } else {
@@ -532,7 +533,7 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
                 href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline"
+                className="inline-flex items-center font-medium text-primary hover:underline group bg-primary/5 px-0.5 rounded"
                 onClick={(e) => {
                   e.preventDefault();
                   
@@ -548,7 +549,8 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
                   window.open(resource.url, "_blank", "noopener,noreferrer");
                 }}
               >
-                {resourceName}
+                <span className="border-b border-primary/30 group-hover:border-primary">{resourceName}</span>
+                <ExternalLink className="h-3 w-3 ml-0.5 inline-block flex-shrink-0" />
               </a>
             );
           }
@@ -1034,17 +1036,13 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           </div>
         )}
         
-        {/* Show streaming answer as it comes in */}
+        {/* Show streaming answer as it comes in - removed redundant "Thinking..." indicator */}
         {isStreaming && (
           <div className="mt-4">
             <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
               <div className="flex items-center mb-3">
                 <Sparkles className="h-5 w-5 mr-2 text-primary" />
                 <h3 className="font-semibold text-primary">AI Answer</h3>
-                <div className="ml-auto flex items-center">
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                  <span className="text-xs text-primary/70">Thinking...</span>
-                </div>
               </div>
               <div className="text-sm prose prose-sm max-w-none">
                 {streamedAnswer || "Finding relevant resources for your question..."}
@@ -1063,13 +1061,23 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
         
         {aiAnswer && (
           <div className="mt-4">
-            <div className="bg-primary/5 p-4 rounded-md border border-primary/20">
-              <div className="flex items-center mb-3">
-                <Sparkles className="h-5 w-5 mr-2 text-primary" />
-                <h3 className="font-semibold text-primary">AI Answer</h3>
-              </div>
-              <div className="text-sm prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-2 prose-headings:mt-4 prose-li:my-1 prose-ul:my-2">
-                {formatAnswerWithLinks(aiAnswer.answer, resources, trackView, viewedResources, setViewedResources)}
+            <div className="bg-white p-4 rounded-md border border-primary/20 shadow-sm">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 bg-primary/10 p-1.5 rounded-full mr-2.5 mt-0.5">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  {/* Remove initial "Searching for..." text in the answer when displayed */}
+                  <div className="text-sm prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-2 prose-headings:mt-4 prose-li:my-1.5 prose-ul:my-3">
+                    {formatAnswerWithLinks(
+                      aiAnswer.answer.replace(/^Searching for relevant resources to answer your question\.\.\.\s*Found \d+ potentially relevant resources\. Analyzing content to answer your question\.\.\.\s*/i, ''), 
+                      resources, 
+                      trackView, 
+                      viewedResources, 
+                      setViewedResources
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             
