@@ -81,7 +81,21 @@ export class MemStorage implements IStorage {
     // Initialize partners from file
     this.initializePartners();
     
+    console.log("Setting up resource stats tracking with persistence...");
+    
+    // First make sure resource-stats.json exists
+    const absolutePath = path.resolve(process.cwd(), this.resourceStatsFilePath);
+    if (!fs.existsSync(absolutePath)) {
+      console.log(`Creating initial empty resource stats file at: ${absolutePath}`);
+      try {
+        fs.writeFileSync(absolutePath, JSON.stringify([], null, 2));
+      } catch (error) {
+        console.error(`Error creating resource stats file: ${error}`);
+      }
+    }
+    
     // Initialize resource stats from file
+    // This must be done after resources are loaded (happens in the getResources call)
     this.initializeResourceStats();
   }
 
@@ -456,8 +470,24 @@ export class MemStorage implements IStorage {
         ...stats
       }));
 
-      fs.writeFileSync(this.resourceStatsFilePath, JSON.stringify(statsArray, null, 2));
-      console.log("Resource stats saved to file");
+      // Make sure all resources with stats are updated with their current stats
+      for (const stat of statsArray) {
+        const resource = this.resources.get(stat.id);
+        if (resource) {
+          // Apply stats to the resource in memory
+          this.resources.set(stat.id, {
+            ...resource,
+            viewCount: stat.viewCount || 0,
+            shareCount: stat.shareCount || 0,
+            downloadCount: stat.downloadCount || 0
+          });
+        }
+      }
+
+      // Write to file with absolute path
+      const absolutePath = path.resolve(process.cwd(), this.resourceStatsFilePath);
+      fs.writeFileSync(absolutePath, JSON.stringify(statsArray, null, 2));
+      console.log(`Resource stats saved to file: ${absolutePath}`);
     } catch (error) {
       console.error("Error saving resource stats to file:", error);
     }
@@ -466,12 +496,15 @@ export class MemStorage implements IStorage {
   // Helper to load resource stats from JSON file
   private loadResourceStatsFromFile() {
     try {
-      if (!fs.existsSync(this.resourceStatsFilePath)) {
-        console.log("Resource stats file doesn't exist yet");
+      // Use absolute path resolution
+      const absolutePath = path.resolve(process.cwd(), this.resourceStatsFilePath);
+      
+      if (!fs.existsSync(absolutePath)) {
+        console.log(`Resource stats file doesn't exist yet at path: ${absolutePath}`);
         return null;
       }
 
-      const fileData = fs.readFileSync(this.resourceStatsFilePath, 'utf8');
+      const fileData = fs.readFileSync(absolutePath, 'utf8');
       
       // Define the structure of the stored data
       interface StatData {
@@ -481,6 +514,7 @@ export class MemStorage implements IStorage {
         downloadCount: number;
       }
 
+      console.log(`Successfully loaded resource stats from: ${absolutePath}`);
       const data = JSON.parse(fileData) as StatData[];
       return data;
     } catch (error) {
@@ -496,13 +530,25 @@ export class MemStorage implements IStorage {
     if (data) {
       // Populate the Map with loaded stats
       data.forEach(stat => {
+        // Store in stats map
         this.resourceUsageStats.set(stat.id, {
           viewCount: stat.viewCount || 0,
           shareCount: stat.shareCount || 0,
           downloadCount: stat.downloadCount || 0
         });
+        
+        // Also apply to any existing resource objects
+        const resource = this.resources.get(stat.id);
+        if (resource) {
+          this.resources.set(stat.id, {
+            ...resource,
+            viewCount: stat.viewCount || 0,
+            shareCount: stat.shareCount || 0,
+            downloadCount: stat.downloadCount || 0
+          });
+        }
       });
-      console.log(`Loaded stats for ${data.length} resources from file`);
+      console.log(`Loaded and applied stats for ${data.length} resources from file`);
     } else {
       // No stats file exists yet, will be created on first update
       console.log("No resource stats file found. A new one will be created when needed.");
