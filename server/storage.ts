@@ -487,4 +487,163 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+
+// Database implementation of the storage interface
+export class DatabaseStorage implements IStorage {
+  // Resource methods
+  async getResources(): Promise<Resource[]> {
+    return await db.select().from(resources);
+  }
+  
+  async getResource(id: number): Promise<Resource | undefined> {
+    const [resource] = await db.select().from(resources).where(eq(resources.id, id));
+    return resource || undefined;
+  }
+  
+  async getResourceByNotionId(notionId: string): Promise<Resource | undefined> {
+    const [resource] = await db.select().from(resources).where(eq(resources.notionId, notionId));
+    return resource || undefined;
+  }
+  
+  async createResource(insertResource: InsertResource): Promise<Resource> {
+    const [resource] = await db.insert(resources).values(insertResource).returning();
+    return resource;
+  }
+  
+  async updateResource(id: number, resourceUpdate: Partial<Resource>): Promise<Resource | undefined> {
+    const [updatedResource] = await db
+      .update(resources)
+      .set(resourceUpdate)
+      .where(eq(resources.id, id))
+      .returning();
+    return updatedResource || undefined;
+  }
+  
+  async updateResourceByNotionId(notionId: string, resourceUpdate: Partial<Resource>): Promise<Resource | undefined> {
+    const [updatedResource] = await db
+      .update(resources)
+      .set(resourceUpdate)
+      .where(eq(resources.notionId, notionId))
+      .returning();
+    return updatedResource || undefined;
+  }
+  
+  async deleteResource(id: number): Promise<boolean> {
+    const result = await db.delete(resources).where(eq(resources.id, id));
+    return result.count > 0;
+  }
+  
+  async clearResources(): Promise<void> {
+    await db.delete(resources);
+  }
+  
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+  
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  
+  // Team methods
+  async getTeams(): Promise<Team[]> {
+    return await db.select().from(teams);
+  }
+  
+  async getTeam(id: number): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team || undefined;
+  }
+  
+  async getPartnerBySlug(slug: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.slug, slug));
+    return team || undefined;
+  }
+  
+  async createPartner(insertTeam: InsertTeam): Promise<Team> {
+    const [team] = await db.insert(teams).values({
+      ...insertTeam,
+      lastPasswordUpdate: new Date()
+    }).returning();
+    return team;
+  }
+  
+  async updatePartnerPassword(id: number, passwordData: UpdateTeamPassword): Promise<Team | undefined> {
+    const [updatedTeam] = await db
+      .update(teams)
+      .set({
+        password: passwordData.password,
+        lastPasswordUpdate: new Date()
+      })
+      .where(eq(teams.id, id))
+      .returning();
+    return updatedTeam || undefined;
+  }
+  
+  async verifyPartnerPassword(slug: string, password: string): Promise<boolean> {
+    const partner = await this.getPartnerBySlug(slug);
+    if (!partner) return false;
+    if (!partner.password) return false;
+    return partner.password === password;
+  }
+  
+  async deletePartner(id: number): Promise<boolean> {
+    const result = await db.delete(teams).where(eq(teams.id, id));
+    return result.count > 0;
+  }
+  
+  // Resource usage tracking methods
+  async incrementResourceViews(id: number): Promise<Resource | undefined> {
+    const [updatedResource] = await db
+      .update(resources)
+      .set({
+        viewCount: db.select({ value: resources.viewCount }).from(resources).where(eq(resources.id, id)).limit(1).then(rows => (rows[0]?.value || 0) + 1)
+      })
+      .where(eq(resources.id, id))
+      .returning();
+    return updatedResource || undefined;
+  }
+  
+  async incrementResourceShares(id: number): Promise<Resource | undefined> {
+    const [updatedResource] = await db
+      .update(resources)
+      .set({
+        shareCount: db.select({ value: resources.shareCount }).from(resources).where(eq(resources.id, id)).limit(1).then(rows => (rows[0]?.value || 0) + 1)
+      })
+      .where(eq(resources.id, id))
+      .returning();
+    return updatedResource || undefined;
+  }
+  
+  async incrementResourceDownloads(id: number): Promise<Resource | undefined> {
+    const [updatedResource] = await db
+      .update(resources)
+      .set({
+        downloadCount: db.select({ value: resources.downloadCount }).from(resources).where(eq(resources.id, id)).limit(1).then(rows => (rows[0]?.value || 0) + 1)
+      })
+      .where(eq(resources.id, id))
+      .returning();
+    return updatedResource || undefined;
+  }
+  
+  async getPopularResources(limit: number = 5): Promise<Resource[]> {
+    return await db
+      .select()
+      .from(resources)
+      .orderBy(resources.viewCount, { direction: 'desc' })
+      .limit(limit);
+  }
+}
+
+// Use DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();
