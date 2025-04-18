@@ -39,14 +39,7 @@ export default function Layout({ children }: LayoutProps) {
                   </span>
                 </Link>
               </li>
-              <li>
-                <Link href="/admin/analytics">
-                  <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
-                    <BarChart3 className="h-4 w-4 mr-1.5" />
-                    <span className="inline-block mt-0.5">Analytics</span>
-                  </span>
-                </Link>
-              </li>
+              {/* Analytics link hidden as requested, still accessible directly at /admin/analytics */}
               <li className="ml-3">
                 <FeedbackDialog />
               </li>

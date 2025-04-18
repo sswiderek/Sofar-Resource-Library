@@ -17,7 +17,7 @@ export const getResourceGradient = (type: string): string => {
   const typeKey = type.toLowerCase();
   
   if (typeKey.includes('webinar') || typeKey === 'webinar') {
-    return "bg-blue-300";
+    return "bg-cyan-400"; // Changed from blue-300 to cyan-400 to make it more distinct
   } else if (typeKey.includes('slide') || typeKey === 'slides') {
     return "bg-teal-300";
   } else if (typeKey.includes('customer story') || typeKey === 'customer story') {
@@ -37,7 +37,7 @@ export const getResourceGradient = (type: string): string => {
   } else if (typeKey.includes('branding')) {
     return "bg-pink-300";
   } else if (typeKey.includes('one-pager')) {
-    return "bg-green-500";
+    return "bg-green-500"; // Kelly green color for One-Pager
   } else if (typeKey.includes('guide')) {
     return "bg-lime-300";
   } else if (typeKey.includes('fact sheet')) {
@@ -64,7 +64,7 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
   // Text class definitions (for use in inline text)
   if (variant === 'text') {
     if (typeKey.includes('webinar') || typeKey === 'webinar') {
-      return "text-blue-700";
+      return "text-cyan-700"; // Changed from blue-700 to cyan-700 to match the new color
     } else if (typeKey.includes('slide') || typeKey === 'slides') {
       return "text-teal-700";
     } else if (typeKey.includes('customer story') || typeKey === 'customer story') {
@@ -106,7 +106,7 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
 
   // Badge class definitions (for use in badges/labels)
   if (typeKey.includes('webinar') || typeKey === 'webinar') {
-    return "bg-blue-100 text-blue-700 border-blue-200";
+    return "bg-cyan-100 text-cyan-700 border-cyan-200"; // Changed from blue to cyan for consistency
   } else if (typeKey.includes('slide') || typeKey === 'slides') {
     return "bg-teal-100 text-teal-700 border-teal-200";
   } else if (typeKey.includes('customer story') || typeKey === 'customer story') {
