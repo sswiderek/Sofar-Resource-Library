@@ -468,29 +468,33 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
     });
 
   return (
-    <Card className="w-full bg-white border border-neutral-200 shadow-sm transition-all duration-300 mb-4 relative">
-      <CardContent className="px-4 py-3">
+    <Card className={`w-full bg-white border shadow-sm transition-all duration-300 mb-4 relative ${expanded ? 'border-primary/30' : 'border-neutral-200'}`}>
+      <CardContent className={`px-4 ${expanded ? 'py-4' : 'py-3'}`}>
         <div className="flex flex-col">
-          <div className="flex items-center mb-2">
+          <div className="flex items-center mb-3">
             <div className="flex items-center flex-grow">
-              <Sparkles className="h-4 w-4 mr-2 text-primary" />
-              <span className="text-sm font-medium">Ask about resources</span>
-              <span className="ml-2 text-xs bg-primary/10 text-primary font-medium px-1.5 py-0.5 rounded-sm">
-                BETA
-              </span>
+              <div className="bg-primary/10 p-1.5 rounded-full mr-2.5">
+                <Sparkles className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <span className="text-sm font-medium">Resource AI Assistant</span>
+                <span className="ml-2 text-xs bg-primary/10 text-primary font-medium px-1.5 py-0.5 rounded-sm">
+                  BETA
+                </span>
+              </div>
             </div>
             {expanded && (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 w-6 p-0 rounded-full"
+                className="h-7 w-7 p-0 rounded-full hover:bg-neutral-100"
                 onClick={() => {
                   setExpanded(false);
                   setQuestion('');
                   setAiAnswer(null);
                 }}
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
                 <span className="sr-only">Close</span>
               </Button>
             )}
@@ -498,54 +502,145 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
           
           <form onSubmit={handleSubmit} className="flex gap-2 items-center">
             <Input
-              placeholder="Ask a question about resources..."
+              placeholder={expanded ? "What resources are available for..." : "Ask a question about resources..."}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              className="flex-grow"
+              className={`flex-grow transition-all ${expanded ? 'border-primary/30 focus-visible:ring-primary/20' : ''}`}
               onFocus={() => setExpanded(true)}
             />
-            <Button type="submit" size="sm" disabled={isPending || !question.trim()}>
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <Button 
+              type="submit" 
+              size="sm" 
+              disabled={isPending || !question.trim()}
+              className={`${isPending ? 'bg-primary/80' : ''} transition-all`}
+            >
+              {isPending ? (
+                <div className="flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="text-xs">Processing</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Send className="h-3.5 w-3.5" />
+                  <span className="text-xs">Ask</span>
+                </div>
+              )}
             </Button>
           </form>
+          
+          {/* Quick guide when first expanded */}
+          {expanded && !aiAnswer && !isPending && !isStreaming && (
+            <div className="text-xs text-neutral-500 mt-2">
+              <p>Ask questions about Sofar's products, resources, or specific use cases to get personalized recommendations</p>
+            </div>
+          )}
         </div>
         
         {expanded && !aiAnswer && !isPending && (
-          <div className="text-xs mt-2 border-t pt-2 border-neutral-100">
-            <div className="flex items-center">
-              <p className="font-medium text-neutral-600">Try:</p>
+          <div className="text-xs mt-3 border-t pt-3 border-neutral-100">
+            <div className="flex items-center mb-2">
+              <Sparkles className="h-3 w-3 mr-1 text-primary" />
+              <p className="font-medium text-neutral-600">Try asking about:</p>
             </div>
-            <div className="mt-1 flex gap-1 flex-wrap">
-              <button 
-                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
-                onClick={() => {
-                  const query = "Can you recommend case studies that show how customers have achieved fuel savings using Wayfinder technology?";
-                  setQuestion(query);
-                  mutate(query);
-                }}
-              >
-                Case studies about fuel savings with Wayfinder
-              </button>
-              <button 
-                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
-                onClick={() => {
-                  const query = "I'm preparing for a technical presentation. What materials do we have that explain how our Smart Mooring Sensors work?";
-                  setQuestion(query);
-                  mutate(query);
-                }}
-              >
-                Technical materials about Smart Mooring Sensors
-              </button>
-              <button 
-                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
-                onClick={() => {
-                  const query = "What resources would help me explain Sofar's technology to environmental researchers?";
-                  setQuestion(query);
-                  mutate(query);
-                }}
-              >
-                Resources for environmental researchers
-              </button>
+            
+            {/* Categorized suggestion buttons */}
+            <div className="space-y-3">
+              {/* Product-specific suggestions */}
+              <div>
+                <div className="text-[10px] font-medium uppercase text-neutral-500 mb-1">Products & Solutions</div>
+                <div className="flex gap-1 flex-wrap">
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "Can you recommend case studies that show how customers have achieved fuel savings using Wayfinder technology?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Wayfinder fuel savings case studies
+                  </button>
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "What materials explain how Smart Mooring Sensors work?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Smart Mooring technical details
+                  </button>
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "What's the latest research on Spotter buoys and their applications?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Spotter buoy research
+                  </button>
+                </div>
+              </div>
+              
+              {/* Audience-focused suggestions */}
+              <div>
+                <div className="text-[10px] font-medium uppercase text-neutral-500 mb-1">By Audience</div>
+                <div className="flex gap-1 flex-wrap">
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "What resources would help me explain Sofar's technology to environmental researchers?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Materials for environmental researchers
+                  </button>
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "What presentation materials do we have for shipping executives focused on decarbonization?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Shipping executive presentations
+                  </button>
+                </div>
+              </div>
+              
+              {/* General inquiries */}
+              <div>
+                <div className="text-[10px] font-medium uppercase text-neutral-500 mb-1">General Questions</div>
+                <div className="flex gap-1 flex-wrap">
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "How does Sofar's technology help with weather forecasting?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Ocean data & weather forecasting
+                  </button>
+                  <button 
+                    className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
+                    onClick={() => {
+                      const query = "What are the key benefits of Sofar's solutions for shipping companies?";
+                      setQuestion(query);
+                      mutate(query);
+                    }}
+                  >
+                    Benefits for shipping companies
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-3 flex items-center">
+              <div className="text-[10px] text-neutral-500">
+                <p>Ask any question about Sofar's resources, products, or applications</p>
+              </div>
             </div>
           </div>
         )}
@@ -637,65 +732,112 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
             
             {relevantResources.length > 0 && (
               <div className="mt-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm mb-2">
-                    <Sparkles className="h-4 w-4 inline-block mr-1 text-primary" />
-                    Relevant Resources:
-                  </h3>
-                  <div className="text-xs text-muted-foreground">
-                    {aiAnswer.relevantResourceIds?.length} resources found
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
+                    <h3 className="font-semibold text-sm">Recommended Resources</h3>
+                  </div>
+                  <div className="text-xs text-muted-foreground bg-primary/5 px-2 py-0.5 rounded-full">
+                    {aiAnswer.relevantResourceIds?.length} {aiAnswer.relevantResourceIds?.length === 1 ? 'resource' : 'resources'} found
                   </div>
                 </div>
-                <div className="max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                
+                <div className="max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="grid grid-cols-1 gap-3">
                     {relevantResources.map((resource, index) => {
-                      // Get the resource type badge class using our utility function
+                      // Get the resource type badge class
                       const badgeClass = getResourceTypeClasses(resource.type);
+                      // Check if resource has been viewed
+                      const isViewed = viewedResources[resource.id];
                       
                       return (
-                        <div key={`resource-${resource.id}`} className="bg-white border border-gray-200 shadow-sm p-3 rounded-md text-sm hover:shadow-md transition-shadow flex flex-col h-full">
-                          <div className="flex items-start justify-between mb-1">
-                            <div className="font-medium text-primary flex-1 line-clamp-2 leading-tight">{resource.name}</div>
-                            <div className={`flex items-center text-xs ${badgeClass} px-2 py-1 rounded-full ml-2 shrink-0`}>
-                              <span className="uppercase text-[10px]">{resource.type}</span>
+                        <div 
+                          key={`resource-${resource.id}`} 
+                          className={`bg-white border rounded-md transition-all flex flex-col h-full overflow-hidden relative ${
+                            isViewed 
+                              ? 'border-neutral-200' 
+                              : 'border-primary/30 shadow-sm hover:shadow-md'
+                          }`}
+                        >
+                          {/* Top color bar based on resource type */}
+                          <div className={`w-full h-1 ${badgeClass.replace('text-', 'bg-')}`}></div>
+                          
+                          <div className="p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                  <div className={`text-xs px-2 py-0.5 rounded-full ${badgeClass} mr-2`}>
+                                    <span className="uppercase text-[10px] font-medium">{resource.type}</span>
+                                  </div>
+                                  {isViewed && (
+                                    <div className="text-[10px] text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded-full">
+                                      Viewed
+                                    </div>
+                                  )}
+                                </div>
+                                <h4 className="font-medium text-primary leading-tight mb-1">
+                                  {resource.name}
+                                </h4>
+                                <div className="text-xs text-neutral-500 mb-2">
+                                  {resource.date}
+                                </div>
+                              </div>
+                              
+                              <div className="flex-shrink-0">
+                                {/* Priority indicator for first 3 resources */}
+                                {index < 3 && (
+                                  <div className="bg-primary/10 text-primary text-[10px] px-2 py-1 rounded-full font-medium flex items-center">
+                                    {index === 0 && "Best Match"}
+                                    {index === 1 && "Highly Relevant"}
+                                    {index === 2 && "Recommended"}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center mt-1 text-[10px] text-gray-500">
-                            <span className="inline-block">{resource.date}</span>
-                          </div>
-                          
-                          <div className="text-xs mt-2 line-clamp-2 text-gray-700 flex-grow">
-                            {resource.description}
-                          </div>
-                          
-                          <div className="mt-auto pt-3 flex gap-2">
-                            <a 
-                              href={resource.url}
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="bg-primary text-white text-xs px-3 py-1.5 rounded hover:bg-primary/90 inline-flex items-center gap-1.5 w-full justify-center"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                
-                                // Track the view if not already viewed
-                                if (!viewedResources[resource.id]) {
-                                  trackView(resource.id);
-                                  setViewedResources(prev => ({...prev, [resource.id]: true}));
-                                }
-                                
-                                // Open in new tab
-                                window.open(resource.url, "_blank", "noopener,noreferrer");
-                              }}
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              View Resource
-                            </a>
+                            
+                            <div className="text-xs text-neutral-700 my-2">
+                              {resource.description}
+                            </div>
+                            
+                            <div className="flex gap-2 mt-3">
+                              <a 
+                                href={resource.url}
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`text-xs px-3 py-1.5 rounded inline-flex items-center gap-1.5 justify-center flex-1 border ${
+                                  isViewed 
+                                    ? 'border-neutral-200 hover:border-primary/30 text-neutral-700 hover:text-primary bg-white hover:bg-primary/5' 
+                                    : 'bg-primary text-white hover:bg-primary/90 border-primary'
+                                }`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  
+                                  // Track the view if not already viewed
+                                  if (!viewedResources[resource.id]) {
+                                    trackView(resource.id);
+                                    setViewedResources(prev => ({...prev, [resource.id]: true}));
+                                  }
+                                  
+                                  // Open in new tab
+                                  window.open(resource.url, "_blank", "noopener,noreferrer");
+                                }}
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                {isViewed ? 'View Again' : 'View Resource'}
+                              </a>
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
+                  
+                  {/* Show a message if there are more resources available */}
+                  {aiAnswer.relevantResourceIds?.length > relevantResources.length && (
+                    <div className="text-center text-xs text-neutral-500 mt-3 py-2 border-t border-neutral-100">
+                      {aiAnswer.relevantResourceIds.length - relevantResources.length} more resources mentioned but not found in the current list
+                    </div>
+                  )}
                 </div>
               </div>
             )}
