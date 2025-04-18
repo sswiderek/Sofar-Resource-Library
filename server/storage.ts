@@ -61,7 +61,10 @@ export class MemStorage implements IStorage {
 
   // Path for storing data files
   private partnersFilePath: string = path.join(process.cwd(), 'partners-data.json');
-  private resourceStatsFilePath: string = path.join(process.cwd(), 'resource-stats.json');
+  // Store resource stats in a stable, persistent location that survives deployments
+  private resourceStatsFilePath: string = path.resolve(process.env.PERSISTENT_STORAGE_DIR || process.cwd(), 'resource-stats.json');
+  // Legacy path for backward compatibility
+  private legacyResourceStatsFilePath: string = path.join(process.cwd(), 'resource-stats.json');
 
   constructor() {
     this.users = new Map();
@@ -83,12 +86,21 @@ export class MemStorage implements IStorage {
     
     console.log("Setting up resource stats tracking with persistence...");
     
-    // First make sure resource-stats.json exists
-    const absolutePath = path.resolve(process.cwd(), this.resourceStatsFilePath);
-    if (!fs.existsSync(absolutePath)) {
-      console.log(`Creating initial empty resource stats file at: ${absolutePath}`);
+    // Check if legacy stats file exists and migrate if needed
+    this.migrateStatsIfNeeded();
+    
+    // Make sure the primary resource-stats.json exists
+    if (!fs.existsSync(this.resourceStatsFilePath)) {
+      console.log(`Creating initial empty resource stats file at: ${this.resourceStatsFilePath}`);
       try {
-        fs.writeFileSync(absolutePath, JSON.stringify([], null, 2));
+        // Create directory if it doesn't exist
+        const dir = path.dirname(this.resourceStatsFilePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+          console.log(`Created directory: ${dir}`);
+        }
+        
+        fs.writeFileSync(this.resourceStatsFilePath, JSON.stringify([], null, 2));
       } catch (error) {
         console.error(`Error creating resource stats file: ${error}`);
       }
@@ -461,6 +473,39 @@ export class MemStorage implements IStorage {
     return result;
   }
 
+  // Helper function to migrate stats from legacy path to new persistent path
+  private migrateStatsIfNeeded() {
+    try {
+      // Check if legacy file exists but new one doesn't
+      if (fs.existsSync(this.legacyResourceStatsFilePath) && !fs.existsSync(this.resourceStatsFilePath)) {
+        console.log(`Found legacy stats file at ${this.legacyResourceStatsFilePath}, migrating to ${this.resourceStatsFilePath}`);
+        
+        // Read the legacy file
+        const legacyData = fs.readFileSync(this.legacyResourceStatsFilePath, 'utf8');
+        const statsData = JSON.parse(legacyData);
+        
+        // Ensure the target directory exists
+        const dir = path.dirname(this.resourceStatsFilePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+          console.log(`Created directory: ${dir}`);
+        }
+        
+        // Write to the new location
+        fs.writeFileSync(this.resourceStatsFilePath, JSON.stringify(statsData, null, 2));
+        console.log(`Successfully migrated stats to persistent location: ${this.resourceStatsFilePath}`);
+        
+        // Keep a backup of the legacy file but don't delete it
+        const backupPath = `${this.legacyResourceStatsFilePath}.bak`;
+        fs.copyFileSync(this.legacyResourceStatsFilePath, backupPath);
+        console.log(`Created backup of legacy stats file at: ${backupPath}`);
+      }
+    } catch (error) {
+      console.error(`Error migrating stats: ${error}`);
+      // Non-fatal error, continue with empty stats if migration fails
+    }
+  }
+
   // Helper to save resource stats to JSON file
   private saveResourceStatsToFile() {
     try {
@@ -484,10 +529,23 @@ export class MemStorage implements IStorage {
         }
       }
 
-      // Write to file with absolute path
-      const absolutePath = path.resolve(process.cwd(), this.resourceStatsFilePath);
-      fs.writeFileSync(absolutePath, JSON.stringify(statsArray, null, 2));
-      console.log(`Resource stats saved to file: ${absolutePath}`);
+      // Ensure directory exists
+      const dir = path.dirname(this.resourceStatsFilePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      // Write to persistent file path
+      fs.writeFileSync(this.resourceStatsFilePath, JSON.stringify(statsArray, null, 2));
+      console.log(`Resource stats saved to persistent file: ${this.resourceStatsFilePath}`);
+      
+      // Also save to legacy path as a backup during transition
+      try {
+        fs.writeFileSync(this.legacyResourceStatsFilePath, JSON.stringify(statsArray, null, 2));
+      } catch (backupError) {
+        // Non-fatal if backup fails
+        console.log(`Note: Could not write backup to legacy location: ${backupError.message}`);
+      }
     } catch (error) {
       console.error("Error saving resource stats to file:", error);
     }
@@ -496,15 +554,25 @@ export class MemStorage implements IStorage {
   // Helper to load resource stats from JSON file
   private loadResourceStatsFromFile() {
     try {
-      // Use absolute path resolution
-      const absolutePath = path.resolve(process.cwd(), this.resourceStatsFilePath);
-      
-      if (!fs.existsSync(absolutePath)) {
-        console.log(`Resource stats file doesn't exist yet at path: ${absolutePath}`);
+      if (!fs.existsSync(this.resourceStatsFilePath)) {
+        console.log(`Resource stats file doesn't exist yet at path: ${this.resourceStatsFilePath}`);
+        
+        // Check if we have a legacy file to use instead
+        if (fs.existsSync(this.legacyResourceStatsFilePath)) {
+          console.log(`Found legacy stats file, will use that instead: ${this.legacyResourceStatsFilePath}`);
+          const legacyData = fs.readFileSync(this.legacyResourceStatsFilePath, 'utf8');
+          const data = JSON.parse(legacyData);
+          
+          // Save to the new location for next time
+          this.migrateStatsIfNeeded();
+          
+          return data;
+        }
+        
         return null;
       }
 
-      const fileData = fs.readFileSync(absolutePath, 'utf8');
+      const fileData = fs.readFileSync(this.resourceStatsFilePath, 'utf8');
       
       // Define the structure of the stored data
       interface StatData {
@@ -514,11 +582,23 @@ export class MemStorage implements IStorage {
         downloadCount: number;
       }
 
-      console.log(`Successfully loaded resource stats from: ${absolutePath}`);
+      console.log(`Successfully loaded resource stats from persistent location: ${this.resourceStatsFilePath}`);
       const data = JSON.parse(fileData) as StatData[];
       return data;
     } catch (error) {
-      console.error("Error loading resource stats from file:", error);
+      console.error(`Error loading resource stats from file: ${error}`);
+      
+      // Try the legacy file as a fallback
+      try {
+        if (fs.existsSync(this.legacyResourceStatsFilePath)) {
+          console.log(`Trying to load from legacy location as fallback...`);
+          const legacyData = fs.readFileSync(this.legacyResourceStatsFilePath, 'utf8');
+          return JSON.parse(legacyData);
+        }
+      } catch (fallbackError) {
+        console.error(`Fallback also failed: ${fallbackError}`);
+      }
+      
       return null;
     }
   }
