@@ -512,8 +512,19 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
   // Also find explicit mentions of resource names
   for (const resource of sortedResources) {
     const resourceName = resource.name;
-    // Skip very short resource names (avoid common words)
-    if (resourceName.length < 10) continue;
+    // Skip very short resource names (avoid common words) unless they're in a structured format
+    let shouldProcess = resourceName.length >= 10;
+    
+    // Check if resource appears in RELEVANT_RESOURCES section
+    if (!shouldProcess) {
+      const relevantSection = text.match(/RELEVANT_RESOURCES:.*|Relevant Resources:.*|relevant resources:.*|Resources mentioned:.*/i);
+      if (relevantSection && relevantSection[0].toLowerCase().includes(resourceName.toLowerCase())) {
+        shouldProcess = true;
+      }
+    }
+    
+    // If resource name is too short and not in a special section, skip it
+    if (!shouldProcess) continue;
     
     // Process each text fragment
     const newResult: React.ReactNode[] = [];
