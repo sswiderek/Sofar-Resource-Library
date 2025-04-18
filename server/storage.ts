@@ -341,10 +341,18 @@ export class MemStorage implements IStorage {
       switch (filter.sortBy) {
         case 'popularity':
           filtered.sort((a, b) => {
-            // Sort by total interactions (views + shares + downloads)
-            const aTotal = (a.viewCount || 0) + (a.shareCount || 0) + (a.downloadCount || 0);
-            const bTotal = (b.viewCount || 0) + (b.shareCount || 0) + (b.downloadCount || 0);
-            return bTotal - aTotal; // Descending order
+            // Primary sort by view count
+            const aViews = a.viewCount || 0;
+            const bViews = b.viewCount || 0;
+            
+            // If view counts are equal, use total interaction count as secondary sort
+            if (aViews === bViews) {
+              const aTotalInteractions = aViews + (a.shareCount || 0) + (a.downloadCount || 0);
+              const bTotalInteractions = bViews + (b.shareCount || 0) + (b.downloadCount || 0);
+              return bTotalInteractions - aTotalInteractions;
+            }
+            
+            return bViews - aViews; // Descending by views
           });
           break;
         case 'newest':

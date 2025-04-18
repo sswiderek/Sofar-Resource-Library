@@ -69,6 +69,10 @@ export default function ResourceList({ resource }: ResourceListProps) {
         </div>
         
         <div className="mt-4 sm:mt-0 sm:ml-6 flex sm:flex-col sm:items-end">
+          <div className="hidden sm:flex items-center text-xs text-neutral-500 mb-2">
+            <Eye className="h-3.5 w-3.5 mr-1 opacity-70" />
+            <span>{resource.viewCount || 0} views</span>
+          </div>
           <Button 
             variant="default"
             className="px-4"
