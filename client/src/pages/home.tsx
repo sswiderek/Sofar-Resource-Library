@@ -173,7 +173,7 @@ export default function Home() {
           onClick={() => setShowMobileFilters(false)}
         >
           <div 
-            className="absolute left-0 top-0 h-full w-80 max-w-full bg-white shadow-xl"
+            className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-white shadow-xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <FilterSidebar
@@ -245,9 +245,9 @@ export default function Home() {
         <QuestionBox resources={resources} />
         
         {/* View controls, sort and sync buttons */}
-        <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-[#1e5bb0]">Sort by:</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 mt-6 bg-white p-3 sm:p-4 rounded-lg border border-neutral-200 shadow-sm gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-sm font-medium text-[#1e5bb0] whitespace-nowrap">Sort by:</span>
             <Select
               value={filters.sortBy || "relevance"}
               onValueChange={(value) => {
@@ -258,7 +258,7 @@ export default function Home() {
                 });
               }}
             >
-              <SelectTrigger className="w-[180px] h-9 bg-white border-blue-200 hover:border-blue-300 focus:ring-blue-200">
+              <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white border-blue-200 hover:border-blue-300 focus:ring-blue-200">
                 <SelectValue placeholder="Relevance">
                   {filters.sortBy === "relevance" || !filters.sortBy ? (
                     <div className="flex items-center">
@@ -314,7 +314,7 @@ export default function Home() {
             </Select>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
             <Button
               variant="outline"
               size="sm"
@@ -324,13 +324,15 @@ export default function Home() {
             >
               {isSyncing ? (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Syncing...
+                  <RefreshCw className="mr-1 sm:mr-2 h-4 w-4 animate-spin" />
+                  <span className="hidden sm:inline">Syncing...</span>
+                  <span className="sm:hidden">Sync</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Sync
+                  <RefreshCw className="mr-1 sm:mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Sync</span>
+                  <span className="sm:hidden">Sync</span>
                 </>
               )}
             </Button>
