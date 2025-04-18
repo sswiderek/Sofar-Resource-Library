@@ -33,8 +33,8 @@ export async function submitFeedbackToNotion(feedback: Feedback): Promise<void> 
         database_id: cleanDatabaseId
       },
       properties: {
-        // Use "title" as the default name field - this is the default field in Notion databases
-        "title": {
+        // Map to exact column names in the Notion database
+        "Submitter's Name": {
           title: [
             {
               text: {
@@ -43,13 +43,7 @@ export async function submitFeedbackToNotion(feedback: Feedback): Promise<void> 
             }
           ]
         },
-        // Use simpler property names that are likely in the Notion database
-        "Type": {
-          select: {
-            name: "Feedback" // Use a simple fixed value since we're not collecting types
-          }
-        },
-        "Content": {
+        "Feedback": {
           rich_text: [
             {
               text: {
@@ -57,18 +51,6 @@ export async function submitFeedbackToNotion(feedback: Feedback): Promise<void> 
               }
             }
           ]
-        },
-        // Add a status field to help with organization in Notion
-        "Status": {
-          select: {
-            name: "New"
-          }
-        },
-        // Use a created_time field for the timestamp
-        "Created": {
-          date: {
-            start: timestamp.toISOString()
-          }
         }
       }
     });
