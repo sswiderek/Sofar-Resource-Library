@@ -414,16 +414,24 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
   
   let result: React.ReactNode[] = [text];
   
-  // Extract resource titles in quotes pattern first
-  const resourceQuotePattern = /\*\*(.*?)\*\*/g;
-  const resourceQuotes = text.match(resourceQuotePattern) || [];
+  // Extract resource titles in various formats:
+  // 1. Markdown-style bold with ** 
+  // 2. Text in quotes that might be resource titles
+  // 3. Text with [Read more] style links
+  const boldPattern = /\*\*(.*?)\*\*/g;
+  const quotePattern = /"([^"]+)"|'([^']+)'/g;
+  const readMorePattern = /\[Read more\]\s*\(([^)]+)\)/g;
+  
+  const boldMatches = text.match(boldPattern) || [];
+  const quoteMatches = text.match(quotePattern) || [];
+  const readMoreMatches = text.match(readMorePattern) || [];
   
   // Sort resources by name length (descending) to ensure longer names are matched first
   // This prevents partial matches of shorter resource names within longer ones
   const sortedResources = [...resources].sort((a, b) => b.name.length - a.name.length);
   
-  // Process quoted resource titles
-  if (resourceQuotes.length > 0) {
+  // Process bold markdown-style resources
+  if (boldMatches.length > 0) {
     const newResult: React.ReactNode[] = [];
     
     for (const node of result) {
@@ -437,10 +445,10 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
       let match;
       
       // Reset regex search
-      resourceQuotePattern.lastIndex = 0;
+      boldPattern.lastIndex = 0;
       
-      while ((match = resourceQuotePattern.exec(node)) !== null) {
-        const quoteText = match[0]; // The full **text**
+      while ((match = boldPattern.exec(node)) !== null) {
+        const boldText = match[0]; // The full **text**
         const innerText = match[1]; // Just the text inside **
         
         // Add the text before this match
@@ -595,9 +603,9 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
       const useStreaming = true;
       
       if (useStreaming) {
-        // Reset streaming state
+        // Reset streaming state - don't set isStreaming until actual content arrives
         setStreamedAnswer('');
-        setIsStreaming(true);
+        setIsStreaming(false);
         
         // Create the request with streaming enabled
         const body = JSON.stringify({ question, stream: true });
@@ -663,7 +671,12 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
             if (eventType === 'chunk') {
               try {
                 const parsedData = JSON.parse(data);
-                setStreamedAnswer(prev => prev + (parsedData.content || ''));
+                const content = parsedData.content || '';
+                if (content && !isStreaming) {
+                  // Once we get actual content, enable streaming UI
+                  setIsStreaming(true);
+                }
+                setStreamedAnswer(prev => prev + content);
               } catch (err) {
                 console.error('Error parsing streaming chunk:', err);
               }
