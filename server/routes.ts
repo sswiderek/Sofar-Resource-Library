@@ -31,6 +31,42 @@ let resourcesNeedEmbeddingUpdate = false;
 let isGeneratingEmbeddings = false;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add feedback API route
+  app.post("/api/feedback", async (req: Request, res: Response) => {
+    try {
+      // Add page and user agent automatically
+      const feedbackData = {
+        ...req.body,
+        page: req.body.page || req.headers.referer,
+        userAgent: req.body.userAgent || req.headers['user-agent'],
+        timestamp: new Date()
+      };
+      
+      const parseResult = feedbackSchema.safeParse(feedbackData);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid feedback data",
+          errors: parseResult.error.errors
+        });
+      }
+      
+      // Submit the feedback to Notion
+      await submitFeedbackToNotion(parseResult.data);
+      
+      // Return success response
+      res.json({ 
+        message: "Thank you for your feedback!",
+        success: true
+      });
+    } catch (error) {
+      log(`Error submitting feedback: ${error instanceof Error ? error.message : String(error)}`);
+      return res.status(500).json({
+        message: "Failed to submit feedback",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
   // put application routes here
   // prefix all routes with /api
 
