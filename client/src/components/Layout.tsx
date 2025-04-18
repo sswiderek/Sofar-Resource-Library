@@ -30,12 +30,12 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           
           <nav className="flex items-center">
-            <ul className="flex space-x-6">
+            <ul className="flex items-center space-x-6">
               <li>
                 <Link href="/">
                   <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
                     <Home className="h-4 w-4 mr-1.5" />
-                    Home
+                    <span className="inline-block mt-0.5">Home</span>
                   </span>
                 </Link>
               </li>
@@ -43,14 +43,12 @@ export default function Layout({ children }: LayoutProps) {
                 <Link href="/admin/analytics">
                   <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
                     <BarChart3 className="h-4 w-4 mr-1.5" />
-                    Analytics
+                    <span className="inline-block mt-0.5">Analytics</span>
                   </span>
                 </Link>
               </li>
-              <li className="ml-2">
-                <div className="bg-white rounded-md">
-                  <FeedbackDialog />
-                </div>
+              <li className="ml-3">
+                <FeedbackDialog />
               </li>
             </ul>
           </nav>
