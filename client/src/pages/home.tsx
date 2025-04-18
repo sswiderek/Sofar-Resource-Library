@@ -338,7 +338,7 @@ export default function Home() {
               <Button
                 variant={viewMode === "card" ? "default" : "ghost"}
                 size="sm"
-                className={`rounded-none px-2 h-full ${viewMode === "card" ? "bg-primary text-white" : "bg-transparent"}`}
+                className="rounded-none px-2 h-full"
                 onClick={() => setViewMode("card")}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function Home() {
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
-                className={`rounded-none px-2 h-full ${viewMode === "list" ? "bg-primary text-white" : "bg-transparent"}`}
+                className="rounded-none px-2 h-full"
                 onClick={() => setViewMode("list")}
               >
                 <List className="h-4 w-4" />
@@ -426,9 +426,9 @@ export default function Home() {
                 <span className="sr-only">Previous</span>
               </Button>
               
-              <div className="text-sm text-neutral-600 font-medium">
+              <div className="text-sm text-neutral-600">
                 Page {pagination.page} of {pagination.totalPages}
-                <span className="mx-2 text-neutral-400">·</span>
+                <span className="mx-2">·</span>
                 <span className="text-neutral-500">
                   {pagination.total} resources total
                 </span>

@@ -468,15 +468,14 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
     });
 
   return (
-    <Card className="w-full bg-gradient-to-r from-blue-50 to-white border border-blue-200 shadow-sm transition-all duration-300 mb-4 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-600 to-blue-400"></div>
+    <Card className="w-full bg-white border border-neutral-200 shadow-sm transition-all duration-300 mb-4 relative">
       <CardContent className="px-4 py-3">
         <div className="flex flex-col">
           <div className="flex items-center mb-2">
             <div className="flex items-center flex-grow">
-              <Sparkles className="h-4 w-4 mr-2 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">Ask about resources</span>
-              <span className="ml-2 text-xs bg-blue-600 text-white font-medium px-1.5 py-0.5 rounded-md">
+              <Sparkles className="h-4 w-4 mr-2 text-primary" />
+              <span className="text-sm font-medium">Ask about resources</span>
+              <span className="ml-2 text-xs bg-primary/10 text-primary font-medium px-1.5 py-0.5 rounded-sm">
                 BETA
               </span>
             </div>
@@ -516,9 +515,9 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
             <div className="flex items-center">
               <p className="font-medium text-neutral-600">Try:</p>
             </div>
-            <div className="mt-1 flex gap-1.5 flex-wrap">
+            <div className="mt-1 flex gap-1 flex-wrap">
               <button 
-                className="text-left px-2 py-1.5 bg-gradient-to-r from-blue-50 to-white rounded-md border border-blue-200 hover:border-blue-300 hover:shadow-sm transition-all text-xs text-blue-700" 
+                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
                   const query = "Can you recommend case studies that show how customers have achieved fuel savings using Wayfinder technology?";
                   setQuestion(query);
@@ -528,7 +527,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 Case studies about fuel savings with Wayfinder
               </button>
               <button 
-                className="text-left px-2 py-1.5 bg-gradient-to-r from-sky-50 to-white rounded-md border border-sky-200 hover:border-sky-300 hover:shadow-sm transition-all text-xs text-sky-700" 
+                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
                   const query = "I'm preparing for a technical presentation. What materials do we have that explain how our Smart Mooring Sensors work?";
                   setQuestion(query);
@@ -538,7 +537,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 Technical materials about Smart Mooring Sensors
               </button>
               <button 
-                className="text-left px-2 py-1.5 bg-gradient-to-r from-indigo-50 to-white rounded-md border border-indigo-200 hover:border-indigo-300 hover:shadow-sm transition-all text-xs text-indigo-700" 
+                className="text-left px-2 py-1 bg-white rounded border border-neutral-200 hover:border-primary/30 hover:bg-primary/5 transition-colors text-xs" 
                 onClick={() => {
                   const query = "What resources would help me explain Sofar's technology to environmental researchers?";
                   setQuestion(query);
