@@ -39,23 +39,24 @@ export default function FilterSidebar({
   const { data, isLoading, isError, refetch } = useQuery<Metadata>({
     queryKey: ['/api/resources/metadata'],
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     // Increase retry attempts for preview environments
-    retry: 3,
+    retry: 5,
     retryDelay: 1000,
+    refetchOnMount: true,
   });
 
   // Force a refetch if data is empty but should be available
   useEffect(() => {
-    if (!isLoading && data && 
+    if ((!data || 
         (data.types.length === 0 || 
          data.products.length === 0 || 
-         data.audiences.length === 0)) {
+         data.audiences.length === 0))) {
       // If data is empty after loading, try refetching once
       console.log("Metadata appears empty, refetching...");
       refetch();
     }
-  }, [data, isLoading, refetch]);
+  }, [data, refetch]);
 
   // Ensure we have default values for the metadata
   const metadata: Metadata = data || {

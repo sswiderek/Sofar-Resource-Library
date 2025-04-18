@@ -121,7 +121,7 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
               
         type: properties["Content Type"]?.select?.name || 
               properties.Type?.select?.name || 
-              "Unknown",
+              "",
               
         product: properties["Smart Mooring Sensor(s)"]?.multi_select?.map((p: any) => p.name) || 
                  properties.Product?.multi_select?.map((p: any) => p.name) || 
@@ -140,7 +140,7 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                          
         messagingStage: properties["Stage in Buyer's Journey"]?.multi_select?.[0]?.name || 
                        properties["Key Topic or Messaging Stage"]?.select?.name || 
-                       "Unknown",
+                       "",
                        
         // Map "Publicly Shareable?" field to contentVisibility
         contentVisibility: properties["Publicly Shareable?"]?.select?.name === "No" ? "internal" :
