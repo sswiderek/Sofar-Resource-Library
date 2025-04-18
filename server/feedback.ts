@@ -24,10 +24,13 @@ export async function submitFeedbackToNotion(feedback: Feedback): Promise<void> 
   try {
     const timestamp = feedback.timestamp || new Date();
     
+    // Clean the database ID by removing any trailing question mark
+    const cleanDatabaseId = FEEDBACK_DATABASE_ID.replace(/\?$/, '');
+    
     // Create a new page (row) in the Notion database
     await notionFeedbackClient.pages.create({
       parent: {
-        database_id: FEEDBACK_DATABASE_ID
+        database_id: cleanDatabaseId
       },
       properties: {
         "Name": {
