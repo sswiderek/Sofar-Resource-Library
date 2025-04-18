@@ -494,7 +494,7 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
           parts.push(<strong key={`unmatched-${match.index}`}>{innerText}</strong>);
         }
         
-        lastIndex = match.index + quoteText.length;
+        lastIndex = match.index + boldText.length;
       }
       
       // Add remaining text
