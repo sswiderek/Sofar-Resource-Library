@@ -414,11 +414,93 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
   
   let result: React.ReactNode[] = [text];
   
+  // Extract resource titles in quotes pattern first
+  const resourceQuotePattern = /\*\*(.*?)\*\*/g;
+  const resourceQuotes = text.match(resourceQuotePattern) || [];
+  
   // Sort resources by name length (descending) to ensure longer names are matched first
   // This prevents partial matches of shorter resource names within longer ones
   const sortedResources = [...resources].sort((a, b) => b.name.length - a.name.length);
   
-  // For each resource, find and replace its name with a link
+  // Process quoted resource titles
+  if (resourceQuotes.length > 0) {
+    const newResult: React.ReactNode[] = [];
+    
+    for (const node of result) {
+      if (typeof node !== 'string') {
+        newResult.push(node);
+        continue;
+      }
+      
+      let lastIndex = 0;
+      const parts: React.ReactNode[] = [];
+      let match;
+      
+      // Reset regex search
+      resourceQuotePattern.lastIndex = 0;
+      
+      while ((match = resourceQuotePattern.exec(node)) !== null) {
+        const quoteText = match[0]; // The full **text**
+        const innerText = match[1]; // Just the text inside **
+        
+        // Add the text before this match
+        if (match.index > lastIndex) {
+          parts.push(node.substring(lastIndex, match.index));
+        }
+        
+        // Find the matching resource
+        const matchedResource = sortedResources.find(r => 
+          innerText.includes(r.name) || r.name.includes(innerText)
+        );
+        
+        if (matchedResource) {
+          // Add as a link
+          parts.push(
+            <a 
+              key={`resource-quote-${matchedResource.id}-${match.index}`}
+              href={matchedResource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                
+                // Track the view using passed functions if available
+                if (trackViewFn && viewedResourcesMap && setViewedResourcesFn) {
+                  if (!viewedResourcesMap[matchedResource.id]) {
+                    trackViewFn(matchedResource.id);
+                    setViewedResourcesFn(prev => ({...prev, [matchedResource.id]: true}));
+                  }
+                }
+                
+                // Open in new tab
+                window.open(matchedResource.url, "_blank", "noopener,noreferrer");
+              }}
+            >
+              {innerText}
+            </a>
+          );
+        } else {
+          // If no match, keep original text
+          parts.push(<strong key={`unmatched-${match.index}`}>{innerText}</strong>);
+        }
+        
+        lastIndex = match.index + quoteText.length;
+      }
+      
+      // Add remaining text
+      if (lastIndex < node.length) {
+        parts.push(node.substring(lastIndex));
+      }
+      
+      // Add all parts
+      newResult.push(...parts);
+    }
+    
+    result = newResult;
+  }
+  
+  // Also find explicit mentions of resource names
   for (const resource of sortedResources) {
     const resourceName = resource.name;
     // Skip very short resource names (avoid common words)
@@ -872,16 +954,80 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
               </div>
               <div className="mt-2 text-xs text-gray-500 max-w-sm mx-auto">
                 {loadingStage === 1 && (
-                  <p className="italic">Searching for the most relevant resources that match your question...</p>
+                  <div className="space-y-1.5">
+                    <p className="italic font-medium">Exploring the Resource Library...</p>
+                    <ul className="text-left space-y-1 pl-4 text-[11px] text-gray-500 pt-1">
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Searching through all Wayfinder case studies</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Looking for fuel savings metrics across customers</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Ranking resources by relevance and recency</span>
+                      </li>
+                    </ul>
+                  </div>
                 )}
                 {loadingStage === 2 && (
-                  <p className="italic">Examining resource content to extract the most helpful information...</p>
+                  <div className="space-y-1.5">
+                    <p className="italic font-medium">Digging into relevant resources...</p>
+                    <ul className="text-left space-y-1 pl-4 text-[11px] text-gray-500 pt-1">
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Analyzing details about implementation strategies</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Extracting statistics and cost-saving metrics</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Comparing customer experiences across industries</span>
+                      </li>
+                    </ul>
+                  </div>
                 )}
                 {loadingStage === 3 && (
-                  <p className="italic">Interpreting your question and connecting it with marine intelligence data...</p>
+                  <div className="space-y-1.5">
+                    <p className="italic font-medium">Building your personalized answer...</p>
+                    <ul className="text-left space-y-1 pl-4 text-[11px] text-gray-500 pt-1">
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Identifying key success stories and metrics</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Gathering evidence of implementation results</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Finding common factors in successful deployments</span>
+                      </li>
+                    </ul>
+                  </div>
                 )}
                 {loadingStage === 4 && (
-                  <p className="italic">Almost there! Formulating a comprehensive answer tailored to your needs...</p>
+                  <div className="space-y-1.5">
+                    <p className="italic font-medium">Finalizing resources for you...</p>
+                    <ul className="text-left space-y-1 pl-4 text-[11px] text-gray-500 pt-1">
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Prioritizing most relevant case studies</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Highlighting key performance metrics</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60 mt-1 mr-1.5"></span>
+                        <span>Arranging information for best readability</span>
+                      </li>
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>
