@@ -17,30 +17,30 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
       <header className="bg-[#1e5bb0] shadow-md">
-        <div className="py-3 flex items-center justify-between max-w-7xl mx-auto px-4">
+        <div className="py-3 flex items-center justify-between max-w-7xl mx-auto px-3 sm:px-4">
           <div className="flex items-center">
             <img 
               src="/sofar-logo.png" 
               alt="Sofar Logo" 
-              className="h-8 w-auto mr-3 bg-white rounded-md p-1"
+              className="h-8 w-auto mr-2 sm:mr-3 bg-white rounded-md p-1"
             />
-            <h1 className="text-xl font-semibold text-white">
-              Sofar Resource Library
+            <h1 className="text-base xs:text-lg sm:text-xl font-semibold text-white truncate">
+              <span className="hidden xs:inline">Sofar </span>Resource Library
             </h1>
           </div>
           
           <nav className="flex items-center">
-            <ul className="flex items-center space-x-6">
+            <ul className="flex items-center space-x-2 xs:space-x-4 sm:space-x-6">
               <li>
                 <Link href="/">
                   <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
-                    <Home className="h-4 w-4 mr-1.5" />
-                    <span className="inline-block mt-0.5">Home</span>
+                    <Home className="h-4 w-4 mr-1" />
+                    <span className="inline-block mt-0.5 hidden xs:inline">Home</span>
                   </span>
                 </Link>
               </li>
               {/* Analytics link hidden as requested, still accessible directly at /admin/analytics */}
-              <li className="ml-3">
+              <li className="ml-1 xs:ml-2 sm:ml-3">
                 <FeedbackDialog />
               </li>
             </ul>
@@ -48,7 +48,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="flex-grow max-w-7xl w-full mx-auto">{children}</main>
+      <main className="flex-grow max-w-7xl w-full mx-auto px-1 xs:px-2 sm:px-3 md:px-4">{children}</main>
 
       <footer className="bg-white border-t border-neutral-200 py-5 mt-auto">
         <div className="max-w-7xl mx-auto px-4">
