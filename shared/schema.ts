@@ -95,3 +95,16 @@ export const teamAccessSchema = z.object({
 
 export type AdminLogin = z.infer<typeof adminLoginSchema>;
 export type TeamAccess = z.infer<typeof teamAccessSchema>;
+
+// Feedback schema for user feedback submissions
+export const feedbackSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  feedback: z.string().min(3, { message: "Feedback must be at least 3 characters" }),
+  feedbackType: z.enum(["bug", "suggestion", "other"]).default("other"),
+  email: z.string().email().optional(),
+  page: z.string().optional(),
+  userAgent: z.string().optional(),
+  timestamp: z.date().optional(),
+});
+
+export type Feedback = z.infer<typeof feedbackSchema>;

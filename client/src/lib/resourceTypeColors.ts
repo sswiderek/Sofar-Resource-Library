@@ -37,7 +37,7 @@ export const getResourceGradient = (type: string): string => {
   } else if (typeKey.includes('branding')) {
     return "bg-pink-300";
   } else if (typeKey.includes('one-pager')) {
-    return "bg-cyan-300";
+    return "bg-green-500";
   } else if (typeKey.includes('guide')) {
     return "bg-lime-300";
   } else if (typeKey.includes('fact sheet')) {
@@ -84,7 +84,7 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
     } else if (typeKey.includes('branding')) {
       return "text-pink-700";
     } else if (typeKey.includes('one-pager')) {
-      return "text-cyan-700";
+      return "text-green-700";
     } else if (typeKey.includes('guide')) {
       return "text-lime-700";
     } else if (typeKey.includes('fact sheet')) {
@@ -126,7 +126,7 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
   } else if (typeKey.includes('branding')) {
     return "bg-pink-100 text-pink-700 border-pink-200";
   } else if (typeKey.includes('one-pager')) {
-    return "bg-cyan-100 text-cyan-700 border-cyan-200";
+    return "bg-green-100 text-green-700 border-green-200";
   } else if (typeKey.includes('guide')) {
     return "bg-lime-100 text-lime-700 border-lime-200";
   } else if (typeKey.includes('fact sheet')) {

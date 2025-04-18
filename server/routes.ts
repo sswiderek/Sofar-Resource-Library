@@ -11,9 +11,10 @@ declare module "express-session" {
 import { storage } from "./storage";
 import { fetchResourcesFromNotion, shouldSyncResources } from "./notion";
 import { log } from "./vite";
-import { resourceFilterSchema, adminLoginSchema } from "@shared/schema";
+import { resourceFilterSchema, adminLoginSchema, feedbackSchema } from "@shared/schema";
 import { processQuestion } from "./openai";
 import { createResourceEmbeddings } from "./embeddings";
+import { submitFeedbackToNotion } from "./feedback";
 import { z } from 'zod';
 
 // Schema for question validation
