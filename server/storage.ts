@@ -53,18 +53,21 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private resources: Map<number, Resource>;
   private partners: Map<number, Team>;
+  private resourceUsageStats: Map<number, { viewCount: number, shareCount: number, downloadCount: number }>;
   currentUserId: number;
   currentResourceId: number;
   currentPartnerId: number;
   sessionStore: session.Store;
 
-  // Path for storing partners data (keeping for backward compatibility)
+  // Path for storing data files
   private partnersFilePath: string = path.join(process.cwd(), 'partners-data.json');
+  private resourceStatsFilePath: string = path.join(process.cwd(), 'resource-stats.json');
 
   constructor() {
     this.users = new Map();
     this.resources = new Map();
     this.partners = new Map();
+    this.resourceUsageStats = new Map();
     this.currentUserId = 1;
     this.currentResourceId = 1;
     this.currentPartnerId = 1;
@@ -77,6 +80,9 @@ export class MemStorage implements IStorage {
 
     // Initialize partners from file
     this.initializePartners();
+    
+    // Initialize resource stats from file
+    this.initializeResourceStats();
   }
 
   // Helper to save partners to JSON file
@@ -433,55 +439,164 @@ export class MemStorage implements IStorage {
     return result;
   }
 
+  // Helper to save resource stats to JSON file
+  private saveResourceStatsToFile() {
+    try {
+      // Convert Map to array for serialization
+      const statsArray = Array.from(this.resourceUsageStats.entries()).map(([id, stats]) => ({
+        id,
+        ...stats
+      }));
+
+      fs.writeFileSync(this.resourceStatsFilePath, JSON.stringify(statsArray, null, 2));
+      console.log("Resource stats saved to file");
+    } catch (error) {
+      console.error("Error saving resource stats to file:", error);
+    }
+  }
+
+  // Helper to load resource stats from JSON file
+  private loadResourceStatsFromFile() {
+    try {
+      if (!fs.existsSync(this.resourceStatsFilePath)) {
+        console.log("Resource stats file doesn't exist yet");
+        return null;
+      }
+
+      const fileData = fs.readFileSync(this.resourceStatsFilePath, 'utf8');
+      
+      // Define the structure of the stored data
+      interface StatData {
+        id: number;
+        viewCount: number;
+        shareCount: number;
+        downloadCount: number;
+      }
+
+      const data = JSON.parse(fileData) as StatData[];
+      return data;
+    } catch (error) {
+      console.error("Error loading resource stats from file:", error);
+      return null;
+    }
+  }
+
+  // Initialize resource stats from file or create empty ones if none exists
+  private initializeResourceStats() {
+    const data = this.loadResourceStatsFromFile();
+
+    if (data) {
+      // Populate the Map with loaded stats
+      data.forEach(stat => {
+        this.resourceUsageStats.set(stat.id, {
+          viewCount: stat.viewCount || 0,
+          shareCount: stat.shareCount || 0,
+          downloadCount: stat.downloadCount || 0
+        });
+      });
+      console.log(`Loaded stats for ${data.length} resources from file`);
+    } else {
+      // No stats file exists yet, will be created on first update
+      console.log("No resource stats file found. A new one will be created when needed.");
+    }
+  }
+
+  // Update a resource with the latest stats from our file-backed tracker
+  private applyStatsToResource(resource: Resource): Resource {
+    const stats = this.resourceUsageStats.get(resource.id);
+    if (!stats) return resource;
+    
+    return {
+      ...resource,
+      viewCount: stats.viewCount,
+      shareCount: stats.shareCount,
+      downloadCount: stats.downloadCount
+    };
+  }
+
   // Resource usage tracking methods
   async incrementResourceViews(id: number): Promise<Resource | undefined> {
     const resource = this.resources.get(id);
     if (!resource) return undefined;
     
-    const updatedResource = { 
-      ...resource, 
-      viewCount: (resource.viewCount || 0) + 1 
-    };
+    // Get current stats or initialize new ones
+    let stats = this.resourceUsageStats.get(id) || { viewCount: 0, shareCount: 0, downloadCount: 0 };
     
+    // Update stats
+    stats = { ...stats, viewCount: stats.viewCount + 1 };
+    this.resourceUsageStats.set(id, stats);
+    
+    // Apply stats to resource
+    const updatedResource = this.applyStatsToResource(resource);
     this.resources.set(id, updatedResource);
+    
+    // Save to file
+    this.saveResourceStatsToFile();
+    
     return updatedResource;
   }
-
+  
   async incrementResourceShares(id: number): Promise<Resource | undefined> {
     const resource = this.resources.get(id);
     if (!resource) return undefined;
     
-    const updatedResource = { 
-      ...resource, 
-      shareCount: (resource.shareCount || 0) + 1 
-    };
+    // Get current stats or initialize new ones
+    let stats = this.resourceUsageStats.get(id) || { viewCount: 0, shareCount: 0, downloadCount: 0 };
     
+    // Update stats
+    stats = { ...stats, shareCount: stats.shareCount + 1 };
+    this.resourceUsageStats.set(id, stats);
+    
+    // Apply stats to resource
+    const updatedResource = this.applyStatsToResource(resource);
     this.resources.set(id, updatedResource);
+    
+    // Save to file
+    this.saveResourceStatsToFile();
+    
     return updatedResource;
   }
-
+  
   async incrementResourceDownloads(id: number): Promise<Resource | undefined> {
     const resource = this.resources.get(id);
     if (!resource) return undefined;
     
-    const updatedResource = { 
-      ...resource, 
-      downloadCount: (resource.downloadCount || 0) + 1 
-    };
+    // Get current stats or initialize new ones
+    let stats = this.resourceUsageStats.get(id) || { viewCount: 0, shareCount: 0, downloadCount: 0 };
     
+    // Update stats
+    stats = { ...stats, downloadCount: stats.downloadCount + 1 };
+    this.resourceUsageStats.set(id, stats);
+    
+    // Apply stats to resource
+    const updatedResource = this.applyStatsToResource(resource);
     this.resources.set(id, updatedResource);
+    
+    // Save to file
+    this.saveResourceStatsToFile();
+    
     return updatedResource;
   }
-
+  
   async getPopularResources(limit: number = 5): Promise<Resource[]> {
-    // Get all resources and sort by total usage (views + shares + downloads)
-    const resources = Array.from(this.resources.values());
+    // Get all resources and ensure they have the latest stats applied
+    const resourcesWithStats = Array.from(this.resources.values())
+      .map(resource => this.applyStatsToResource(resource));
     
-    return resources
+    // Sort by view count first (primary sort)
+    return resourcesWithStats
       .sort((a, b) => {
-        const totalA = (a.viewCount || 0) + (a.shareCount || 0) + (a.downloadCount || 0);
-        const totalB = (b.viewCount || 0) + (b.shareCount || 0) + (b.downloadCount || 0);
-        return totalB - totalA; // Sort in descending order
+        const aViews = a.viewCount || 0;
+        const bViews = b.viewCount || 0;
+        
+        // If view counts are equal, use total interaction count as secondary sort
+        if (aViews === bViews) {
+          const aTotalInteractions = aViews + (a.shareCount || 0) + (a.downloadCount || 0);
+          const bTotalInteractions = bViews + (b.shareCount || 0) + (b.downloadCount || 0);
+          return bTotalInteractions - aTotalInteractions;
+        }
+        
+        return bViews - aViews; // Descending by views
       })
       .slice(0, limit);
   }

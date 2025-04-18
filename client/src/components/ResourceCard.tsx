@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye } from "lucide-react";
 import { Resource } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,7 +50,11 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           {resource.description}
         </p>
         
-        <div className="mt-3 pt-3 border-t border-blue-50 flex justify-end items-center">
+        <div className="mt-3 pt-3 border-t border-blue-50 flex justify-between items-center">
+          <div className="flex items-center text-xs text-neutral-500">
+            <Eye className="h-3.5 w-3.5 mr-1 opacity-70" />
+            <span>{resource.viewCount || 0} views</span>
+          </div>
           <div className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
             <span>View Resource</span>
             <ArrowRight className="h-4 w-4 ml-1" />
