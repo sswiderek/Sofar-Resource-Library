@@ -50,14 +50,14 @@ export default function Layout({ children }: LayoutProps) {
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-1 xs:px-2 sm:px-3 md:px-4">{children}</main>
 
-      <footer className="bg-white border-t border-neutral-200 py-5 mt-auto">
-        <div className="max-w-7xl mx-auto px-4">
+      <footer className="bg-white border-t border-neutral-200 py-3 sm:py-4 md:py-5 mt-auto">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-sm text-neutral-600">
+            <div className="text-xs sm:text-sm text-neutral-600">
               &copy; {new Date().getFullYear()} Sofar Ocean. All rights reserved.
             </div>
-            <div className="mt-3 md:mt-0">
-              <span className="text-sm text-neutral-500">
+            <div className="mt-2 md:mt-0">
+              <span className="text-xs sm:text-sm text-neutral-500">
                 Last updated: {new Date().toLocaleDateString()}
               </span>
             </div>

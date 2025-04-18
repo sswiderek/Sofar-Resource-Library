@@ -398,7 +398,7 @@ export default function Home() {
 
         {/* Resources Grid View */}
         {viewMode === "card" && resources && resources.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-0 duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-5 md:gap-6 px-2 xs:px-3 sm:px-4 md:px-6 animate-in fade-in-0 duration-300">
             {resources.map((resource: Resource) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
@@ -407,7 +407,7 @@ export default function Home() {
 
         {/* Resources List View */}
         {viewMode === "list" && resources && resources.length > 0 && (
-          <div className="space-y-4 animate-in fade-in-0 duration-300">
+          <div className="space-y-3 xs:space-y-4 px-2 xs:px-3 sm:px-4 md:px-6 animate-in fade-in-0 duration-300">
             {resources.map((resource: Resource) => (
               <ResourceList key={resource.id} resource={resource} />
             ))}
@@ -416,24 +416,24 @@ export default function Home() {
 
         {/* Pagination UI */}
         {!isLoading && pagination && pagination.totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center">
-            <div className="flex items-center space-x-3 bg-white py-2 px-4 rounded-lg shadow-sm border border-blue-100">
+          <div className="mt-5 sm:mt-6 md:mt-8 flex items-center justify-center px-2 xs:px-3 sm:px-4 md:px-6">
+            <div className="flex items-center space-x-2 xs:space-x-3 bg-white py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg shadow-sm border border-blue-100">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
                 disabled={pagination.page === 1}
-                className="px-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 disabled:text-gray-400"
+                className="px-1.5 sm:px-2 h-7 sm:h-8 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 disabled:text-gray-400"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="sr-only">Previous</span>
               </Button>
               
-              <div className="text-sm">
+              <div className="text-xs sm:text-sm">
                 <span className="font-medium text-blue-700">Page {pagination.page}</span> 
                 <span className="text-neutral-600"> of {pagination.totalPages}</span>
-                <span className="mx-2 text-blue-300">•</span>
-                <span className="text-neutral-500">
+                <span className="mx-1 sm:mx-2 text-blue-300">•</span>
+                <span className="text-neutral-500 hidden xs:inline">
                   {pagination.total} resources
                 </span>
               </div>
@@ -443,9 +443,9 @@ export default function Home() {
                 size="sm"
                 onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
                 disabled={pagination.page === pagination.totalPages}
-                className="px-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 disabled:text-gray-400"
+                className="px-1.5 sm:px-2 h-7 sm:h-8 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 disabled:text-gray-400"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="sr-only">Next</span>
               </Button>
             </div>
