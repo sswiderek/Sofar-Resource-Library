@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { BarChart3, Home, Settings, User } from "lucide-react";
+import { FeedbackDialog } from "./FeedbackDialog";
 
 interface LayoutProps {
   children: ReactNode;
@@ -28,7 +29,7 @@ export default function Layout({ children }: LayoutProps) {
             </h1>
           </div>
           
-          <nav className="flex">
+          <nav className="flex items-center">
             <ul className="flex space-x-6">
               <li>
                 <Link href="/">
@@ -45,6 +46,11 @@ export default function Layout({ children }: LayoutProps) {
                     Analytics
                   </span>
                 </Link>
+              </li>
+              <li className="ml-2">
+                <div className="bg-white rounded-md">
+                  <FeedbackDialog />
+                </div>
               </li>
             </ul>
           </nav>

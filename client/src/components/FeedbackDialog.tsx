@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 
 export function FeedbackDialog() {
   const [open, setOpen] = useState(false);
@@ -46,8 +45,11 @@ export function FeedbackDialog() {
     setIsSubmitting(true);
     
     try {
-      const response = await apiRequest('/api/feedback', {
+      const response = await fetch('/api/feedback', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           name,
           email: email || undefined, // Only include if provided
@@ -56,7 +58,9 @@ export function FeedbackDialog() {
         })
       });
       
-      if (response.success) {
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
         toast({
           title: "Thank you!",
           description: "Your feedback has been submitted successfully",
@@ -69,7 +73,7 @@ export function FeedbackDialog() {
         setFeedback('');
         setOpen(false);
       } else {
-        throw new Error(response.message || 'Failed to submit feedback');
+        throw new Error(data.message || 'Failed to submit feedback');
       }
     } catch (error) {
       toast({
