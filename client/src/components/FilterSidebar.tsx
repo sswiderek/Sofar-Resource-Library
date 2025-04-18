@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ResourceFilters } from "@/lib/resourceFilters";
 
@@ -44,19 +44,37 @@ export default function FilterSidebar({
     retry: 5,
     retryDelay: 1000,
     refetchOnMount: true,
+    // Simplified refetch interval
+    refetchInterval: 3000, // Check every 3 seconds initially
+    refetchIntervalInBackground: true,
+    // Stop refetching once we have complete data
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
-
-  // Force a refetch if data is empty but should be available
+  
+  // Check if data is actually loaded and has content
+  const isDataLoaded = data && 
+                      data.types && 
+                      data.types.length > 0 && 
+                      data.products && 
+                      data.products.length > 0;
+                      
+  // Force an immediate refetch on initial load if data is empty
   useEffect(() => {
-    if ((!data || 
-        (data.types.length === 0 || 
-         data.products.length === 0 || 
-         data.audiences.length === 0))) {
-      // If data is empty after loading, try refetching once
-      console.log("Metadata appears empty, refetching...");
-      refetch();
+    let refetchTimer: NodeJS.Timeout | null = null;
+    
+    // Only set up refetch timer if data is missing or empty
+    if (!isDataLoaded && !isLoading) {
+      console.log("Metadata appears empty or incomplete, will refetch shortly...");
+      refetchTimer = setTimeout(() => {
+        console.log("Refetching metadata...");
+        refetch();
+      }, 800);
     }
-  }, [data, refetch]);
+    
+    return () => {
+      if (refetchTimer) clearTimeout(refetchTimer);
+    };
+  }, [isDataLoaded, isLoading, refetch]);
 
   // Ensure we have default values for the metadata
   const metadata: Metadata = data || {
@@ -280,8 +298,9 @@ export default function FilterSidebar({
                   </Label>
                 </div>
               ))
-            ) : isLoading ? (
-              <div className="text-xs text-neutral-500 italic">
+            ) : (isLoading || !data) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                 Loading solutions...
               </div>
             ) : (
@@ -318,8 +337,9 @@ export default function FilterSidebar({
                   </Label>
                 </div>
               ))
-            ) : isLoading ? (
-              <div className="text-xs text-neutral-500 italic">
+            ) : (isLoading || !isDataLoaded) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                 Loading types...
               </div>
             ) : (
@@ -356,8 +376,9 @@ export default function FilterSidebar({
                   </Label>
                 </div>
               ))
-            ) : isLoading ? (
-              <div className="text-xs text-neutral-500 italic">
+            ) : (isLoading || !isDataLoaded) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                 Loading products...
               </div>
             ) : (
@@ -394,8 +415,9 @@ export default function FilterSidebar({
                   </Label>
                 </div>
               ))
-            ) : isLoading ? (
-              <div className="text-xs text-neutral-500 italic">
+            ) : (isLoading || !isDataLoaded) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                 Loading target markets...
               </div>
             ) : (
@@ -432,8 +454,9 @@ export default function FilterSidebar({
                   </Label>
                 </div>
               ))
-            ) : isLoading ? (
-              <div className="text-xs text-neutral-500 italic">
+            ) : (isLoading || !isDataLoaded) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
                 Loading journey stages...
               </div>
             ) : (

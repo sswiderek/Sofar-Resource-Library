@@ -414,87 +414,290 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
   
   let result: React.ReactNode[] = [text];
   
-  // Extract resource titles in various formats:
-  // 1. Markdown-style bold with ** 
-  // 2. Text in quotes that might be resource titles
-  // 3. Text with [Read more] style links
+  // Extract resource titles in various formats
   const boldPattern = /\*\*(.*?)\*\*/g;
   const quotePattern = /"([^"]+)"|'([^']+)'/g;
   const readMorePattern = /\[Read more\]\s*\(([^)]+)\)/g;
   
-  const boldMatches = text.match(boldPattern) || [];
-  const quoteMatches = text.match(quotePattern) || [];
-  const readMoreMatches = text.match(readMorePattern) || [];
+  // Check for special RELEVANT_RESOURCES section
+  const relevantResourcesPattern = /RELEVANT_RESOURCES:.*|Relevant Resources:.*|relevant resources:.*|Resources mentioned:.*/i;
+  const hasRelevantSection = relevantResourcesPattern.test(text);
+  const relevantSectionMatch = text.match(relevantResourcesPattern);
+  const relevantSectionText = relevantSectionMatch ? relevantSectionMatch[0] : '';
+  
+  // Extract resources explicitly listed in the RELEVANT_RESOURCES section
+  const explicitlyListedResources: Resource[] = [];
+  if (hasRelevantSection) {
+    // Extract resource names from quotes in the relevant section
+    const quotedNames = relevantSectionText.match(quotePattern) || [];
+    quotedNames.forEach(quotedName => {
+      // Remove quotes around the name
+      const name = quotedName.replace(/^["']|["']$/g, '');
+      
+      // Find matching resources
+      const matchingResource = resources.find(r => 
+        r.name === name || 
+        r.name.includes(name) || 
+        name.includes(r.name)
+      );
+      
+      if (matchingResource && !explicitlyListedResources.includes(matchingResource)) {
+        explicitlyListedResources.push(matchingResource);
+      }
+    });
+    
+    // Also check for resources listed without quotes in the relevant section
+    resources.forEach(resource => {
+      if (relevantSectionText.includes(resource.name) && !explicitlyListedResources.includes(resource)) {
+        explicitlyListedResources.push(resource);
+      }
+    });
+  }
   
   // Sort resources by name length (descending) to ensure longer names are matched first
   // This prevents partial matches of shorter resource names within longer ones
   const sortedResources = [...resources].sort((a, b) => b.name.length - a.name.length);
   
-  // Process bold markdown-style resources
-  if (boldMatches.length > 0) {
-    const newResult: React.ReactNode[] = [];
+  // Process bold markdown-style resources (e.g., **Resource Name**)
+  if (text.includes('**')) {
+    result = processPatternMatches(result, boldPattern, sortedResources, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
+  }
+  
+  // Process quoted resources (e.g., "Resource Name" or 'Resource Name')
+  if (text.includes('"') || text.includes("'")) {
+    result = processQuotedResources(result, quotePattern, sortedResources, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
+  }
+  
+  // Process all resources by name, with special handling for short names and explicitly listed resources
+  const allResourcesToProcess = [...sortedResources];
+  
+  // Prioritize explicitly listed resources
+  explicitlyListedResources.forEach(resource => {
+    // Move to the beginning of the array if not already there
+    const index = allResourcesToProcess.findIndex(r => r.id === resource.id);
+    if (index > 0) {
+      allResourcesToProcess.splice(index, 1);
+      allResourcesToProcess.unshift(resource);
+    }
+  });
+  
+  for (const resource of allResourcesToProcess) {
+    const resourceName = resource.name;
+    let shouldProcess = false;
     
-    for (const node of result) {
-      if (typeof node !== 'string') {
-        newResult.push(node);
+    // Process if resource is explicitly listed in the RELEVANT_RESOURCES section
+    if (explicitlyListedResources.some(r => r.id === resource.id)) {
+      shouldProcess = true;
+    }
+    // Process if name is long enough (to avoid common words)
+    else if (resourceName.length >= 10) {
+      shouldProcess = true;
+    }
+    // Process if in a relevant resources section
+    else if (hasRelevantSection && relevantSectionText.toLowerCase().includes(resourceName.toLowerCase())) {
+      shouldProcess = true;
+    }
+    
+    // Skip processing if criteria not met
+    if (!shouldProcess) continue;
+    
+    // Process this resource name
+    result = processResourceName(result, resource, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
+  }
+  
+  return result;
+}
+
+// Process pattern matches (like **Resource Name**)
+function processPatternMatches(
+  nodes: React.ReactNode[], 
+  pattern: RegExp, 
+  resources: Resource[],
+  trackViewFn?: (id: number) => Promise<any>,
+  viewedResourcesMap?: Record<number, boolean>,
+  setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void
+): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  
+  for (const node of nodes) {
+    if (typeof node !== 'string') {
+      result.push(node);
+      continue;
+    }
+    
+    let lastIndex = 0;
+    const parts: React.ReactNode[] = [];
+    let match;
+    
+    // Reset regex search
+    pattern.lastIndex = 0;
+    
+    while ((match = pattern.exec(node)) !== null) {
+      const fullText = match[0]; // The full matched text
+      const innerText = match[1]; // The text inside the pattern
+      
+      // Add the text before this match
+      if (match.index > lastIndex) {
+        parts.push(node.substring(lastIndex, match.index));
+      }
+      
+      // Find the matching resource
+      const matchedResource = resources.find(r => 
+        innerText.includes(r.name) || r.name.includes(innerText)
+      );
+      
+      if (matchedResource) {
+        // Add as a link
+        parts.push(createResourceLink(
+          matchedResource, 
+          innerText, 
+          `bold-resource-${matchedResource.id}-${match.index}`,
+          trackViewFn,
+          viewedResourcesMap,
+          setViewedResourcesFn
+        ));
+      } else {
+        // If no match, keep original formatting
+        parts.push(<strong key={`unmatched-${match.index}`}>{innerText}</strong>);
+      }
+      
+      lastIndex = match.index + fullText.length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < node.length) {
+      parts.push(node.substring(lastIndex));
+    }
+    
+    // Add all parts
+    result.push(...parts);
+  }
+  
+  return result;
+}
+
+// Process quoted resources (e.g., "Resource Name")
+function processQuotedResources(
+  nodes: React.ReactNode[], 
+  pattern: RegExp, 
+  resources: Resource[],
+  trackViewFn?: (id: number) => Promise<any>,
+  viewedResourcesMap?: Record<number, boolean>,
+  setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void
+): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  
+  for (const node of nodes) {
+    if (typeof node !== 'string') {
+      result.push(node);
+      continue;
+    }
+    
+    let lastIndex = 0;
+    const parts: React.ReactNode[] = [];
+    let match;
+    
+    // Reset regex search
+    pattern.lastIndex = 0;
+    
+    while ((match = pattern.exec(node)) !== null) {
+      const fullText = match[0]; // The full quoted text
+      const innerText = match[1] || match[2]; // The text inside quotes
+      
+      // Skip if it's very short (likely not a resource name)
+      if (innerText.length < 5) {
+        parts.push(node.substring(lastIndex, match.index + fullText.length));
+        lastIndex = match.index + fullText.length;
         continue;
       }
       
+      // Add the text before this match
+      if (match.index > lastIndex) {
+        parts.push(node.substring(lastIndex, match.index));
+      }
+      
+      // Find the matching resource
+      const matchedResource = resources.find(r => 
+        innerText === r.name || 
+        innerText.includes(r.name) || 
+        r.name.includes(innerText)
+      );
+      
+      if (matchedResource) {
+        // Add as a link
+        parts.push(createResourceLink(
+          matchedResource, 
+          innerText, 
+          `quoted-resource-${matchedResource.id}-${match.index}`,
+          trackViewFn,
+          viewedResourcesMap,
+          setViewedResourcesFn
+        ));
+      } else {
+        // If no match, keep original text
+        parts.push(fullText);
+      }
+      
+      lastIndex = match.index + fullText.length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < node.length) {
+      parts.push(node.substring(lastIndex));
+    }
+    
+    // Add all parts
+    result.push(...parts);
+  }
+  
+  return result;
+}
+
+// Process a specific resource name in all text nodes
+function processResourceName(
+  nodes: React.ReactNode[], 
+  resource: Resource,
+  trackViewFn?: (id: number) => Promise<any>,
+  viewedResourcesMap?: Record<number, boolean>,
+  setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void
+): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  const resourceName = resource.name;
+  
+  for (const node of nodes) {
+    if (typeof node !== 'string') {
+      result.push(node);
+      continue;
+    }
+    
+    // Check if node contains resource name using case-insensitive search
+    const lowerNode = node.toLowerCase();
+    const lowerResourceName = resourceName.toLowerCase();
+    
+    if (lowerNode.includes(lowerResourceName)) {
+      // Find all instances of resource name (case insensitive)
+      const parts = [];
       let lastIndex = 0;
-      const parts: React.ReactNode[] = [];
-      let match;
+      let index;
       
-      // Reset regex search
-      boldPattern.lastIndex = 0;
-      
-      while ((match = boldPattern.exec(node)) !== null) {
-        const boldText = match[0]; // The full **text**
-        const innerText = match[1]; // Just the text inside **
-        
-        // Add the text before this match
-        if (match.index > lastIndex) {
-          parts.push(node.substring(lastIndex, match.index));
+      while ((index = lowerNode.indexOf(lowerResourceName, lastIndex)) !== -1) {
+        // Add text before match
+        if (index > lastIndex) {
+          parts.push(node.substring(lastIndex, index));
         }
         
-        // Find the matching resource
-        const matchedResource = sortedResources.find(r => 
-          innerText.includes(r.name) || r.name.includes(innerText)
-        );
+        // Add resource link
+        const exactResourceNameInText = node.substring(index, index + resourceName.length);
+        parts.push(createResourceLink(
+          resource, 
+          exactResourceNameInText, 
+          `resource-${resource.id}-${index}`,
+          trackViewFn,
+          viewedResourcesMap,
+          setViewedResourcesFn
+        ));
         
-        if (matchedResource) {
-          // Add as a more visually distinct link with external icon
-          parts.push(
-            <a 
-              key={`resource-quote-${matchedResource.id}-${match.index}`}
-              href={matchedResource.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center font-medium text-primary hover:underline group bg-primary/5 px-0.5 rounded"
-              onClick={(e) => {
-                e.preventDefault();
-                
-                // Track the view using passed functions if available
-                if (trackViewFn && viewedResourcesMap && setViewedResourcesFn) {
-                  if (!viewedResourcesMap[matchedResource.id]) {
-                    trackViewFn(matchedResource.id);
-                    setViewedResourcesFn(prev => ({...prev, [matchedResource.id]: true}));
-                  }
-                }
-                
-                // Open in new tab
-                window.open(matchedResource.url, "_blank", "noopener,noreferrer");
-              }}
-            >
-              <span className="border-b border-primary/30 group-hover:border-primary">{innerText}</span>
-              <ExternalLink className="h-3 w-3 ml-0.5 inline-block flex-shrink-0" />
-            </a>
-          );
-        } else {
-          // If no match, keep original text
-          parts.push(<strong key={`unmatched-${match.index}`}>{innerText}</strong>);
-        }
-        
-        lastIndex = match.index + boldText.length;
+        lastIndex = index + lowerResourceName.length;
       }
       
       // Add remaining text
@@ -502,87 +705,50 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
         parts.push(node.substring(lastIndex));
       }
       
-      // Add all parts
-      newResult.push(...parts);
+      result.push(...parts);
+    } else {
+      result.push(node);
     }
-    
-    result = newResult;
-  }
-  
-  // Also find explicit mentions of resource names
-  for (const resource of sortedResources) {
-    const resourceName = resource.name;
-    // Skip very short resource names (avoid common words) unless they're in a structured format
-    let shouldProcess = resourceName.length >= 10;
-    
-    // Check if resource appears in RELEVANT_RESOURCES section
-    if (!shouldProcess) {
-      const relevantSection = text.match(/RELEVANT_RESOURCES:.*|Relevant Resources:.*|relevant resources:.*|Resources mentioned:.*/i);
-      if (relevantSection && relevantSection[0].toLowerCase().includes(resourceName.toLowerCase())) {
-        shouldProcess = true;
-      }
-    }
-    
-    // If resource name is too short and not in a special section, skip it
-    if (!shouldProcess) continue;
-    
-    // Process each text fragment
-    const newResult: React.ReactNode[] = [];
-    
-    for (const node of result) {
-      // Only process string nodes
-      if (typeof node !== 'string') {
-        newResult.push(node);
-        continue;
-      }
-      
-      // Look for resource name in the text
-      if (node.includes(resourceName)) {
-        const parts = node.split(resourceName);
-        
-        // Reassemble with links
-        for (let i = 0; i < parts.length; i++) {
-          if (parts[i]) newResult.push(parts[i]);
-          
-          // Add resource link between parts (but not after the last part)
-          if (i < parts.length - 1) {
-            newResult.push(
-              <a 
-                key={`resource-${resource.id}-${i}`}
-                href={resource.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center font-medium text-primary hover:underline group bg-primary/5 px-0.5 rounded"
-                onClick={(e) => {
-                  e.preventDefault();
-                  
-                  // Track the view using passed functions if available
-                  if (trackViewFn && viewedResourcesMap && setViewedResourcesFn) {
-                    if (!viewedResourcesMap[resource.id]) {
-                      trackViewFn(resource.id);
-                      setViewedResourcesFn(prev => ({...prev, [resource.id]: true}));
-                    }
-                  }
-                  
-                  // Open in new tab
-                  window.open(resource.url, "_blank", "noopener,noreferrer");
-                }}
-              >
-                <span className="border-b border-primary/30 group-hover:border-primary">{resourceName}</span>
-                <ExternalLink className="h-3 w-3 ml-0.5 inline-block flex-shrink-0" />
-              </a>
-            );
-          }
-        }
-      } else {
-        newResult.push(node);
-      }
-    }
-    
-    result = newResult;
   }
   
   return result;
+}
+
+// Create a resource link component
+function createResourceLink(
+  resource: Resource, 
+  displayText: string, 
+  key: string,
+  trackViewFn?: (id: number) => Promise<any>,
+  viewedResourcesMap?: Record<number, boolean>,
+  setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void
+): React.ReactNode {
+  return (
+    <a 
+      key={key}
+      href={resource.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center font-medium text-primary hover:underline group bg-primary/5 px-0.5 rounded"
+      onClick={(e) => {
+        e.preventDefault();
+        
+        // Track the view using passed functions if available
+        if (trackViewFn && viewedResourcesMap && setViewedResourcesFn) {
+          if (!viewedResourcesMap[resource.id]) {
+            trackViewFn(resource.id);
+            setViewedResourcesFn(prev => ({...prev, [resource.id]: true}));
+          }
+        }
+        
+        // Open in new tab
+        window.open(resource.url, "_blank", "noopener,noreferrer");
+      }}
+    >
+      <span className="border-b border-primary/30 group-hover:border-primary">{displayText}</span>
+      <ExternalLink className="h-3 w-3 ml-0.5 inline-block flex-shrink-0" />
+    </a>
+  );
 }
 
 interface QuestionBoxProps {
