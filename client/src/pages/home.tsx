@@ -215,24 +215,24 @@ export default function Home() {
 
         {/* Welcome Hero - show when showWelcome is true - Condensed version */}
         {showWelcome && (
-          <div className="mb-4 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
-            <div className="flex items-center p-3">
+          <div className="mb-4 bg-gradient-to-r from-blue-700 to-blue-600 border border-blue-800 rounded-lg overflow-hidden relative shadow-sm">
+            <div className="flex items-center p-4">
               <div className="flex-grow">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-md font-semibold text-primary">
+                  <h2 className="text-xl font-semibold text-white">
                     Welcome to the Sofar Resource Library
                   </h2>
                   
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-full"
+                    className="h-6 w-6 rounded-full bg-white/20 hover:bg-white/30"
                     onClick={() => setShowWelcome(false)}
                   >
-                    <X className="h-3 w-3 text-neutral-500" />
+                    <X className="h-3 w-3 text-white" />
                   </Button>
                 </div>
-                <p className="text-neutral-600 text-sm mt-1">
+                <p className="text-blue-100 text-sm mt-1">
                   Find Sofar resources through search, filters, or AI assistance
                 </p>
               </div>
@@ -318,7 +318,7 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={handleSync}
-              className="flex items-center h-9"
+              className="flex items-center h-9 bg-blue-50 border-blue-300 hover:bg-blue-100 hover:text-blue-700 text-blue-600"
               disabled={isSyncing}
             >
               {isSyncing ? (
@@ -334,11 +334,11 @@ export default function Home() {
               )}
             </Button>
 
-            <div className="flex border border-neutral-200 rounded-md overflow-hidden h-9">
+            <div className="flex border border-blue-300 rounded-md overflow-hidden h-9 bg-blue-50">
               <Button
                 variant={viewMode === "card" ? "default" : "ghost"}
                 size="sm"
-                className="rounded-none px-2 h-full"
+                className={`rounded-none px-2 h-full ${viewMode === "card" ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-transparent text-blue-700 hover:bg-blue-100"}`}
                 onClick={() => setViewMode("card")}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function Home() {
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
-                className="rounded-none px-2 h-full"
+                className={`rounded-none px-2 h-full ${viewMode === "list" ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-transparent text-blue-700 hover:bg-blue-100"}`}
                 onClick={() => setViewMode("list")}
               >
                 <List className="h-4 w-4" />
@@ -420,16 +420,16 @@ export default function Home() {
                 size="sm"
                 onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
                 disabled={pagination.page === 1}
-                className="px-2"
+                className="px-2 border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only">Previous</span>
               </Button>
               
-              <div className="text-sm text-neutral-600">
+              <div className="text-sm text-blue-800 font-medium">
                 Page {pagination.page} of {pagination.totalPages}
-                <span className="mx-2">·</span>
-                <span className="text-neutral-500">
+                <span className="mx-2 text-blue-400">·</span>
+                <span className="text-blue-600">
                   {pagination.total} resources total
                 </span>
               </div>
@@ -439,7 +439,7 @@ export default function Home() {
                 size="sm"
                 onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
                 disabled={pagination.page === pagination.totalPages}
-                className="px-2"
+                className="px-2 border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700"
               >
                 <ChevronRight className="h-4 w-4" />
                 <span className="sr-only">Next</span>
