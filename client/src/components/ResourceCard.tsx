@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Resource } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { getResourceTypeClasses } from "@/lib/resourceTypeColors";
+import { getResourceTypeClasses, getResourceGradient } from "@/lib/resourceTypeColors";
 import { useResourceTracking } from "@/hooks/use-resource-tracking";
 import { useState } from "react";
 
@@ -31,7 +31,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
       className="bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border border-neutral-200 hover:border-blue-200 h-full flex flex-col cursor-pointer"
       onClick={handleResourceClick}
     >
-      <div className="h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+      <div className={`h-2 ${getResourceGradient(resource.type)}`}></div>
       <CardContent className="p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3 gap-2">
           <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[65%] truncate`}>

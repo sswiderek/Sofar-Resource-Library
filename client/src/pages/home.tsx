@@ -214,32 +214,29 @@ export default function Home() {
           )}
         </div>
 
-        {/* Welcome Hero - show when showWelcome is true - Enhanced version */}
+        {/* Welcome Hero - show when showWelcome is true - Toned down version */}
         {showWelcome && (
-          <div className="mb-6 bg-gradient-to-r from-[#1e5bb0] to-[#3a7ed5] rounded-lg overflow-hidden relative shadow-md">
-            <div className="flex items-center p-4 relative z-10">
+          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg overflow-hidden relative">
+            <div className="flex items-center p-3 relative z-10">
               <div className="flex-grow">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-white">
+                  <h2 className="text-md font-medium text-blue-700">
                     Welcome to the Sofar Resource Library
                   </h2>
                   
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-full hover:bg-white/20 text-white"
+                    className="h-6 w-6 rounded-full hover:bg-blue-100/50 text-blue-500"
                     onClick={() => setShowWelcome(false)}
                   >
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
-                <p className="text-blue-100 text-sm mt-2">
+                <p className="text-blue-600 text-xs mt-1">
                   Find Sofar resources through search, filters, or AI assistance
                 </p>
               </div>
-            </div>
-            <div className="absolute top-0 right-0 w-32 h-full opacity-10">
-              <div className="w-full h-full bg-[url('/sofar-logo.png')] bg-no-repeat bg-right bg-contain"></div>
             </div>
           </div>
         )}

@@ -6,6 +6,56 @@
  * @param variant Whether to return classes for badge or text styling
  * @returns A string of CSS classes for styling
  */
+
+/**
+ * Get gradient classes for card header bars based on resource type
+ * 
+ * @param type The resource type string
+ * @returns A string of CSS classes for styling the gradient header
+ */
+export const getResourceGradient = (type: string): string => {
+  const typeKey = type.toLowerCase();
+  
+  if (typeKey.includes('webinar') || typeKey === 'webinar') {
+    return "bg-gradient-to-r from-blue-600 to-blue-400";
+  } else if (typeKey.includes('slide') || typeKey === 'slides') {
+    return "bg-gradient-to-r from-teal-600 to-teal-400";
+  } else if (typeKey.includes('customer story') || typeKey === 'customer story') {
+    return "bg-gradient-to-r from-indigo-600 to-indigo-400";
+  } else if (typeKey.includes('blog') || typeKey === 'blog post') {
+    return "bg-gradient-to-r from-amber-600 to-amber-400";
+  } else if (typeKey.includes('whitepaper') || typeKey.includes('research paper')) {
+    return "bg-gradient-to-r from-purple-600 to-purple-400";
+  } else if (typeKey.includes('video')) {
+    return "bg-gradient-to-r from-red-600 to-red-400";
+  } else if (typeKey.includes('media')) {
+    return "bg-gradient-to-r from-fuchsia-600 to-fuchsia-400";
+  } else if (typeKey.includes('partner enablement')) {
+    return "bg-gradient-to-r from-green-600 to-green-400";
+  } else if (typeKey.includes('webpage')) {
+    return "bg-gradient-to-r from-orange-600 to-orange-400";
+  } else if (typeKey.includes('branding')) {
+    return "bg-gradient-to-r from-pink-600 to-pink-400";
+  } else if (typeKey.includes('one-pager')) {
+    return "bg-gradient-to-r from-cyan-600 to-cyan-400";
+  } else if (typeKey.includes('guide')) {
+    return "bg-gradient-to-r from-lime-600 to-lime-400";
+  } else if (typeKey.includes('fact sheet')) {
+    return "bg-gradient-to-r from-violet-600 to-violet-400";
+  } else if (typeKey.includes('infographic')) {
+    return "bg-gradient-to-r from-emerald-600 to-emerald-400";
+  } else if (typeKey.includes('report')) {
+    return "bg-gradient-to-r from-rose-600 to-rose-400";
+  } else if (typeKey.includes('case study')) {
+    return "bg-gradient-to-r from-sky-600 to-sky-400";
+  } else if (typeKey.includes('spec')) {
+    return "bg-gradient-to-r from-green-600 to-green-400";
+  } else if (typeKey.includes('booklet') || typeKey === 'booklet') {
+    return "bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500";
+  } else {
+    return "bg-gradient-to-r from-blue-600 to-blue-400";
+  }
+};
 export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' = 'badge'): string => {
   const typeKey = type.toLowerCase();
   
