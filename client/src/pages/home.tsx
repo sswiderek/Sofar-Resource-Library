@@ -157,7 +157,7 @@ export default function Home() {
   return (
     <div className="flex md:flex-row">
       {/* Filter Sidebar - Desktop */}
-      <aside className="hidden md:block bg-white border-r border-neutral-200 w-64 sticky top-0 h-screen overflow-y-auto">
+      <aside className="hidden md:block bg-white border-r border-neutral-200 w-64 sticky top-0 h-screen overflow-y-auto shadow-sm">
         <FilterSidebar
           filter={filters}
           onFilterChange={handleFilterChange}
@@ -201,41 +201,45 @@ export default function Home() {
           </Button>
         </div>
 
-        {/* Resource header with just the title */}
-        <div className="mb-4">
-          <h2 className="text-2xl font-semibold text-neutral-800 mb-1">
+        {/* Resource header with title */}
+        <div className="mb-5">
+          <h2 className="text-2xl font-semibold text-[#1e5bb0] mb-1">
             Resource Library
           </h2>
           {resources && (
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-neutral-600 flex items-center">
+              <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
               Showing {resources.length} resources
             </p>
           )}
         </div>
 
-        {/* Welcome Hero - show when showWelcome is true - Condensed version */}
+        {/* Welcome Hero - show when showWelcome is true - Enhanced version */}
         {showWelcome && (
-          <div className="mb-4 bg-gradient-to-r from-primary/10 to-white border border-primary/20 rounded-lg overflow-hidden relative">
-            <div className="flex items-center p-3">
+          <div className="mb-6 bg-gradient-to-r from-[#1e5bb0] to-[#3a7ed5] rounded-lg overflow-hidden relative shadow-md">
+            <div className="flex items-center p-4 relative z-10">
               <div className="flex-grow">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-md font-semibold text-primary">
+                  <h2 className="text-lg font-semibold text-white">
                     Welcome to the Sofar Resource Library
                   </h2>
                   
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-full"
+                    className="h-6 w-6 rounded-full hover:bg-white/20 text-white"
                     onClick={() => setShowWelcome(false)}
                   >
-                    <X className="h-3 w-3 text-neutral-500" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
-                <p className="text-neutral-600 text-sm mt-1">
+                <p className="text-blue-100 text-sm mt-2">
                   Find Sofar resources through search, filters, or AI assistance
                 </p>
               </div>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-full opacity-10">
+              <div className="w-full h-full bg-[url('/sofar-logo.png')] bg-no-repeat bg-right bg-contain"></div>
             </div>
           </div>
         )}
@@ -244,9 +248,9 @@ export default function Home() {
         <QuestionBox resources={resources} />
         
         {/* View controls, sort and sync buttons */}
-        <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200">
+        <div className="flex items-center justify-between mb-6 mt-6 bg-white p-4 rounded-lg border border-neutral-200 shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-neutral-600">Sort by:</span>
+            <span className="text-sm font-medium text-[#1e5bb0]">Sort by:</span>
             <Select
               value={filters.sortBy || "relevance"}
               onValueChange={(value) => {
@@ -257,26 +261,26 @@ export default function Home() {
                 });
               }}
             >
-              <SelectTrigger className="w-[180px] h-9 bg-white">
+              <SelectTrigger className="w-[180px] h-9 bg-white border-blue-200 hover:border-blue-300 focus:ring-blue-200">
                 <SelectValue placeholder="Relevance">
                   {filters.sortBy === "relevance" || !filters.sortBy ? (
                     <div className="flex items-center">
-                      <ArrowDownAZ className="mr-2 h-4 w-4" />
+                      <ArrowDownAZ className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Relevance</span>
                     </div>
                   ) : filters.sortBy === "popularity" ? (
                     <div className="flex items-center">
-                      <TrendingUp className="mr-2 h-4 w-4" />
+                      <TrendingUp className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Most Popular</span>
                     </div>
                   ) : filters.sortBy === "newest" ? (
                     <div className="flex items-center">
-                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Newest First</span>
                     </div>
                   ) : (
                     <div className="flex items-center">
-                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Oldest First</span>
                     </div>
                   )}
@@ -286,25 +290,25 @@ export default function Home() {
                 <SelectGroup>
                   <SelectItem value="relevance">
                     <div className="flex items-center">
-                      <ArrowDownAZ className="mr-2 h-4 w-4" />
+                      <ArrowDownAZ className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Relevance</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="popularity">
                     <div className="flex items-center">
-                      <TrendingUp className="mr-2 h-4 w-4" />
+                      <TrendingUp className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Most Popular</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="newest">
                     <div className="flex items-center">
-                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Newest First</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="oldest">
                     <div className="flex items-center">
-                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
                       <span>Oldest First</span>
                     </div>
                   </SelectItem>
@@ -318,7 +322,7 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={handleSync}
-              className="flex items-center h-9"
+              className="flex items-center h-9 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700"
               disabled={isSyncing}
             >
               {isSyncing ? (
@@ -334,11 +338,11 @@ export default function Home() {
               )}
             </Button>
 
-            <div className="flex border border-neutral-200 rounded-md overflow-hidden h-9">
+            <div className="flex border border-blue-200 rounded-md overflow-hidden h-9 shadow-sm">
               <Button
                 variant={viewMode === "card" ? "default" : "ghost"}
                 size="sm"
-                className="rounded-none px-2 h-full"
+                className={`rounded-none px-2 h-full ${viewMode === "card" ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-50 text-blue-700"}`}
                 onClick={() => setViewMode("card")}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -346,7 +350,7 @@ export default function Home() {
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
-                className="rounded-none px-2 h-full"
+                className={`rounded-none px-2 h-full ${viewMode === "list" ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-50 text-blue-700"}`}
                 onClick={() => setViewMode("list")}
               >
                 <List className="h-4 w-4" />
@@ -414,23 +418,24 @@ export default function Home() {
         {/* Pagination UI */}
         {!isLoading && pagination && pagination.totalPages > 1 && (
           <div className="mt-8 flex items-center justify-center">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 bg-white py-2 px-4 rounded-lg shadow-sm border border-blue-100">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
                 disabled={pagination.page === 1}
-                className="px-2"
+                className="px-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 disabled:text-gray-400"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only">Previous</span>
               </Button>
               
-              <div className="text-sm text-neutral-600">
-                Page {pagination.page} of {pagination.totalPages}
-                <span className="mx-2">·</span>
+              <div className="text-sm">
+                <span className="font-medium text-blue-700">Page {pagination.page}</span> 
+                <span className="text-neutral-600"> of {pagination.totalPages}</span>
+                <span className="mx-2 text-blue-300">•</span>
                 <span className="text-neutral-500">
-                  {pagination.total} resources total
+                  {pagination.total} resources
                 </span>
               </div>
               
@@ -439,7 +444,7 @@ export default function Home() {
                 size="sm"
                 onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
                 disabled={pagination.page === pagination.totalPages}
-                className="px-2"
+                className="px-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 disabled:text-gray-400"
               >
                 <ChevronRight className="h-4 w-4" />
                 <span className="sr-only">Next</span>

@@ -31,6 +31,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
       className="bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border border-neutral-200 hover:border-blue-200 h-full flex flex-col cursor-pointer"
       onClick={handleResourceClick}
     >
+      <div className="h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
       <CardContent className="p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3 gap-2">
           <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[65%] truncate`}>
@@ -41,7 +42,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           )}
         </div>
         
-        <h3 className="text-lg font-semibold text-neutral-800 line-clamp-3 leading-tight mb-3">
+        <h3 className="text-lg font-semibold text-[#1e5bb0] line-clamp-3 leading-tight mb-3 hover:text-blue-700">
           {resource.name}
         </h3>
         
@@ -49,8 +50,8 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           {resource.description}
         </p>
         
-        <div className="mt-3 pt-3 border-t border-neutral-100 flex justify-end items-center">
-          <div className="flex items-center text-sm font-medium text-primary">
+        <div className="mt-3 pt-3 border-t border-blue-50 flex justify-end items-center">
+          <div className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
             <span>View Resource</span>
             <ArrowRight className="h-4 w-4 ml-1" />
           </div>
