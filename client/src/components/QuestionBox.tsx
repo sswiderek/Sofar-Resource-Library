@@ -719,6 +719,9 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
   // Advance loading stages to simulate progress
   useEffect(() => {
     if (isPending) {
+      // Reset to stage 1 when we start loading again
+      setLoadingStage(1);
+      
       const stageTimers = [
         setTimeout(() => setLoadingStage(2), 2000),
         setTimeout(() => setLoadingStage(3), 4500),
@@ -1046,7 +1049,6 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
               </div>
               <div className="text-sm prose prose-sm max-w-none">
                 {streamedAnswer || "Finding relevant resources for your question..."}
-                <span className="inline-block w-1 h-4 bg-primary animate-pulse ml-1"></span>
               </div>
             </div>
           </div>
@@ -1068,7 +1070,7 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
                 </div>
                 <div className="flex-1">
                   {/* Remove initial "Searching for..." text in the answer when displayed */}
-                  <div className="text-sm prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-2 prose-headings:mt-4 prose-li:my-1.5 prose-ul:my-3">
+                  <div className="text-sm prose prose-sm max-w-none prose-p:my-2 prose-headings:mb-2 prose-headings:mt-4 prose-li:my-1.5 prose-ul:my-3 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
                     {formatAnswerWithLinks(
                       aiAnswer.answer.replace(/^Searching for relevant resources to answer your question\.\.\.\s*Found \d+ potentially relevant resources\. Analyzing content to answer your question\.\.\.\s*/i, ''), 
                       resources, 
