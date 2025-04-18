@@ -14,19 +14,94 @@ import { useResourceTracking } from '@/hooks/use-resource-tracking';
 function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackViewFn?: (id: number) => Promise<any>, viewedResourcesMap?: Record<number, boolean>, setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void) {
   if (!text) return null;
   
-  // Extract resource information mentioned in the answer
-  const mentionedResources: Resource[] = [];
+  // Step 1: Perform a more comprehensive resource detection to find all possible resources
+  // We'll do this by using our enhanced detection logic implemented in addResourceLinks
   
+  // Find all resources that might be mentioned by using various detection approaches
+  const mentionedResources: Resource[] = [];
+  const lowerText = text.toLowerCase();
+  
+  // Extract resource information mentioned in the answer using multiple detection strategies
   resources.forEach(resource => {
-    // Check if the resource name is mentioned in the text (case insensitive)
-    if (text.toLowerCase().includes(resource.name.toLowerCase())) {
+    const resourceName = resource.name;
+    const lowerResourceName = resourceName.toLowerCase();
+    
+    // Check for direct mentions of the resource name
+    if (lowerText.includes(lowerResourceName)) {
       mentionedResources.push(resource);
+      return; // Skip other checks if we already found a match
+    }
+    
+    // Check for variations of the resource name (without Spotter/Sofar prefix)
+    if (resourceName.startsWith("Spotter ") && lowerText.includes(resourceName.substring(8).toLowerCase())) {
+      mentionedResources.push(resource);
+      return;
+    }
+    
+    if (resourceName.startsWith("Sofar ") && lowerText.includes(resourceName.substring(6).toLowerCase())) {
+      mentionedResources.push(resource);
+      return;
+    }
+    
+    // Look for spec sheet variations
+    if (resourceName.includes("Spec Sheet") && resourceName.includes("(")) {
+      const baseName = resourceName.substring(0, resourceName.indexOf("(")).trim();
+      if (lowerText.includes(baseName.toLowerCase()) || 
+          lowerText.includes(baseName.toLowerCase() + " specification")) {
+        mentionedResources.push(resource);
+        return;
+      }
+    }
+    
+    // Check for quoted mentions - more precise detection for short names
+    const quotePattern = new RegExp(`["']${escapeRegExp(lowerResourceName)}["']`, 'i');
+    if (quotePattern.test(lowerText)) {
+      mentionedResources.push(resource);
+      return;
+    }
+    
+    // Check for bullet or numbered list mentions
+    const bulletPattern = new RegExp(`(?:^|\\n)[-•*]\\s*${escapeRegExp(lowerResourceName)}`, 'i');
+    const numberedPattern = new RegExp(`(?:^|\\n)\\d+\\.\\s*${escapeRegExp(lowerResourceName)}`, 'i');
+    if (bulletPattern.test(lowerText) || numberedPattern.test(lowerText)) {
+      mentionedResources.push(resource);
+      return;
+    }
+    
+    // Look for specific wording patterns that indicate resources
+    const resourceIntroPatterns = [
+      /you can find more information in/i,
+      /refer to/i,
+      /check out/i,
+      /take a look at/i,
+      /review/i,
+      /explore/i,
+      /according to/i,
+      /based on/i,
+      /mentioned in/i,
+      /detailed in/i,
+      /discussed in/i,
+      /shown in/i,
+      /see/i
+    ];
+    
+    for (const pattern of resourceIntroPatterns) {
+      const regex = new RegExp(`${pattern.source}\\s+(?:"|')?([^,.!?\\n"']*)${escapeRegExp(lowerResourceName)}([^,.!?\\n"']*)(?:"|')?`, 'i');
+      if (regex.test(lowerText)) {
+        mentionedResources.push(resource);
+        return;
+      }
     }
   });
   
+  // Function to escape special characters in regex patterns
+  function escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  
   // Try to identify if this is a response about specific case studies
-  const isCaseStudyResponse = text.toLowerCase().includes('case stud') || 
-                             text.toLowerCase().includes('customer stor') ||
+  const isCaseStudyResponse = lowerText.includes('case stud') || 
+                             lowerText.includes('customer stor') ||
                              mentionedResources.some(r => 
                                r.type.toLowerCase().includes('case stud') || 
                                r.type.toLowerCase().includes('customer stor'));
@@ -52,14 +127,14 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackVi
       return 0;
     });
     
-    // Extract key metrics from text
-    const metricsRegex = /(\d+(\.\d+)?%|savings of \$\d+|reduced by \d+[^\s.,]+)/g;
+    // Extract key metrics from text with more robust pattern matching
+    const metricsRegex = /(\d+(\.\d+)?%|savings of \$[\d,]+|reduced by \d+[^\s.,]+|(?:\d+|several)[\w\s]+(?:reduction|increase|improvement|savings))/g;
     const metricsMatches = text.match(metricsRegex) || [];
     const metrics = metricsMatches.slice(0, 3); // Take up to 3 metrics
     
     // Extract introduction text - typically the first paragraph before specific resources are mentioned
     let introText = text.split(/\n\n|\.\s+/)[0] + '.';
-    if (introText.length < 40) { // If intro is too short, take a bit more
+    if (introText.length < 50) { // If intro is too short, take a bit more
       const parts = text.split(/\n\n|\.\s+/);
       introText = (parts[0] + '. ' + (parts[1] || '')).trim();
     }
@@ -414,19 +489,43 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
   
   let result: React.ReactNode[] = [text];
   
-  // Extract resource titles in various formats
-  const boldPattern = /\*\*(.*?)\*\*/g;
-  const quotePattern = /"([^"]+)"|'([^']+)'/g;
-  const readMorePattern = /\[Read more\]\s*\(([^)]+)\)/g;
+  // Enhanced patterns to detect resources in various formats
+  const boldPattern = /\*\*(.*?)\*\*/g;                          // **Resource Name**
+  const quotePattern = /"([^"]+)"|'([^']+)'/g;                   // "Resource Name" or 'Resource Name'
+  const readMorePattern = /\[Read more\]\s*\(([^)]+)\)/g;        // [Read more](link)
+  const bulletPattern = /(?:^|\n)[-•*]\s*([^\n]+)/g;             // - Resource Name or • Resource Name
+  const numberedPattern = /(?:^|\n)\d+\.\s*([^\n]+)/g;           // 1. Resource Name
+  const colonPattern = /(?:[:-])\s*([^,.!?\n]+[^\s,.!?\n])/g;    // Resource: Resource Name or - Resource Name
   
-  // Check for special RELEVANT_RESOURCES section
-  const relevantResourcesPattern = /RELEVANT_RESOURCES:.*|Relevant Resources:.*|relevant resources:.*|Resources mentioned:.*/i;
+  // Check for special sections that indicate resources
+  const relevantResourcesPattern = /(?:RELEVANT|RECOMMENDED|KEY|USEFUL)_?(?:RESOURCES|LINKS|MATERIALS|DOCUMENTS|ASSETS):.*|(?:Relevant|Recommended|Key|Useful)\s+(?:Resources|Links|Materials|Documents|Assets):.*|(?:relevant|recommended|key|useful)\s+(?:resources|links|materials|documents|assets):.*|(?:Resources|Links|Materials|Documents|Assets)\s+(?:mentioned|referenced|cited|included|to review|to explore):.*/i;
   const hasRelevantSection = relevantResourcesPattern.test(text);
   const relevantSectionMatch = text.match(relevantResourcesPattern);
   const relevantSectionText = relevantSectionMatch ? relevantSectionMatch[0] : '';
   
-  // Extract resources explicitly listed in the RELEVANT_RESOURCES section
+  // Check for specific wording patterns that indicate resources
+  const resourceIntroPatterns = [
+    /you can find more information in/i,
+    /refer to the following resources?/i,
+    /check out the/i,
+    /take a look at/i,
+    /review the/i,
+    /explore the/i,
+    /according to the/i,
+    /based on the/i,
+    /as mentioned in/i,
+    /as detailed in/i,
+    /as discussed in/i,
+    /as shown in/i,
+    /see the/i
+  ];
+  
+  // Identify whether the text contains phrases that introduce resources
+  const hasResourceIntro = resourceIntroPatterns.some(pattern => pattern.test(text));
+  
+  // Extract resources explicitly listed in special sections
   const explicitlyListedResources: Resource[] = [];
+  
   if (hasRelevantSection) {
     // Extract resource names from quotes in the relevant section
     const quotedNames = relevantSectionText.match(quotePattern) || [];
@@ -450,6 +549,52 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
     resources.forEach(resource => {
       if (relevantSectionText.includes(resource.name) && !explicitlyListedResources.includes(resource)) {
         explicitlyListedResources.push(resource);
+      }
+    });
+  }
+  
+  // Check for resource names in numbered lists or bullet points
+  const listMatches = [...(text.match(bulletPattern) || []), ...(text.match(numberedPattern) || [])];
+  if (listMatches.length > 0) {
+    listMatches.forEach(listItem => {
+      const cleanItem = listItem.replace(/^[-•*\d.]\s*/, '').trim();
+      
+      resources.forEach(resource => {
+        // If the list item contains the resource name and it's not already listed
+        if (cleanItem.includes(resource.name) && !explicitlyListedResources.includes(resource)) {
+          explicitlyListedResources.push(resource);
+        }
+      });
+    });
+  }
+  
+  // Check for resources mentioned after a colon
+  const colonMatches = text.match(colonPattern) || [];
+  if (colonMatches.length > 0) {
+    colonMatches.forEach(match => {
+      const cleanItem = match.replace(/^[:-]\s*/, '').trim();
+      
+      resources.forEach(resource => {
+        // If the item matches the resource name and it's not already listed
+        if (cleanItem.includes(resource.name) && !explicitlyListedResources.includes(resource)) {
+          explicitlyListedResources.push(resource);
+        }
+      });
+    });
+  }
+  
+  // Check for resources mentioned after an intro phrase
+  if (hasResourceIntro) {
+    resources.forEach(resource => {
+      // Find phrases like "check out the [ResourceName]" or "refer to the [ResourceName]"
+      for (const pattern of resourceIntroPatterns) {
+        const regex = new RegExp(`${pattern.source}\\s+(?:"|')?([^,.!?\\n"']*)(?:"|')?`, 'i');
+        const matches = text.match(regex);
+        
+        if (matches && matches[1] && matches[1].includes(resource.name) && !explicitlyListedResources.includes(resource)) {
+          explicitlyListedResources.push(resource);
+          break;
+        }
       }
     });
   }
@@ -485,16 +630,21 @@ function addResourceLinks(text: string, resources: Resource[], trackViewFn?: (id
     const resourceName = resource.name;
     let shouldProcess = false;
     
-    // Process if resource is explicitly listed in the RELEVANT_RESOURCES section
+    // Process if resource is explicitly listed in a relevant section
     if (explicitlyListedResources.some(r => r.id === resource.id)) {
       shouldProcess = true;
     }
     // Process if name is long enough (to avoid common words)
-    else if (resourceName.length >= 10) {
+    else if (resourceName.length >= 8) { // Reduced from 10 to catch more resource names
       shouldProcess = true;
     }
-    // Process if in a relevant resources section
-    else if (hasRelevantSection && relevantSectionText.toLowerCase().includes(resourceName.toLowerCase())) {
+    // Process if name appears in a list item or after a colon
+    else if (listMatches.some(item => item.includes(resourceName)) || 
+             colonMatches.some(item => item.includes(resourceName))) {
+      shouldProcess = true;
+    }
+    // Process if resource appears after a resource introduction phrase
+    else if (hasResourceIntro) {
       shouldProcess = true;
     }
     
@@ -664,40 +814,86 @@ function processResourceName(
   const result: React.ReactNode[] = [];
   const resourceName = resource.name;
   
+  // Prepare variations of the resource name to match more occurrences
+  const resourceNameVariations = [
+    resourceName,
+    // Remove "Spotter" prefix if it exists (common in product names)
+    resourceName.startsWith("Spotter ") ? resourceName.substring(8) : null,
+    // Remove "Sofar" prefix if it exists (common in product names)
+    resourceName.startsWith("Sofar ") ? resourceName.substring(6) : null,
+    // If the name has "Guide" in it, also look for "User Guide" and vice versa
+    resourceName.includes("Guide") && !resourceName.includes("User Guide") ? 
+      resourceName.replace("Guide", "User Guide") : null,
+    resourceName.includes("User Guide") ? 
+      resourceName.replace("User Guide", "Guide") : null,
+    // Match sheet naming variations
+    resourceName.includes("Spec Sheet") && resourceName.includes("(") ?
+      resourceName.substring(0, resourceName.indexOf("(")).trim() + "Specification" : null
+  ].filter(Boolean) as string[];
+  
   for (const node of nodes) {
     if (typeof node !== 'string') {
       result.push(node);
       continue;
     }
     
-    // Check if node contains resource name using case-insensitive search
+    // Check if node contains any variation of the resource name using case-insensitive search
     const lowerNode = node.toLowerCase();
-    const lowerResourceName = resourceName.toLowerCase();
+    let foundMatch = false;
+    let matchedVariation = resourceName;
     
-    if (lowerNode.includes(lowerResourceName)) {
-      // Find all instances of resource name (case insensitive)
+    // Try all variations of the resource name
+    for (const variation of resourceNameVariations) {
+      const lowerVariation = variation.toLowerCase();
+      if (lowerNode.includes(lowerVariation)) {
+        foundMatch = true;
+        matchedVariation = variation;
+        break;
+      }
+    }
+    
+    if (foundMatch) {
+      // Find all instances of resource name variation (case insensitive)
       const parts = [];
       let lastIndex = 0;
+      const lowerVariation = matchedVariation.toLowerCase();
       let index;
       
-      while ((index = lowerNode.indexOf(lowerResourceName, lastIndex)) !== -1) {
+      while ((index = lowerNode.indexOf(lowerVariation, lastIndex)) !== -1) {
         // Add text before match
         if (index > lastIndex) {
           parts.push(node.substring(lastIndex, index));
         }
         
-        // Add resource link
-        const exactResourceNameInText = node.substring(index, index + resourceName.length);
-        parts.push(createResourceLink(
-          resource, 
-          exactResourceNameInText, 
-          `resource-${resource.id}-${index}`,
-          trackViewFn,
-          viewedResourcesMap,
-          setViewedResourcesFn
-        ));
+        // Get exact text as it appears in the original string
+        const exactTextInNode = node.substring(index, index + matchedVariation.length);
         
-        lastIndex = index + lowerResourceName.length;
+        // Check if this match is part of a larger word (avoid linking parts of words)
+        const charBefore = index > 0 ? lowerNode.charAt(index - 1) : ' ';
+        const charAfter = index + lowerVariation.length < lowerNode.length ? 
+                         lowerNode.charAt(index + lowerVariation.length) : ' ';
+        
+        // Only treat as a match if it's a standalone word or phrase (not part of another word)
+        // Allow certain characters before/after that might be punctuation or formatting
+        const allowedChars = [' ', '.', ',', ':', ';', '!', '?', '(', ')', '[', ']', '{', '}', '-', '/', '\n', '\t', '*'];
+        const isStandaloneWord = allowedChars.includes(charBefore) && allowedChars.includes(charAfter);
+        
+        if (isStandaloneWord) {
+          // Add resource link
+          parts.push(createResourceLink(
+            resource, 
+            exactTextInNode, 
+            `resource-${resource.id}-${index}`,
+            trackViewFn,
+            viewedResourcesMap,
+            setViewedResourcesFn
+          ));
+        } else {
+          // Not a standalone word, keep as-is
+          parts.push(exactTextInNode);
+        }
+        
+        lastIndex = index + lowerVariation.length;
       }
       
       // Add remaining text
