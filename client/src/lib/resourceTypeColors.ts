@@ -52,6 +52,8 @@ export const getResourceGradient = (type: string): string => {
     return "bg-green-300";
   } else if (typeKey.includes('booklet') || typeKey === 'booklet') {
     return "bg-indigo-300";
+  } else if (typeKey.includes('other') || typeKey === 'other') {
+    return "bg-neutral-300";
   } else {
     return "bg-blue-300";
   }

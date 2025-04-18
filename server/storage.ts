@@ -259,7 +259,9 @@ export class MemStorage implements IStorage {
       "Spotter Spec Sheet (Current Meter)",
       "Spotter Spec Sheet (Dissolved Oxygen)",
       "Spotter Spec Sheet (Hydrophone)",
-      "Spotter Spec Sheet (Core)"
+      "Spotter Spec Sheet (Core)",
+      "Advanced Ocean Sensing: A Research Study",
+      "Spotter Pitch Deck"
     ];
     
     const allResources = Array.from(this.resources.values());
