@@ -14,94 +14,182 @@ import { useResourceTracking } from '@/hooks/use-resource-tracking';
 function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackViewFn?: (id: number) => Promise<any>, viewedResourcesMap?: Record<number, boolean>, setViewedResourcesFn?: (updateFn: (prev: Record<number, boolean>) => Record<number, boolean>) => void) {
   if (!text) return null;
   
-  // First, check if the text appears to contain resource entries like "RESOURCE: name"
-  const resourceEntryPattern = /(\d+\.\s*RESOURCE:[\s\S]*?(?=\d+\.\s*RESOURCE:|$))/g;
-  const hasResourceEntries = resourceEntryPattern.test(text);
+  // Extract resource information mentioned in the answer
+  const mentionedResources: Resource[] = [];
   
-  if (hasResourceEntries) {
-    // Reset the RegExp lastIndex
-    resourceEntryPattern.lastIndex = 0;
-    
-    // Parse resource entries
-    const resourceEntries = text.match(resourceEntryPattern) || [];
-    const introText = text.split(resourceEntryPattern)[0].trim();
-    
-    const elements: React.ReactNode[] = [];
-    
-    // Add the introduction text
-    if (introText) {
-      elements.push(
-        <div key="intro" className="mb-4">
-          {addResourceLinks(introText, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
-        </div>
-      );
+  resources.forEach(resource => {
+    // Check if the resource name is mentioned in the text (case insensitive)
+    if (text.toLowerCase().includes(resource.name.toLowerCase())) {
+      mentionedResources.push(resource);
     }
-    
-    // Add each resource entry with improved formatting
-    resourceEntries.forEach((entry, idx) => {
-      // Extract the resource name from the entry (assumed to be after "RESOURCE:")
-      const resourceNameMatch = entry.match(/RESOURCE:(.*?)(?=-|\n|$)/);
-      const resourceName = resourceNameMatch ? resourceNameMatch[1].trim() : '';
+  });
+  
+  // Try to identify if this is a response about specific case studies
+  const isCaseStudyResponse = text.toLowerCase().includes('case stud') || 
+                             text.toLowerCase().includes('customer stor') ||
+                             mentionedResources.some(r => 
+                               r.type.toLowerCase().includes('case stud') || 
+                               r.type.toLowerCase().includes('customer stor'));
+  
+  // Check if text contains specific metrics or numerical benefits
+  const containsMetrics = /\d+(\.\d+)?%|savings of \$\d+|reduced by \d+/.test(text);
+  
+  // Check if the answer appears to be a list of points (numbered or bullet points)
+  const isListFormat = /(\d+\.\s+[^\n]+)/.test(text) || /•\s+[^\n]+/.test(text) || /\n-\s+[^\n]+/.test(text);
+  
+  // Format for answers about case studies or with specific metrics - use a more visual card-based approach
+  if ((isCaseStudyResponse || containsMetrics) && mentionedResources.length > 0) {
+    // Sort mentioned resources by relevance - case studies first, then other types
+    const sortedResources = [...mentionedResources].sort((a, b) => {
+      // Prioritize case studies and customer stories
+      const aIsCaseStudy = a.type.toLowerCase().includes('case') || a.type.toLowerCase().includes('customer');
+      const bIsCaseStudy = b.type.toLowerCase().includes('case') || b.type.toLowerCase().includes('customer');
       
-      // Extract description and link sections
-      const descMatch = entry.match(/- DESCRIPTION:([\s\S]*?)(?=- LINK:|$)/);
-      const description = descMatch ? descMatch[1].trim() : '';
+      if (aIsCaseStudy && !bIsCaseStudy) return -1;
+      if (!aIsCaseStudy && bIsCaseStudy) return 1;
       
-      const linkMatch = entry.match(/- LINK:([\s\S]*?)$/);
-      const linkText = linkMatch ? linkMatch[1].trim() : '';
-      
-      // Process URLs in the link section
-      const urlRegex = /(https?:\/\/[^\s\)]+)/g;
-      const urls = linkText.match(urlRegex) || [];
-      
-      elements.push(
-        <div key={`resource-formatted-${idx}`} className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
-          <h4 className="font-medium text-primary mb-2">{idx + 1}. {resourceName}</h4>
-          
-          {description && (
-            <div className="mb-2 text-sm">
-              <span className="font-medium">Description:</span> {description}
-            </div>
-          )}
-          
-          {urls.length > 0 && (
-            <div className="mt-2 text-sm">
-              <span className="font-medium">Link:</span>{' '}
-              <a 
-                href={urls[0]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open(urls[0], "_blank", "noopener,noreferrer");
-                }}
-              >
-                <ExternalLink className="h-3 w-3" />
-                <span>{urls[0]}</span>
-              </a>
-            </div>
-          )}
-        </div>
-      );
+      // For other resources, keep their natural order (as mentioned in the text)
+      return 0;
     });
     
-    // Add a closing paragraph if there is one after the last resource entry
-    const closingText = text.split(resourceEntryPattern).pop()?.trim();
-    if (closingText && closingText !== '') {
-      elements.push(
-        <div key="closing" className="mt-3">
-          {addResourceLinks(closingText, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
-        </div>
-      );
+    // Extract key metrics from text
+    const metricsRegex = /(\d+(\.\d+)?%|savings of \$\d+|reduced by \d+[^\s.,]+)/g;
+    const metricsMatches = text.match(metricsRegex) || [];
+    const metrics = metricsMatches.slice(0, 3); // Take up to 3 metrics
+    
+    // Extract introduction text - typically the first paragraph before specific resources are mentioned
+    let introText = text.split(/\n\n|\.\s+/)[0] + '.';
+    if (introText.length < 40) { // If intro is too short, take a bit more
+      const parts = text.split(/\n\n|\.\s+/);
+      introText = (parts[0] + '. ' + (parts[1] || '')).trim();
     }
     
-    return elements;
-  } else {
-    // Enhanced formatting for standard responses
-    // Let's improve the formatting with better visual structure
+    // Show a summary card with key metrics and highlights
+    return (
+      <div className="space-y-4">
+        {/* Introduction card with metrics highlight */}
+        <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+          <div className="text-sm">
+            {addResourceLinks(introText, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+          </div>
+          
+          {/* Display metrics as badges if available */}
+          {metrics.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {metrics.map((metric, idx) => (
+                <div key={`metric-${idx}`} className="bg-primary/10 text-primary text-xs px-3 py-1.5 rounded-full font-medium">
+                  {metric}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Top resources as interactive cards */}
+        <div className="space-y-2 mt-1">
+          <h3 className="text-sm font-semibold text-neutral-700 pl-1 flex items-center">
+            <BookOpen className="h-3.5 w-3.5 mr-1.5 text-primary" />
+            Top Resources from Answer
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+            {sortedResources.slice(0, 3).map((resource, idx) => {
+              const badgeClass = getResourceTypeClasses(resource.type);
+              const isViewed = viewedResourcesMap?.[resource.id] || false;
+              
+              // Find a snippet from the answer that mentions this resource
+              const resourceNameEscaped = resource.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const snippetRegex = new RegExp(`[^.!?]*${resourceNameEscaped}[^.!?]*[.!?]`, 'i');
+              const snippetMatch = text.match(snippetRegex);
+              const snippet = snippetMatch ? snippetMatch[0].trim() : '';
+              
+              return (
+                <div 
+                  key={`resource-card-${resource.id}`}
+                  className="p-3 bg-white border border-neutral-200 rounded-md hover:shadow-sm transition-shadow"
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className={`flex-shrink-0 w-1.5 h-full min-h-[2.5rem] self-stretch ${badgeClass.replace('text-', 'bg-')}`}></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className={`text-xs ${badgeClass} rounded-full px-2 py-0.5`}>
+                          <span className="uppercase text-[10px]">{resource.type}</span>
+                        </div>
+                        {isViewed && (
+                          <div className="text-[10px] text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded-full">
+                            Viewed
+                          </div>
+                        )}
+                      </div>
+                      
+                      <h4 className="font-medium text-sm text-primary mt-1 line-clamp-2">
+                        {resource.name}
+                      </h4>
+                      
+                      {snippet ? (
+                        <p className="text-xs text-neutral-600 mt-2 italic line-clamp-2">
+                          "{snippet}"
+                        </p>
+                      ) : (
+                        <p className="text-xs text-neutral-600 mt-2 line-clamp-2">
+                          {resource.description}
+                        </p>
+                      )}
+                      
+                      <button
+                        className={`mt-3 text-xs px-3 py-1.5 rounded inline-flex items-center gap-1.5 w-full justify-center ${
+                          isViewed 
+                            ? 'border border-neutral-200 bg-white hover:bg-primary/5 text-neutral-700 hover:text-primary hover:border-primary/30' 
+                            : 'bg-primary text-white hover:bg-primary/90'
+                        }`}
+                        onClick={() => {
+                          // Track the view if not already viewed
+                          if (trackViewFn && setViewedResourcesFn && !isViewed) {
+                            trackViewFn(resource.id);
+                            setViewedResourcesFn(prev => ({...prev, [resource.id]: true}));
+                          }
+                          
+                          // Open in new tab
+                          window.open(resource.url, "_blank", "noopener,noreferrer");
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        {isViewed ? 'View Again' : 'Access Resource'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Show full answer in expandable section if it's long */}
+        {text.length > 200 && (
+          <details className="group mt-2">
+            <summary className="list-none cursor-pointer">
+              <div className="flex items-center text-xs text-primary font-medium hover:underline">
+                <div className="group-open:rotate-90 transition-transform">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span>View full answer</span>
+              </div>
+            </summary>
+            <div className="pt-3 pl-5 text-sm text-neutral-700">
+              {addResourceLinks(text, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+            </div>
+          </details>
+        )}
+      </div>
+    );
+  }
+  
+  // Format for list-based answers - enhance the visual hierarchy
+  else if (isListFormat) {
+    // Enhanced list formatting with better visual hierarchy
     
-    // First, try to detect if there are numbered points in the text
+    // Try to detect numbered lists first
     const numberedListPattern = /(\d+\.\s+[^\n]+)/g;
     const hasNumberedList = numberedListPattern.test(text);
     
@@ -115,102 +203,209 @@ function formatAnswerWithLinks(text: string, resources: Resource[] = [], trackVi
       // Add introduction text if present
       if (parts[0].trim()) {
         elements.push(
-          <p key="intro-para" className="mb-3">
+          <div key="intro-para" className="mb-4 pb-2 border-b border-neutral-100">
             {addResourceLinks(parts[0].trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
-          </p>
+          </div>
         );
       }
       
-      // Add numbered items with better formatting
+      // Add numbered items with enhanced formatting
       elements.push(
-        <div key="numbered-list" className="space-y-2 my-3">
-          {numberedItems.map((item, idx) => (
-            <div key={`numbered-item-${idx}`} className="flex">
-              <div className="font-semibold text-primary mr-2">{item.split('.')[0]}.</div>
-              <div>
-                {addResourceLinks(item.substring(item.indexOf('.') + 1).trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+        <div key="numbered-list" className="space-y-3 my-3">
+          {numberedItems.map((item, idx) => {
+            const number = item.split('.')[0];
+            const content = item.substring(item.indexOf('.') + 1).trim();
+            
+            return (
+              <div key={`numbered-item-${idx}`} className="flex items-start group">
+                <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-semibold text-xs mr-3">
+                  {number}
+                </div>
+                <div className="flex-1 pt-0.5">
+                  {addResourceLinks(content, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
       
       // Add any conclusion text
-      // Check if the final part exists and isn't included in the numbered items
       const finalPart = parts[parts.length - 1];
-      if (finalPart && !numberedItems.some((item: string) => item === finalPart)) {
+      if (finalPart && finalPart.trim() && !numberedItems.some((item: string) => item === finalPart)) {
         elements.push(
-          <p key="conclusion" className="mt-3">
-            {addResourceLinks(parts[parts.length - 1].trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
-          </p>
+          <div key="conclusion" className="mt-4 pt-2 border-t border-neutral-100">
+            {addResourceLinks(finalPart.trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+          </div>
+        );
+      }
+      
+      // Add clickable resource buttons at the bottom if resources are mentioned but not directly linked
+      if (mentionedResources.length > 0) {
+        elements.push(
+          <div key="mentioned-resources" className="mt-4 pt-3 border-t border-neutral-100">
+            <div className="text-xs font-medium text-neutral-600 mb-2">Mentioned Resources:</div>
+            <div className="flex flex-wrap gap-2">
+              {mentionedResources.slice(0, 4).map(resource => {
+                const isViewed = viewedResourcesMap?.[resource.id] || false;
+                return (
+                  <button
+                    key={`resource-btn-${resource.id}`}
+                    className={`text-xs px-3 py-1.5 rounded flex items-center gap-1.5 ${
+                      isViewed 
+                        ? 'border border-neutral-200 bg-white hover:bg-primary/5 text-neutral-700 hover:text-primary' 
+                        : 'bg-primary/10 text-primary hover:bg-primary/20'
+                    }`}
+                    onClick={() => {
+                      // Track the view if not already viewed
+                      if (trackViewFn && setViewedResourcesFn && !isViewed) {
+                        trackViewFn(resource.id);
+                        setViewedResourcesFn(prev => ({...prev, [resource.id]: true}));
+                      }
+                      
+                      // Open in new tab
+                      window.open(resource.url, "_blank", "noopener,noreferrer");
+                    }}
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    {resource.name.length > 30 ? resource.name.substring(0, 30) + '...' : resource.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         );
       }
       
       return elements;
-    } else {
-      // Standard text formatting with URL highlighting
-      // URL regex pattern to match URLs in text
-      const urlRegex = /(https?:\/\/[^\s\)]+)/g;
+    }
+    
+    // Handle bullet lists
+    const bulletListPattern = /(•|\*|-)\s+([^\n]+)/g;
+    const hasBulletList = bulletListPattern.test(text);
+    
+    if (hasBulletList) {
+      // Reset pattern index
+      bulletListPattern.lastIndex = 0;
       
-      // Split the text into parts based on the URLs
-      const parts = text.split(urlRegex);
+      // Split by bullet list items
+      const parts = text.split(bulletListPattern);
+      const bulletItems = [];
+      let match;
+      while ((match = bulletListPattern.exec(text)) !== null) {
+        bulletItems.push(match[0]);
+      }
       
-      // Extract all URLs that match the pattern
-      const urls = text.match(urlRegex) || [];
-      
-      // Combine text and URL elements
       const elements: React.ReactNode[] = [];
       
-      // Process each part of the text
-      parts.forEach((part, index) => {
-        // For text parts, check if they contain resource names and link them
-        if (part) {
-          const linkedPart = addResourceLinks(part, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn);
-          elements.push(<span key={`text-part-${index}`}>{linkedPart}</span>);
-        }
-        
-        // If there's a URL that follows this text part, add it as a link
-        if (urls[index]) {
-          const url = urls[index];
-          const label = url.replace(/^https?:\/\//, '').split('/')[0]; // Use domain as label
-          
-          elements.push(
-            <a 
-              key={`link-url-${index}`}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
-            >
-              <ExternalLink className="h-3 w-3" />
-              <span className="underline">{label}</span>
-            </a>
-          );
-        }
-      });
+      // Add introduction text if present
+      if (parts[0].trim()) {
+        elements.push(
+          <div key="intro-para" className="mb-4">
+            {addResourceLinks(parts[0].trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+          </div>
+        );
+      }
       
-      // Split the text by paragraphs for better visual formatting
-      if (elements.length === 1 && 
-          typeof elements[0] === 'object' && 
-          elements[0] !== null && 
-          'props' in elements[0] && 
-          elements[0].props && 
-          typeof elements[0].props.children === 'string') {
-        const paragraphs = elements[0].props.children.split('\n\n');
-        if (paragraphs.length > 1) {
-          return (
-            <div className="space-y-3">
-              {paragraphs.map((para: string, idx: number) => (
-                <p key={`para-${idx}`}>{para.trim()}</p>
-              ))}
-            </div>
-          );
-        }
+      // Add bullet items with enhanced formatting
+      elements.push(
+        <ul key="bullet-list" className="space-y-2 my-3 list-none">
+          {bulletItems.map((item, idx) => {
+            const content = item.replace(/^(•|\*|-)\s+/, '');
+            
+            return (
+              <li key={`bullet-item-${idx}`} className="flex items-start">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2.5"></div>
+                <div className="flex-1">
+                  {addResourceLinks(content, resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      );
+      
+      // Add any conclusion text
+      const finalPart = parts[parts.length - 1];
+      if (finalPart && finalPart.trim()) {
+        elements.push(
+          <div key="conclusion" className="mt-3">
+            {addResourceLinks(finalPart.trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+          </div>
+        );
       }
       
       return elements;
     }
   }
+  
+  // Default formatting for other types of answers
+  // Enhanced paragraph and URL highlighting
+  
+  // Split answer into paragraphs for better readability
+  const paragraphs = text.split(/\n\n+/);
+  
+  // Format paragraphs with resource links
+  const elements = paragraphs.map((paragraph, idx) => {
+    if (!paragraph.trim()) return null;
+    
+    // Check if this is a heading-like paragraph (short, ends with colon)
+    const isHeading = paragraph.trim().length < 50 && paragraph.trim().endsWith(':');
+    
+    if (isHeading) {
+      return (
+        <h4 key={`heading-${idx}`} className="font-medium text-primary mt-4 mb-2">
+          {addResourceLinks(paragraph.trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+        </h4>
+      );
+    }
+    
+    // Normal paragraph
+    return (
+      <p key={`para-${idx}`} className={idx === 0 ? 'mb-3' : 'my-3'}>
+        {addResourceLinks(paragraph.trim(), resources, trackViewFn, viewedResourcesMap, setViewedResourcesFn)}
+      </p>
+    );
+  });
+  
+  // Add resource quick links at the bottom if resources are mentioned
+  if (mentionedResources.length > 0) {
+    elements.push(
+      <div key="resource-quick-links" className="mt-4 pt-3 border-t border-neutral-100">
+        <div className="text-xs font-medium text-neutral-700">Related Resources:</div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {mentionedResources.slice(0, 3).map(resource => {
+            const isViewed = viewedResourcesMap?.[resource.id] || false;
+            return (
+              <button
+                key={`quick-link-${resource.id}`}
+                className={`text-xs px-3 py-1.5 rounded inline-flex items-center gap-1.5 ${
+                  isViewed 
+                    ? 'border border-neutral-200 bg-white hover:bg-primary/5 text-neutral-700 hover:text-primary' 
+                    : 'bg-primary/10 text-primary hover:bg-primary/20'
+                }`}
+                onClick={() => {
+                  // Track the view if not already viewed
+                  if (trackViewFn && setViewedResourcesFn && !isViewed) {
+                    trackViewFn(resource.id);
+                    setViewedResourcesFn(prev => ({...prev, [resource.id]: true}));
+                  }
+                  
+                  // Open in new tab
+                  window.open(resource.url, "_blank", "noopener,noreferrer");
+                }}
+              >
+                <ExternalLink className="h-3 w-3" />
+                {resource.name.length > 40 ? resource.name.substring(0, 40) + '...' : resource.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  
+  return elements;
 }
 
 // Helper function to add links to resource names in text
