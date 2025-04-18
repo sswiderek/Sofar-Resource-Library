@@ -8,52 +8,52 @@
  */
 
 /**
- * Get gradient classes for card header bars based on resource type
+ * Get color classes for card header bars based on resource type
  * 
  * @param type The resource type string
- * @returns A string of CSS classes for styling the gradient header
+ * @returns A string of CSS classes for styling the header bar
  */
 export const getResourceGradient = (type: string): string => {
   const typeKey = type.toLowerCase();
   
   if (typeKey.includes('webinar') || typeKey === 'webinar') {
-    return "bg-gradient-to-r from-blue-600 to-blue-400";
+    return "bg-blue-300";
   } else if (typeKey.includes('slide') || typeKey === 'slides') {
-    return "bg-gradient-to-r from-teal-600 to-teal-400";
+    return "bg-teal-300";
   } else if (typeKey.includes('customer story') || typeKey === 'customer story') {
-    return "bg-gradient-to-r from-indigo-600 to-indigo-400";
+    return "bg-indigo-300";
   } else if (typeKey.includes('blog') || typeKey === 'blog post') {
-    return "bg-gradient-to-r from-amber-600 to-amber-400";
+    return "bg-amber-300";
   } else if (typeKey.includes('whitepaper') || typeKey.includes('research paper')) {
-    return "bg-gradient-to-r from-purple-600 to-purple-400";
+    return "bg-purple-300";
   } else if (typeKey.includes('video')) {
-    return "bg-gradient-to-r from-red-600 to-red-400";
+    return "bg-red-300";
   } else if (typeKey.includes('media')) {
-    return "bg-gradient-to-r from-fuchsia-600 to-fuchsia-400";
+    return "bg-fuchsia-300";
   } else if (typeKey.includes('partner enablement')) {
-    return "bg-gradient-to-r from-green-600 to-green-400";
+    return "bg-green-300";
   } else if (typeKey.includes('webpage')) {
-    return "bg-gradient-to-r from-orange-600 to-orange-400";
+    return "bg-orange-300";
   } else if (typeKey.includes('branding')) {
-    return "bg-gradient-to-r from-pink-600 to-pink-400";
+    return "bg-pink-300";
   } else if (typeKey.includes('one-pager')) {
-    return "bg-gradient-to-r from-cyan-600 to-cyan-400";
+    return "bg-cyan-300";
   } else if (typeKey.includes('guide')) {
-    return "bg-gradient-to-r from-lime-600 to-lime-400";
+    return "bg-lime-300";
   } else if (typeKey.includes('fact sheet')) {
-    return "bg-gradient-to-r from-violet-600 to-violet-400";
+    return "bg-violet-300";
   } else if (typeKey.includes('infographic')) {
-    return "bg-gradient-to-r from-emerald-600 to-emerald-400";
+    return "bg-emerald-300";
   } else if (typeKey.includes('report')) {
-    return "bg-gradient-to-r from-rose-600 to-rose-400";
+    return "bg-rose-300";
   } else if (typeKey.includes('case study')) {
-    return "bg-gradient-to-r from-sky-600 to-sky-400";
+    return "bg-sky-300";
   } else if (typeKey.includes('spec')) {
-    return "bg-gradient-to-r from-green-600 to-green-400";
+    return "bg-green-300";
   } else if (typeKey.includes('booklet') || typeKey === 'booklet') {
-    return "bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500";
+    return "bg-indigo-300";
   } else {
-    return "bg-gradient-to-r from-blue-600 to-blue-400";
+    return "bg-blue-300";
   }
 };
 export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' = 'badge'): string => {
@@ -138,7 +138,7 @@ export const getResourceTypeClasses = (type: string, variant: 'badge' | 'text' =
   } else if (typeKey.includes('spec')) {
     return "bg-green-100 text-green-700 border-green-200";
   } else if (typeKey.includes('booklet') || typeKey === 'booklet') {
-    return "bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 text-indigo-700 border-indigo-200 font-medium";
+    return "bg-indigo-100 text-indigo-700 border-indigo-200 font-medium";
   } else {
     return "bg-neutral-100 text-neutral-700 border-neutral-200";
   }

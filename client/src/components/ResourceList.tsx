@@ -31,7 +31,7 @@ export default function ResourceList({ resource }: ResourceListProps) {
       className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] hover:border-blue-200 cursor-pointer"
       onClick={handleResourceClick}
     >
-      <div className={`h-2 ${getResourceGradient(resource.type)}`}></div>
+      <div className={`h-1.5 ${getResourceGradient(resource.type)}`}></div>
       <div className="p-4 sm:p-5 flex flex-col sm:flex-row">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
