@@ -33,21 +33,22 @@ export async function submitFeedbackToNotion(feedback: Feedback): Promise<void> 
         database_id: cleanDatabaseId
       },
       properties: {
-        // Map to exact column names in the Notion database
-        "Submitter's Name": {
+        // "Feedback" is the Title field in Notion
+        "Feedback": {
           title: [
             {
               text: {
-                content: feedback.name
+                content: feedback.feedback
               }
             }
           ]
         },
-        "Feedback": {
+        // "Submitter's Name" is a rich_text field in Notion
+        "Submitter's Name": {
           rich_text: [
             {
               text: {
-                content: feedback.feedback
+                content: feedback.name
               }
             }
           ]
