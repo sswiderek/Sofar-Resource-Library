@@ -15,27 +15,27 @@ export default function Layout({ children }: LayoutProps) {
   
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
-      <header className="bg-white shadow-sm border-b border-neutral-200">
+      <header className="bg-gradient-to-r from-blue-700 to-blue-600 shadow-md border-b border-blue-800">
         <div className="py-4 flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-4">
           <div className="flex items-center">
             <img 
               src="/sofar-logo.png" 
               alt="Sofar Logo" 
-              className="h-9 w-auto mr-3"
+              className="h-10 w-auto mr-3 bg-white p-1 rounded-md shadow-sm"
             />
             <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-[#0066CC]">
+              <h1 className="text-xl font-bold text-white">
                 Sofar Resource Library
               </h1>
-              <div className="h-0.5 w-full bg-gradient-to-r from-[#0066CC] to-[#00A7E1] rounded-full mt-0.5"></div>
+              <div className="h-0.5 w-full bg-gradient-to-r from-blue-300 to-sky-300 rounded-full mt-0.5"></div>
             </div>
           </div>
           
           <nav className="flex mt-4 md:mt-0">
-            <ul className="flex space-x-4">
+            <ul className="flex space-x-3">
               <li>
                 <Link href="/">
-                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${isActive('/') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors ${isActive('/') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10'}`}>
                     <Home className="h-4 w-4 mr-1" />
                     Home
                   </span>
@@ -43,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
               </li>
               <li>
                 <Link href="/admin/analytics">
-                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${isActive('/admin/analytics') ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <span className={`flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors ${isActive('/admin/analytics') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10'}`}>
                     <BarChart3 className="h-4 w-4 mr-1" />
                     Analytics
                   </span>

@@ -33,11 +33,11 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
     >
       <CardContent className="p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3">
-          <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-3 py-1 rounded-md text-xs font-medium`}>
+          <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[70%] truncate`}>
             {resource.type}
           </Badge>
           {resource.date && (
-            <span className="text-xs text-neutral-500 font-medium">{resource.date}</span>
+            <span className="text-xs text-neutral-500 font-medium ml-1 shrink-0">{resource.date}</span>
           )}
         </div>
         
