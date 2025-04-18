@@ -32,7 +32,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
       onClick={handleResourceClick}
     >
       <div className={`h-1.5 ${getResourceGradient(resource.type)}`}></div>
-      <CardContent className="p-5 flex flex-col h-full">
+      <CardContent className="p-3 sm:p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3 gap-2">
           <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[65%] truncate`}>
             {resource.type}
@@ -42,22 +42,22 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           )}
         </div>
         
-        <h3 className="text-lg font-semibold text-[#1e5bb0] line-clamp-3 leading-tight mb-3 hover:text-blue-700">
+        <h3 className="text-base sm:text-lg font-semibold text-[#1e5bb0] line-clamp-3 leading-tight mb-2 sm:mb-3 hover:text-blue-700">
           {resource.name}
         </h3>
         
-        <p className="text-sm text-neutral-600 line-clamp-4 flex-grow">
+        <p className="text-xs sm:text-sm text-neutral-600 line-clamp-3 sm:line-clamp-4 flex-grow">
           {resource.description}
         </p>
         
         <div className="mt-3 pt-3 border-t border-blue-50 flex justify-between items-center">
           <div className="flex items-center text-xs text-neutral-500">
-            <Eye className="h-3.5 w-3.5 mr-1 opacity-70" />
+            <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 opacity-70" />
             <span>{resource.viewCount || 0} views</span>
           </div>
-          <div className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
+          <div className="flex items-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700">
             <span>View Resource</span>
-            <ArrowRight className="h-4 w-4 ml-1" />
+            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
           </div>
         </div>
       </CardContent>

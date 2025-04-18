@@ -32,25 +32,25 @@ export default function ResourceList({ resource }: ResourceListProps) {
       onClick={handleResourceClick}
     >
       <div className={`h-1.5 ${getResourceGradient(resource.type)}`}></div>
-      <div className="p-4 sm:p-5 flex flex-col sm:flex-row">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[200px] truncate`}>
+      <div className="p-3 sm:p-5 flex flex-col sm:flex-row">
+        <div className="flex-1 min-w-0"> {/* min-w-0 prevents flex items from overflowing */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap xs:flex-nowrap">
+            <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[150px] sm:max-w-[200px] truncate`}>
               {resource.type}
             </Badge>
             <span className="text-xs text-neutral-500 font-medium shrink-0">{resource.date}</span>
           </div>
           
-          <h3 className="text-lg font-semibold text-[#1e5bb0] hover:text-blue-700 leading-tight">
+          <h3 className="text-base sm:text-lg font-semibold text-[#1e5bb0] hover:text-blue-700 leading-tight line-clamp-2 sm:line-clamp-none">
             {resource.name}
           </h3>
           
-          <p className="mt-2 text-sm text-neutral-500 mb-3">
+          <p className="mt-2 text-xs sm:text-sm text-neutral-500 mb-3 line-clamp-2 sm:line-clamp-none">
             {resource.description}
           </p>
           
           {resource.audience && resource.audience.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1">
+            <div className="mb-2 flex flex-wrap gap-1 hidden sm:flex">
               {resource.audience.map((segment, index) => (
                 <span key={index} className="inline-flex text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-md">
                   {segment}
@@ -59,8 +59,8 @@ export default function ResourceList({ resource }: ResourceListProps) {
             </div>
           )}
           
-          {/* Only show view statistics */}
-          <div className="flex items-center mt-2 text-xs text-neutral-500">
+          {/* Only show view statistics on mobile */}
+          <div className="flex items-center mt-2 text-xs text-neutral-500 sm:hidden">
             <div className="flex items-center">
               <Eye className="h-3 w-3 mr-1" />
               <span>{resource.viewCount || 0} views</span>
@@ -68,14 +68,14 @@ export default function ResourceList({ resource }: ResourceListProps) {
           </div>
         </div>
         
-        <div className="mt-4 sm:mt-0 sm:ml-6 flex sm:flex-col sm:items-end">
+        <div className="mt-4 sm:mt-0 sm:ml-6 flex sm:flex-col sm:items-end sm:min-w-[140px]">
           <div className="hidden sm:flex items-center text-xs text-neutral-500 mb-2">
             <Eye className="h-3.5 w-3.5 mr-1 opacity-70" />
             <span>{resource.viewCount || 0} views</span>
           </div>
           <Button 
             variant="default"
-            className="px-4"
+            className="px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
             onClick={(e) => {
               e.stopPropagation(); // Prevent double-firing the parent click
               // We need to make sure we also track the view when the button is clicked directly
@@ -87,7 +87,7 @@ export default function ResourceList({ resource }: ResourceListProps) {
             }}
           >
             View Resource
-            <ArrowRight className="ml-1 h-4 w-4" />
+            <ArrowRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>

@@ -1182,12 +1182,13 @@ export default function QuestionBox({ onShowResource, resources = [] }: Question
               type="submit" 
               size="sm" 
               disabled={isPending || !question.trim()}
-              className={`${isPending ? 'bg-primary/80' : ''} transition-all`}
+              className={`${isPending ? 'bg-primary/80' : ''} transition-all min-w-[75px] sm:min-w-[85px]`}
             >
               {isPending ? (
                 <div className="flex items-center gap-1.5">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span className="text-xs">Processing</span>
+                  <span className="text-xs hidden xs:inline">Processing</span>
+                  <span className="text-xs xs:hidden">Wait</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
