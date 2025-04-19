@@ -12,7 +12,7 @@ export interface ResourceFilters {
   sortBy?: 'relevance' | 'popularity' | 'newest' | 'oldest'; // Optional sort parameter
 }
 
-// Initialize empty filters
+// Initialize empty filters with 'newest' as the default sort
 export const initialFilters: ResourceFilters = {
   types: [],
   products: [],
@@ -21,7 +21,7 @@ export const initialFilters: ResourceFilters = {
   contentVisibility: [], // No default selection for content visibility
   solutions: [],
   search: '',
-  sortBy: undefined,
+  sortBy: 'newest', // Setting "Newest First" as the default sort
 };
 
 // Builds the URL query string from filter state

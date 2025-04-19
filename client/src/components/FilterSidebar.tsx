@@ -86,12 +86,17 @@ export default function FilterSidebar({
     solutions: [],
   };
 
-  // Handle search input with debounce
+  // Handle search input with debounce and auto-switch to "Relevance" sort when searching
   useEffect(() => {
     const timer = setTimeout(() => {
+      // When search term is present, automatically set sorting to "relevance"
+      // When search is cleared, keep the current sort
+      const newSort = search.trim() !== '' ? 'relevance' : filter.sortBy;
+      
       onFilterChange({
         ...filter,
         search,
+        sortBy: newSort,
       });
     }, 300);
 
