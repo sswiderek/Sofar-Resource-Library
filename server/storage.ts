@@ -10,8 +10,11 @@ import {
   Team, 
   InsertTeam,
   ResourceFilter,
-  UpdateTeamPassword
+  UpdateTeamPassword,
+  resources
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, or, desc, like, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Session store
@@ -736,4 +739,454 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+/**
+ * DatabaseStorage class that uses PostgreSQL for persisting resource statistics
+ * This provides true persistence that survives deployments, unlike file-based storage
+ */
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  private currentUserId: number = 1;
+  private currentPartnerId: number = 1;
+  private partnersFilePath: string = path.join(process.cwd(), 'partners-data.json');
+  private partners: Map<number, Team> = new Map();
+
+  constructor() {
+    // Create a memory store for sessions
+    const MemoryStoreFactory = MemoryStore(session);
+    this.sessionStore = new MemoryStoreFactory({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
+
+    // Initialize partners from file (still using file for backward compatibility)
+    this.initializePartners();
+    
+    console.log("Using database-backed storage for resource tracking. View counts will persist across deployments.");
+  }
+
+  // *** User methods ***
+
+  async getUser(id: number): Promise<User | undefined> {
+    // For now, keeping users in memory since they're not critical for the application
+    return undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    // For now, keeping users in memory since they're not critical for the application
+    return undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    // For now, keeping users in memory since they're not critical for the application
+    const id = this.currentUserId++;
+    const user: User = { ...insertUser, id };
+    return user;
+  }
+
+  // *** Resource methods ***
+
+  async getResources(): Promise<Resource[]> {
+    return await db.select().from(resources);
+  }
+
+  async getResourceById(id: number): Promise<Resource | undefined> {
+    const result = await db.select().from(resources).where(eq(resources.id, id));
+    return result[0];
+  }
+
+  async getResourceByNotionId(notionId: string): Promise<Resource | undefined> {
+    const result = await db.select().from(resources).where(eq(resources.notionId, notionId));
+    return result[0];
+  }
+
+  async createResource(resource: InsertResource): Promise<Resource> {
+    const [result] = await db.insert(resources).values(resource).returning();
+    return result;
+  }
+
+  async updateResource(id: number, resourceUpdate: Partial<InsertResource>): Promise<Resource | undefined> {
+    const [result] = await db
+      .update(resources)
+      .set(resourceUpdate)
+      .where(eq(resources.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteResource(id: number): Promise<boolean> {
+    const result = await db.delete(resources).where(eq(resources.id, id));
+    return true;
+  }
+
+  async deleteAllResources(): Promise<boolean> {
+    // This is dangerous, so we're adding extra logs
+    console.log("WARNING: Deleting all resources from the database!");
+    await db.delete(resources);
+    console.log("All resources have been deleted from the database");
+    return true;
+  }
+
+  // *** Resource filtering methods ***
+
+  async getFilteredResourcesPaginated(
+    filter: ResourceFilter,
+    page: number = 1,
+    limit: number = 30
+  ): Promise<{resources: Resource[], total: number}> {
+    // Get all filtered resources first
+    const allFilteredResources = await this.getFilteredResources(filter);
+    
+    // Calculate pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedResources = allFilteredResources.slice(startIndex, endIndex);
+    
+    return {
+      resources: paginatedResources,
+      total: allFilteredResources.length
+    };
+  }
+
+  async getFilteredResources(filter: ResourceFilter): Promise<Resource[]> {
+    console.log(`Filtering resources with filter:`, JSON.stringify(filter, null, 2));
+    
+    // Hard-coded list of resource names to exclude (temporarily while waiting for Notion to update)
+    const excludedResources = [
+      "Spotter Spec Sheet (Temperature Sensor)",
+      "Spotter Spec Sheet (Pressure Sensor)",
+      "Spotter Spec Sheet (All spec sheets in one)",
+      "Spotter Spec Sheet (Smart Mooring)",
+      "Spotter Spec Sheet (Current Meter)",
+      "Spotter Spec Sheet (Dissolved Oxygen)",
+      "Spotter Spec Sheet (Hydrophone)",
+      "Spotter Spec Sheet (Core)",
+      "Advanced Ocean Sensing: A Research Study",
+      "Spotter Pitch Deck"
+    ];
+    
+    // Fetch all resources first - more optimal DB solutions would involve
+    // building the query with WHERE clauses, but this maintains compatibility with existing code
+    const allResources = await this.getResources();
+    console.log(`Total resources before filtering: ${allResources.length}`);
+    
+    const filtered = allResources.filter(resource => {
+      // Filter out resources that have been manually flagged for exclusion
+      if (excludedResources.includes(resource.name)) {
+        console.log(`Filtering out excluded resource: ${resource.name}`);
+        return false;
+      }
+    
+      // Filter by content visibility if specified
+      if (filter.contentVisibility && filter.contentVisibility.length > 0) {
+        // If the resource doesn't have contentVisibility, default to "both"
+        const visibility = resource.contentVisibility || "both";
+        
+        // Check if the resource's visibility matches any of the requested ones
+        const visibilityMatch = filter.contentVisibility.includes(visibility);
+        if (!visibilityMatch) return false;
+      }
+
+      // Filter by type if specified
+      if (filter.types && filter.types.length > 0 && !filter.types.includes(resource.type)) {
+        return false;
+      }
+
+      // Filter by product if specified
+      if (filter.products && filter.products.length > 0) {
+        const hasMatchingProduct = resource.product.some(p => filter.products?.includes(p));
+        if (!hasMatchingProduct) return false;
+      }
+
+      // Filter by solutions if specified
+      if (filter.solutions && filter.solutions.length > 0) {
+        // Check if the resource has the solutions field and if it contains any of the requested solutions
+        const hasMatchingSolution = resource.solutions && resource.solutions.some(s => 
+          filter.solutions?.includes(s)
+        );
+        
+        // If no matching solution found, exclude this resource
+        if (!hasMatchingSolution) return false;
+      }
+
+      // Filter by audience if specified
+      if (filter.audiences && filter.audiences.length > 0) {
+        const hasMatchingAudience = resource.audience.some(a => filter.audiences?.includes(a));
+        if (!hasMatchingAudience) return false;
+      }
+
+      // Filter by messaging stage if specified
+      if (filter.messagingStages && filter.messagingStages.length > 0 && !filter.messagingStages.includes(resource.messagingStage)) {
+        return false;
+      }
+
+      // Filter by search term if specified
+      if (filter.search && filter.search.trim() !== '') {
+        const searchTerm = filter.search.toLowerCase().trim();
+        return (
+          resource.name.toLowerCase().includes(searchTerm) ||
+          resource.description.toLowerCase().includes(searchTerm) ||
+          (resource.detailedDescription && resource.detailedDescription.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      return true;
+    });
+    
+    // Sort the filtered results based on the sortBy parameter
+    if (filter.sortBy) {
+      switch (filter.sortBy) {
+        case 'popularity':
+          filtered.sort((a, b) => {
+            // Primary sort by view count
+            const aViews = a.viewCount || 0;
+            const bViews = b.viewCount || 0;
+            
+            // If view counts are equal, use total interaction count as secondary sort
+            if (aViews === bViews) {
+              const aTotalInteractions = aViews + (a.shareCount || 0) + (a.downloadCount || 0);
+              const bTotalInteractions = bViews + (b.shareCount || 0) + (b.downloadCount || 0);
+              return bTotalInteractions - aTotalInteractions;
+            }
+            
+            return bViews - aViews; // Descending by views
+          });
+          break;
+        case 'newest':
+          filtered.sort((a, b) => {
+            // Parse dates and sort by newest first (using the "Last Updated" date from Notion)
+            const aDate = new Date(a.date);
+            const bDate = new Date(b.date);
+            return bDate.getTime() - aDate.getTime(); // Descending order
+          });
+          break;
+        case 'oldest':
+          filtered.sort((a, b) => {
+            // Parse dates and sort by oldest first (using the "Last Updated" date from Notion)
+            const aDate = new Date(a.date);
+            const bDate = new Date(b.date);
+            return aDate.getTime() - bDate.getTime(); // Ascending order
+          });
+          break;
+        default:
+          // Default case (relevance) - no sorting needed as it's handled by search
+          break;
+      }
+    }
+    
+    console.log(`Filtered results count: ${filtered.length}`);
+    return filtered;
+  }
+
+  // *** Resource usage tracking methods ***
+
+  async incrementResourceViews(id: number): Promise<Resource | undefined> {
+    try {
+      // Update the view count directly in the database
+      const [updatedResource] = await db
+        .update(resources)
+        .set({
+          viewCount: sql`${resources.viewCount} + 1`
+        })
+        .where(eq(resources.id, id))
+        .returning();
+      
+      console.log(`Tracked view for resource ${id}. New count: ${updatedResource.viewCount}`);
+      return updatedResource;
+    } catch (error) {
+      console.error(`Error incrementing resource views: ${error}`);
+      return undefined;
+    }
+  }
+
+  async incrementResourceShares(id: number): Promise<Resource | undefined> {
+    try {
+      // Update the share count directly in the database
+      const [updatedResource] = await db
+        .update(resources)
+        .set({
+          shareCount: sql`${resources.shareCount} + 1`
+        })
+        .where(eq(resources.id, id))
+        .returning();
+      
+      console.log(`Tracked share for resource ${id}. New count: ${updatedResource.shareCount}`);
+      return updatedResource;
+    } catch (error) {
+      console.error(`Error incrementing resource shares: ${error}`);
+      return undefined;
+    }
+  }
+
+  async incrementResourceDownloads(id: number): Promise<Resource | undefined> {
+    try {
+      // Update the download count directly in the database
+      const [updatedResource] = await db
+        .update(resources)
+        .set({
+          downloadCount: sql`${resources.downloadCount} + 1`
+        })
+        .where(eq(resources.id, id))
+        .returning();
+      
+      console.log(`Tracked download for resource ${id}. New count: ${updatedResource.downloadCount}`);
+      return updatedResource;
+    } catch (error) {
+      console.error(`Error incrementing resource downloads: ${error}`);
+      return undefined;
+    }
+  }
+
+  async getPopularResources(limit: number = 5): Promise<Resource[]> {
+    // Get resources sorted by view count directly from the database
+    const popularResources = await db
+      .select()
+      .from(resources)
+      .orderBy(desc(resources.viewCount))
+      .limit(limit);
+    
+    return popularResources;
+  }
+
+  // *** Partner/Team methods (for backward compatibility) ***
+
+  // Helper to save partners to JSON file
+  private savePartnersToFile() {
+    try {
+      const partnersArray = Array.from(this.partners.values()).map(partner => ({
+        ...partner,
+        lastPasswordUpdate: partner.lastPasswordUpdate?.toISOString() || null
+      }));
+
+      const data = {
+        partners: partnersArray,
+        currentPartnerId: this.currentPartnerId
+      };
+
+      fs.writeFileSync(this.partnersFilePath, JSON.stringify(data, null, 2));
+      console.log("Partners data saved to file");
+    } catch (error) {
+      console.error("Error saving partners data to file:", error);
+    }
+  }
+
+  // Helper to load partners from JSON file
+  private loadPartnersFromFile() {
+    try {
+      if (!fs.existsSync(this.partnersFilePath)) {
+        console.log("Partners file doesn't exist yet");
+        return null;
+      }
+
+      const fileData = fs.readFileSync(this.partnersFilePath, 'utf8');
+      
+      // Define the structure of the stored data
+      interface StoredData {
+        partners: Array<Team & { lastPasswordUpdate: string | null }>;
+        currentPartnerId: number;
+      }
+
+      const data = JSON.parse(fileData) as StoredData;
+
+      // Parse dates from strings
+      const partners = data.partners.map(partner => ({
+        ...partner,
+        lastPasswordUpdate: partner.lastPasswordUpdate ? new Date(partner.lastPasswordUpdate) : null
+      }));
+
+      console.log(`Loaded ${partners.length} partners from file`);
+      return {
+        partners,
+        currentPartnerId: data.currentPartnerId
+      };
+    } catch (error) {
+      console.error("Error loading partners data from file:", error);
+      return null;
+    }
+  }
+
+  // Initialize partners from file or create a default if none exists
+  private initializePartners() {
+    const data = this.loadPartnersFromFile();
+
+    if (data) {
+      // Use loaded data
+      this.currentPartnerId = data.currentPartnerId;
+      
+      // Populate the Map
+      data.partners.forEach(partner => {
+        this.partners.set(partner.id, partner);
+      });
+    } else {
+      // Create a default partner
+      const defaultPartner: Team = {
+        id: 1,
+        name: "PME",
+        slug: "pme",
+        password: "pme123",
+        lastPasswordUpdate: new Date()
+      };
+
+      this.partners.set(defaultPartner.id, defaultPartner);
+      this.currentPartnerId = 2;
+      this.savePartnersToFile();
+    }
+  }
+
+  async getPartners(): Promise<Team[]> {
+    return Array.from(this.partners.values());
+  }
+
+  async getPartnerBySlug(slug: string): Promise<Team | undefined> {
+    for (const partner of this.partners.values()) {
+      if (partner.slug === slug) {
+        return partner;
+      }
+    }
+    return undefined;
+  }
+
+  async getPartnerById(id: number): Promise<Team | undefined> {
+    return this.partners.get(id);
+  }
+
+  async createPartner(insertPartner: InsertTeam): Promise<Team> {
+    const id = this.currentPartnerId++;
+    const partner: Team = { 
+      ...insertPartner, 
+      id
+    };
+    this.partners.set(id, partner);
+    this.savePartnersToFile();
+    return partner;
+  }
+
+  async updatePartnerPassword(id: number, passwordData: UpdateTeamPassword): Promise<Team | undefined> {
+    const existingPartner = this.partners.get(id);
+    if (!existingPartner) return undefined;
+
+    const updatedPartner: Team = {
+      ...existingPartner,
+      password: passwordData.password,
+      lastPasswordUpdate: new Date()
+    };
+    
+    this.partners.set(id, updatedPartner);
+    this.savePartnersToFile();
+    return updatedPartner;
+  }
+
+  async verifyPartnerPassword(slug: string, password: string): Promise<boolean> {
+    const partner = await this.getPartnerBySlug(slug);
+    return partner !== undefined && partner.password === password;
+  }
+
+  async deletePartner(id: number): Promise<boolean> {
+    const result = this.partners.delete(id);
+    if (result) {
+      this.savePartnersToFile();
+    }
+    return result;
+  }
+}
+
+// Use the database-backed storage to ensure view counts persist across deployments
+export const storage = new DatabaseStorage();
