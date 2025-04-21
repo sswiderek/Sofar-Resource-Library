@@ -517,41 +517,82 @@ async function syncResourcesWithNotion() {
     const notionResources = await fetchResourcesFromNotion();
     log(`Fetched ${notionResources.length} resources from Notion`);
     
-    // HARD RESET: Delete all existing resources and recreate them from Notion
-    // This ensures we don't have any stale data
+    // Get existing resources to preserve their view counts and stats
     const existingResources = await storage.getResources();
+    log(`Found ${existingResources.length} existing resources in the database`);
     
-    log(`Performing complete refresh: Deleting all ${existingResources.length} existing resources`);
+    // Create a map of existing resources by notionId for quick lookups
+    const existingResourceMap = new Map();
+    existingResources.forEach(resource => {
+      existingResourceMap.set(resource.notionId, resource);
+    });
     
-    // Delete all resources with our new method that also resets the ID counter
-    await storage.deleteAllResources();
+    // Track which existing resources are still present in Notion
+    const stillExistingNotionIds = new Set();
+    let resourcesUpdated = false;
     
-    // Resources were deleted, mark for update
-    let resourcesUpdated = true;
-    
-    // Add all resources from Notion as new
-    for (const resource of notionResources) {
-      // Create as new resource
-      await storage.createResource(resource);
-      log(`Created new resource: ${resource.name}`);
+    // Process each resource from Notion
+    for (const notionResource of notionResources) {
+      const existingResource = existingResourceMap.get(notionResource.notionId);
+      
+      if (existingResource) {
+        // Resource already exists - update it while preserving usage stats
+        stillExistingNotionIds.add(notionResource.notionId);
+        
+        // Create updated resource with preserved stats
+        const updatedResource = {
+          ...notionResource,
+          // Preserve counts that should not be reset
+          viewCount: existingResource.viewCount || 0,
+          shareCount: existingResource.shareCount || 0,
+          downloadCount: existingResource.downloadCount || 0
+        };
+        
+        // Update the existing resource
+        await storage.updateResource(existingResource.id, updatedResource);
+        log(`Updated existing resource: ${notionResource.name} (id: ${existingResource.id})`);
+        resourcesUpdated = true;
+      } else {
+        // This is a new resource - create it
+        await storage.createResource(notionResource);
+        log(`Created new resource: ${notionResource.name}`);
+        resourcesUpdated = true;
+      }
     }
     
-    // Always update embeddings after a full refresh
-    resourcesNeedEmbeddingUpdate = true;
+    // Find resources that are no longer in Notion and delete them
+    const resourcesToDelete = existingResources.filter(
+      resource => !stillExistingNotionIds.has(resource.notionId)
+    );
     
-    // Always mark for embedding update, but don't block initial page load
-    log(`Resources were updated. Marking for embedding update.`);
+    if (resourcesToDelete.length > 0) {
+      log(`Deleting ${resourcesToDelete.length} resources that are no longer in Notion`);
+      
+      for (const resourceToDelete of resourcesToDelete) {
+        await storage.deleteResource(resourceToDelete.id);
+        log(`Deleted resource: ${resourceToDelete.name} (id: ${resourceToDelete.id})`);
+        resourcesUpdated = true;
+      }
+    }
     
-    // Start the embedding process asynchronously without awaiting
-    if (!isGeneratingEmbeddings) {
-      updateResourceEmbeddings().catch(err => {
-        log(`Background embedding generation error: ${err.message}`);
-      });
+    // Update embeddings if resources were updated
+    if (resourcesUpdated) {
+      resourcesNeedEmbeddingUpdate = true;
+      
+      // Always mark for embedding update, but don't block initial page load
+      log(`Resources were updated. Marking for embedding update.`);
+      
+      // Start the embedding process asynchronously without awaiting
+      if (!isGeneratingEmbeddings) {
+        updateResourceEmbeddings().catch(err => {
+          log(`Background embedding generation error: ${err.message}`);
+        });
+      }
     }
     
     // Update last sync time
     lastSyncTime = new Date();
-    log("Resources sync completed with full refresh");
+    log("Resources sync completed with view count preservation");
   } catch (error) {
     log(`Error syncing resources: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
