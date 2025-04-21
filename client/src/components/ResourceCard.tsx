@@ -1,10 +1,11 @@
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight, Eye, Lock } from "lucide-react";
 import { Resource } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getResourceTypeClasses, getResourceGradient } from "@/lib/resourceTypeColors";
 import { useResourceTracking } from "@/hooks/use-resource-tracking";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ResourceCardProps {
   resource: Resource;
@@ -26,12 +27,33 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
     window.open(resource.url, "_blank", "noopener,noreferrer");
   };
 
+  // Check if resource is internal only
+  const isInternalOnly = resource.contentVisibility === "internal";
+
   return (
     <Card 
-      className="bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border border-neutral-200 hover:border-blue-200 h-full flex flex-col cursor-pointer"
+      className={`bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border h-full flex flex-col cursor-pointer
+        ${isInternalOnly ? 'border-amber-300' : 'border-neutral-200 hover:border-blue-200'}`}
       onClick={handleResourceClick}
     >
       <div className={`h-1.5 ${getResourceGradient(resource.type)}`}></div>
+      {isInternalOnly && (
+        <div className="bg-amber-50 px-3 py-1.5 flex items-center justify-center gap-1.5 border-b border-amber-100">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center text-amber-700 text-xs font-medium">
+                  <Lock className="h-3 w-3 mr-1" />
+                  <span>Internal Use Only</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-[220px]">This resource is for internal use only and should not be shared with external parties</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
       <CardContent className="p-3 sm:p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3 gap-2">
           <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[65%] truncate`}>
