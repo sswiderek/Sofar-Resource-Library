@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getResourceTypeClasses, getResourceGradient } from "@/lib/resourceTypeColors";
 import { useResourceTracking } from "@/hooks/use-resource-tracking";
 import { useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ResourceCardProps {
   resource: Resource;
@@ -38,25 +37,14 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
     >
       <div className={`h-1.5 ${getResourceGradient(resource.type)}`}></div>
       {isInternalOnly && (
-        <div className="bg-amber-50 px-3 py-1.5 flex items-center justify-center gap-1.5 border-b border-amber-100">
-          <TooltipProvider delayDuration={100}>
-            <Tooltip>
-              <TooltipTrigger className="cursor-help">
-                <div className="flex items-center text-amber-700 text-xs font-medium">
-                  <Lock className="h-3 w-3 mr-1" />
-                  <span>Internal Use Only</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent 
-                side="top" 
-                align="center" 
-                sideOffset={5} 
-                className="z-50 bg-slate-900 text-white border-none"
-              >
-                <p className="text-xs max-w-[220px]">This resource is for internal use only and should not be shared with external parties</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div 
+          className="bg-amber-50 px-3 py-1.5 border-b border-amber-100 flex items-center justify-center" 
+          title="This resource is for internal use only and should not be shared with external parties"
+        >
+          <div className="flex items-center text-amber-700 text-xs font-medium cursor-help">
+            <Lock className="h-3 w-3 mr-1" />
+            <span>Internal Use Only</span>
+          </div>
         </div>
       )}
       <CardContent className="p-3 sm:p-5 flex flex-col h-full">
