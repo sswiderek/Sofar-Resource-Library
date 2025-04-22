@@ -103,6 +103,34 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       if (problematicResources.length > 0) {
         log(`IMPORTANT - Found these problematic resources from Notion API: ${problematicResources.join(', ')}`);
       }
+      
+      // CRITICAL DEBUG: Dump all property names for first 5 resources
+      log(`PARTNERS ONLY DEBUG - Dumping full property list for first 5 resources:`);
+      for (let i = 0; i < Math.min(5, response.results.length); i++) {
+        const page = response.results[i];
+        const properties = page.properties;
+        const resourceName = properties.Title?.title?.[0]?.text?.content || 
+                           properties.Name?.title?.[0]?.text?.content || 
+                           "Untitled Resource";
+        log(`Resource ${i+1}: ${resourceName}`);
+        log(`All property keys: ${Object.keys(properties).join(', ')}`);
+        
+        // Check specifically for Partners Only field
+        if (properties["Partners Only"]) {
+          log(`Found "Partners Only" field: ${JSON.stringify(properties["Partners Only"])}`);
+        }
+        
+        if (properties["Partners Only?"]) {
+          log(`Found "Partners Only?" field: ${JSON.stringify(properties["Partners Only?"])}`);
+        }
+        
+        // Check all properties with "partner" in the name
+        for (const key of Object.keys(properties)) {
+          if (key.toLowerCase().includes("partner")) {
+            log(`Found partner-related field "${key}": ${JSON.stringify(properties[key])}`);
+          }
+        }
+      }
     }
     
     // Transform Notion response into our Resource schema
@@ -158,29 +186,35 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                               properties.Name?.title?.[0]?.text?.content || 
                               "Untitled";
           
-          // Log all properties for debugging
-          const partnerOnlyField = properties["Partners Only?"];
-          log(`DEBUG [${resourceName}] - Partners Only field exists: ${!!partnerOnlyField}`);
+          // Try different possible field names for "Partners Only"
+          const possibleFieldNames = ["Partners Only?", "Partners Only", "PartnersOnly", "Partner Only", "Partner Only?"];
           
-          if (partnerOnlyField) {
-            log(`DEBUG [${resourceName}] - Partners Only field type: ${typeof partnerOnlyField}`);
-            log(`DEBUG [${resourceName}] - Partners Only field value: ${JSON.stringify(partnerOnlyField)}`);
-            
-            // Check the 'select' property
-            if (partnerOnlyField.select) {
-              log(`DEBUG [${resourceName}] - Select exists, value: ${JSON.stringify(partnerOnlyField.select)}`);
+          for (const fieldName of possibleFieldNames) {
+            if (properties[fieldName]) {
+              log(`DEBUG [${resourceName}] - Found field "${fieldName}": ${JSON.stringify(properties[fieldName])}`);
               
-              // Check if the select name is "Y"
-              const isPartnerOnly = partnerOnlyField.select.name === "Y";
-              log(`DEBUG [${resourceName}] - Is partner only? ${isPartnerOnly}`);
-              
-              if (isPartnerOnly) {
-                log(`PARTNERS ONLY: Resource "${resourceName}" is marked as Partners Only with value Y`);
+              // Check if it's a select field
+              if (properties[fieldName].select) {
+                const selectValue = properties[fieldName].select.name;
+                log(`DEBUG [${resourceName}] - Field "${fieldName}" has select value: "${selectValue}"`);
+                
+                // Check for various "yes" values
+                if (selectValue === "Y" || selectValue === "Yes" || selectValue === "yes" || selectValue === "TRUE" || selectValue === "true") {
+                  log(`PARTNERS ONLY: Resource "${resourceName}" is marked as Partners Only with value "${selectValue}" in field "${fieldName}"`);
+                  return true;
+                }
               }
               
-              return isPartnerOnly;
-            } else {
-              log(`DEBUG [${resourceName}] - No select property found in Partners Only field`);
+              // Check if it's a checkbox field
+              if (properties[fieldName].checkbox !== undefined) {
+                const checkboxValue = properties[fieldName].checkbox;
+                log(`DEBUG [${resourceName}] - Field "${fieldName}" has checkbox value: ${checkboxValue}`);
+                
+                if (checkboxValue === true) {
+                  log(`PARTNERS ONLY: Resource "${resourceName}" is marked as Partners Only with checkbox value true in field "${fieldName}"`);
+                  return true;
+                }
+              }
             }
           }
           
