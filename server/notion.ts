@@ -153,11 +153,38 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                          
         // Check if this resource is "Partners Only"
         partnersOnly: (() => {
-          const isPartnerOnly = properties["Partners Only?"]?.select?.name === "Y";
-          if (isPartnerOnly) {
-            log(`PARTNERS ONLY: Resource "${properties.Title?.title?.[0]?.text?.content || properties.Name?.title?.[0]?.text?.content || "Untitled"}" is marked as Partners Only`);
+          // Get the resource name for logging
+          const resourceName = properties.Title?.title?.[0]?.text?.content || 
+                              properties.Name?.title?.[0]?.text?.content || 
+                              "Untitled";
+          
+          // Log all properties for debugging
+          const partnerOnlyField = properties["Partners Only?"];
+          log(`DEBUG [${resourceName}] - Partners Only field exists: ${!!partnerOnlyField}`);
+          
+          if (partnerOnlyField) {
+            log(`DEBUG [${resourceName}] - Partners Only field type: ${typeof partnerOnlyField}`);
+            log(`DEBUG [${resourceName}] - Partners Only field value: ${JSON.stringify(partnerOnlyField)}`);
+            
+            // Check the 'select' property
+            if (partnerOnlyField.select) {
+              log(`DEBUG [${resourceName}] - Select exists, value: ${JSON.stringify(partnerOnlyField.select)}`);
+              
+              // Check if the select name is "Y"
+              const isPartnerOnly = partnerOnlyField.select.name === "Y";
+              log(`DEBUG [${resourceName}] - Is partner only? ${isPartnerOnly}`);
+              
+              if (isPartnerOnly) {
+                log(`PARTNERS ONLY: Resource "${resourceName}" is marked as Partners Only with value Y`);
+              }
+              
+              return isPartnerOnly;
+            } else {
+              log(`DEBUG [${resourceName}] - No select property found in Partners Only field`);
+            }
           }
-          return isPartnerOnly;
+          
+          return false;
         })(),
                        
         date: properties["Last Updated"]?.date?.start || 
