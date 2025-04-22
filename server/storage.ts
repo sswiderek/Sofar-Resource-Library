@@ -308,6 +308,12 @@ export class MemStorage implements IStorage {
         console.log(`Filtering out excluded resource: ${resource.name}`);
         return false;
       }
+      
+      // Filter out resources marked as "Partners Only" in Notion
+      if (resource.partnersOnly === true) {
+        console.log(`Filtering out partners-only resource: ${resource.name}`);
+        return false;
+      }
     
       // Filter by content visibility if specified
       if (filter.contentVisibility && filter.contentVisibility.length > 0) {
@@ -871,6 +877,11 @@ export class DatabaseStorage implements IStorage {
     const filtered = allResources.filter(resource => {
       // Filter out resources that have been manually flagged for exclusion
       if (excludedResources.includes(resource.name)) {
+      // Filter out resources marked as "Partners Only" in Notion
+      if (resource.partnersOnly === true) {
+        console.log(`Filtering out partners-only resource: ${resource.name}`);
+        return false;
+      }
         console.log(`Filtering out excluded resource: ${resource.name}`);
         return false;
       }
