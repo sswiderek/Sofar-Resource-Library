@@ -152,7 +152,13 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                          "both",
                          
         // Check if this resource is "Partners Only"
-        partnersOnly: properties["Partners Only?"]?.select?.name === "Y",
+        partnersOnly: (() => {
+          const isPartnerOnly = properties["Partners Only?"]?.select?.name === "Y";
+          if (isPartnerOnly) {
+            log(`PARTNERS ONLY: Resource "${properties.Title?.title?.[0]?.text?.content || properties.Name?.title?.[0]?.text?.content || "Untitled"}" is marked as Partners Only`);
+          }
+          return isPartnerOnly;
+        })(),
                        
         date: properties["Last Updated"]?.date?.start || 
               properties.Date?.date?.start || 
