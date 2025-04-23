@@ -103,49 +103,7 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
       if (problematicResources.length > 0) {
         log(`IMPORTANT - Found these problematic resources from Notion API: ${problematicResources.join(', ')}`);
       }
-      
-      // CRITICAL DEBUG: Dump all property names for first 5 resources
-      log(`PARTNERS ONLY DEBUG - Dumping full property list for first 5 resources:`);
-      for (let i = 0; i < Math.min(5, response.results.length); i++) {
-        const page = response.results[i];
-        const properties = page.properties;
-        const resourceName = properties.Title?.title?.[0]?.text?.content || 
-                           properties.Name?.title?.[0]?.text?.content || 
-                           "Untitled Resource";
-        log(`Resource ${i+1}: ${resourceName}`);
-        log(`All property keys: ${Object.keys(properties).join(', ')}`);
-        
-        // Check specifically for Partners Only field
-        if (properties["Partners Only"]) {
-          log(`Found "Partners Only" field: ${JSON.stringify(properties["Partners Only"])}`);
-        }
-        
-        if (properties["Partners Only?"]) {
-          log(`Found "Partners Only?" field: ${JSON.stringify(properties["Partners Only?"])}`);
-        }
-        
-        // Check all properties with "partner" in the name
-        for (const key of Object.keys(properties)) {
-          if (key.toLowerCase().includes("partner")) {
-            log(`Found partner-related field "${key}": ${JSON.stringify(properties[key])}`);
-          }
-        }
-      }
     }
-    
-    // CRITICAL DEBUG: Show full JSON structure of first 2 pages
-    log("############ CRITICAL DEBUG ############");
-    log("Dumping FULL JSON of first 2 resource properties for debugging:");
-    for (let i = 0; i < Math.min(2, response.results.length); i++) {
-      try {
-        const page = response.results[i];
-        log(`\n------ Resource ${i+1} properties: ------`);
-        log(JSON.stringify(page.properties, null, 2));
-      } catch (err) {
-        log(`Error dumping properties: ${err}`);
-      }
-    }
-    log("############ END CRITICAL DEBUG ############");
     
     // Transform Notion response into our Resource schema
     const resources: InsertResource[] = response.results.map((page: any) => {
@@ -192,58 +150,6 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                          properties["Internal Use Only?"]?.select?.name === "Yes" ? "internal" : // For backward compatibility
                          properties["Internal Use Only?"]?.select?.name === "No" ? "external" : // For backward compatibility
                          "both",
-                         
-        // IMPORTANT FIX FOR PARTNERS ONLY FUNCTIONALITY
-        partnersOnly: (() => {
-          // Get the resource name for logging
-          const resourceName = properties.Title?.title?.[0]?.text?.content || 
-                              properties.Name?.title?.[0]?.text?.content || 
-                              "Untitled";
-          
-          // HARDCODED TEST: Try to force identification of these two resources
-          if (resourceName.includes("Pitch Deck") || resourceName.includes("User Guide")) {
-            log(`PARTNERS ONLY MATCH BY NAME: "${resourceName}" is matched by name`);
-            return true;
-          }
-          
-          // NOTE: After looking at the JSON dumps, we found that column may have various formats.
-          // Let's try to handle all possible formats by checking all fields in the properties
-          try {
-            for (const [fieldName, fieldValue] of Object.entries(properties)) {
-              // Check all fields for matches to "partner" in the name
-              if (fieldName.toLowerCase().includes("partner")) {
-                log(`DEBUG [${resourceName}] - Found partner-related field "${fieldName}": ${JSON.stringify(fieldValue)}`);
-                
-                // Check if it's a select field
-                if (fieldValue.select && fieldValue.select.name) {
-                  const selectValue = fieldValue.select.name;
-                  log(`DEBUG [${resourceName}] - Field "${fieldName}" has select value: "${selectValue}"`);
-                  
-                  // Check for various "yes" values
-                  if (["y", "yes", "true"].includes(selectValue.toLowerCase())) {
-                    log(`PARTNERS ONLY: Resource "${resourceName}" is marked as Partners Only with value "${selectValue}" in field "${fieldName}"`);
-                    return true;
-                  }
-                }
-                
-                // Check if it's a checkbox field
-                if (fieldValue.checkbox !== undefined) {
-                  const checkboxValue = fieldValue.checkbox;
-                  log(`DEBUG [${resourceName}] - Field "${fieldName}" has checkbox value: ${checkboxValue}`);
-                  
-                  if (checkboxValue === true) {
-                    log(`PARTNERS ONLY: Resource "${resourceName}" is marked as Partners Only with checkbox value true in field "${fieldName}"`);
-                    return true;
-                  }
-                }
-              }
-            }
-          } catch (error) {
-            log(`Error checking partnersOnly for "${resourceName}": ${error}`);
-          }
-          
-          return false;
-        })(),
                        
         date: properties["Last Updated"]?.date?.start || 
               properties.Date?.date?.start || 
