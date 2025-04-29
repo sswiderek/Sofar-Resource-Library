@@ -111,14 +111,10 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
                   <span className="sr-only">Resource options</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuContent align="start" className="w-44">
                 <DropdownMenuItem onClick={openInNotion} className="cursor-pointer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   <span>Edit in Notion</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={reportIssue} className="cursor-pointer">
-                  <span>Report tagging issue</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

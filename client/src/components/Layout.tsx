@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { BarChart3, Home, Settings, User } from "lucide-react";
+import { Database, ExternalLink } from "lucide-react";
 import { FeedbackDialog } from "./FeedbackDialog";
 
 interface LayoutProps {
@@ -18,26 +18,32 @@ export default function Layout({ children }: LayoutProps) {
     <div className="flex flex-col min-h-screen bg-neutral-50">
       <header className="bg-[#1e5bb0] shadow-md">
         <div className="py-3 flex items-center justify-between max-w-7xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center">
-            <img 
-              src="/sofar-logo.png" 
-              alt="Sofar Logo" 
-              className="h-8 w-auto mr-2 sm:mr-3 bg-white rounded-md p-1"
-            />
-            <h1 className="text-base xs:text-lg sm:text-xl font-semibold text-white truncate">
-              <span className="hidden xs:inline">Sofar </span>Resource Library
-            </h1>
-          </div>
+          <Link href="/">
+            <div className="flex items-center cursor-pointer hover:opacity-90">
+              <img 
+                src="/sofar-logo.png" 
+                alt="Sofar Logo" 
+                className="h-8 w-auto mr-2 sm:mr-3 bg-white rounded-md p-1"
+              />
+              <h1 className="text-base xs:text-lg sm:text-xl font-semibold text-white truncate">
+                <span className="hidden xs:inline">Sofar </span>Resource Library
+              </h1>
+            </div>
+          </Link>
           
           <nav className="flex items-center">
             <ul className="flex items-center space-x-2 xs:space-x-4 sm:space-x-6">
               <li>
-                <Link href="/">
-                  <span className="flex items-center text-white hover:text-blue-100 font-medium cursor-pointer">
-                    <Home className="h-4 w-4 mr-1" />
-                    <span className="inline-block mt-0.5 hidden xs:inline">Home</span>
-                  </span>
-                </Link>
+                <a 
+                  href={import.meta.env.VITE_NOTION_DATABASE_URL || "https://notion.so"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center text-white hover:text-blue-100 font-medium"
+                >
+                  <Database className="h-4 w-4 mr-1" />
+                  <span className="inline-block mt-0.5 hidden xs:inline">Notion Database</span>
+                  <ExternalLink className="h-3 w-3 ml-1 opacity-75" />
+                </a>
               </li>
               {/* Analytics link hidden as requested, still accessible directly at /admin/analytics */}
               <li className="ml-1 xs:ml-2 sm:ml-3">
