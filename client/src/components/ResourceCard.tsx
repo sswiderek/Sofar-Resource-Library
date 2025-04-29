@@ -31,22 +31,17 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
 
   return (
     <Card 
-      className={`bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border h-full flex flex-col cursor-pointer
+      className={`bg-white overflow-hidden hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] border h-full flex flex-col cursor-pointer relative
         ${isInternalOnly ? 'border-amber-300' : 'border-neutral-200 hover:border-blue-200'}`}
       onClick={handleResourceClick}
     >
       <div className={`h-1.5 ${getResourceGradient(resource.type)}`}></div>
-      {isInternalOnly && (
-        <div 
-          className="bg-amber-50 px-3 py-1.5 border-b border-amber-100 flex items-center justify-center" 
-          title="This resource is for internal use only and should not be shared with external parties"
-        >
-          <div className="flex items-center text-amber-700 text-xs font-medium cursor-help">
-            <Lock className="h-3 w-3 mr-1" />
-            <span>Internal Use Only</span>
-          </div>
-        </div>
-      )}
+      <div className={`absolute top-1.5 right-1.5 z-10 ${isInternalOnly ? 'block' : 'hidden'}`}>
+        <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 px-1.5 py-0.5 text-[10px] font-medium flex items-center">
+          <Lock className="h-2.5 w-2.5 mr-1" />
+          Internal Only
+        </Badge>
+      </div>
       <CardContent className="p-3 sm:p-5 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3 gap-2">
           <Badge variant="outline" className={`${getResourceTypeClasses(resource.type)} border px-2 py-1 rounded-md text-xs font-medium max-w-[65%] truncate`}>
