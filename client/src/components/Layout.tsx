@@ -35,7 +35,7 @@ export default function Layout({ children }: LayoutProps) {
             <ul className="flex items-center space-x-2 xs:space-x-4 sm:space-x-6">
               <li>
                 <a 
-                  href={import.meta.env.VITE_NOTION_DATABASE_URL || "https://notion.so"} 
+                  href="https://www.notion.so/sofarocean/1ac8ff95945081eda6d6d0538f2eed87?v=1ac8ff9594508161bf7c000c0d182979&pvs=4" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center text-white hover:text-blue-100 font-medium"
