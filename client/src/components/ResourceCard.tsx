@@ -1,9 +1,10 @@
-import { ArrowRight, Eye, Lock } from "lucide-react";
+import { ArrowRight, Eye, Lock, ExternalLink, Edit } from "lucide-react";
 import { Resource } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getResourceTypeClasses, getResourceGradient } from "@/lib/resourceTypeColors";
 import { useResourceTracking } from "@/hooks/use-resource-tracking";
+import { useNotionDatabase } from "@/hooks/use-notion-database";
 import { useState } from "react";
 
 interface ResourceCardProps {
@@ -12,6 +13,7 @@ interface ResourceCardProps {
 
 export default function ResourceCard({ resource }: ResourceCardProps) {
   const { trackView } = useResourceTracking();
+  const { url: notionDatabaseUrl, isAvailable: notionAvailable } = useNotionDatabase();
   const [viewCounted, setViewCounted] = useState(false);
 
   // Track view when resource is clicked
@@ -24,6 +26,15 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
     
     // Open the resource URL in a new tab
     window.open(resource.url, "_blank", "noopener,noreferrer");
+  };
+  
+  // Handle edit in Notion click
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    
+    if (notionDatabaseUrl) {
+      window.open(notionDatabaseUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   // Check if resource is internal only
@@ -70,9 +81,21 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
             <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 opacity-70" />
             <span>{resource.viewCount || 0} views</span>
           </div>
-          <div className="flex items-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700">
-            <span>View Resource</span>
-            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
+          <div className="flex items-center gap-3">
+            {notionAvailable && (
+              <button 
+                onClick={handleEditClick}
+                className="flex items-center text-xs sm:text-sm font-medium text-neutral-500 hover:text-neutral-800 transition-colors"
+                title="Edit in Notion Database"
+              >
+                <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+                <span className="hidden sm:inline">Edit</span>
+              </button>
+            )}
+            <div className="flex items-center text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700">
+              <span>View Resource</span>
+              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
+            </div>
           </div>
         </div>
       </CardContent>
