@@ -31,7 +31,6 @@ import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
-import Footer from "@/components/Footer";
 import { ResourceLoadingGrid, ResourceLoadingList } from "@/components/LoadingSkeleton";
 import { Resource } from "@shared/schema";
 import {
@@ -453,9 +452,6 @@ export default function Home() {
           </div>
         )}
       </div>
-      
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

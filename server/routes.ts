@@ -367,40 +367,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     res.json({ isAdmin: false });
   });
-  
-  // Add endpoint to get the Notion database URL for resources
-  app.get("/api/notion/database-url", (_req: Request, res: Response) => {
-    try {
-      const databaseId = process.env.NOTION_DATABASE_ID;
-      
-      if (!databaseId) {
-        return res.status(404).json({ 
-          message: "Notion database ID not configured",
-          success: false 
-        });
-      }
-      
-      // Format database ID if needed (some Notion IDs don't have hyphens)
-      let formattedDatabaseId = databaseId;
-      if (databaseId.length === 32 && !databaseId.includes('-')) {
-        formattedDatabaseId = `${databaseId.slice(0, 8)}-${databaseId.slice(8, 12)}-${databaseId.slice(12, 16)}-${databaseId.slice(16, 20)}-${databaseId.slice(20)}`;
-      }
-      
-      // Construct the Notion URL to the database
-      const notionUrl = `https://notion.so/${formattedDatabaseId}`;
-      
-      return res.json({ 
-        url: notionUrl,
-        success: true 
-      });
-    } catch (error) {
-      log(`Error getting Notion database URL: ${error instanceof Error ? error.message : String(error)}`);
-      return res.status(500).json({
-        message: "Failed to get Notion database URL",
-        success: false
-      });
-    }
-  });
 
   // Middleware to check if user is admin
   const checkAdminAuth = (req: Request, res: Response, next: NextFunction) => {
