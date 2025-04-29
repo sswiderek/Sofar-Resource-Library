@@ -39,10 +39,10 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
     
     // Open Notion page if notionId is available
     if (resource.notionId) {
-      window.open(`https://notion.so/${resource.notionId.replace(/-/g, '')}`, "_blank", "noopener,noreferrer");
+      window.open(`https://www.notion.so/sofarocean/${resource.notionId.replace(/-/g, '')}`, "_blank", "noopener,noreferrer");
     } else {
       // Fallback to the Notion database view
-      window.open(import.meta.env.VITE_NOTION_DATABASE_URL || "https://notion.so", "_blank", "noopener,noreferrer");
+      window.open(import.meta.env.VITE_NOTION_DATABASE_URL || "https://www.notion.so/sofarocean", "_blank", "noopener,noreferrer");
     }
   };
 
