@@ -54,9 +54,9 @@ export default function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-3 sm:px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-xs sm:text-sm text-neutral-600">
-              &copy; {new Date().getFullYear()} Sofar Ocean. All rights reserved.
+              &copy; {new Date().getFullYear()} Sofar Ocean Technologies
             </div>
-            <div className="mt-2 md:mt-0">
+            <div className="flex items-center gap-4 mt-2 md:mt-0">
               <span className="text-xs sm:text-sm text-neutral-500">
                 Last updated: {new Date().toLocaleDateString()}
               </span>
