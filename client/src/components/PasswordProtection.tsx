@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Lock, Waves } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CORRECT_PASSWORD = 'sofar2025';
@@ -97,8 +97,12 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
             transition={{ delay: 0.2 }}
             className="relative z-10 w-full max-w-md rounded-lg bg-white p-8 shadow-xl"
           >
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-              <Waves className="h-8 w-8 text-blue-600" />
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
+              <img 
+                src="/sofar-logo.png" 
+                alt="Sofar Logo" 
+                className="h-full w-auto object-contain"
+              />
             </div>
             
             <h2 className="mb-2 text-center text-2xl font-bold text-gray-900">Sofar Resource Library</h2>
