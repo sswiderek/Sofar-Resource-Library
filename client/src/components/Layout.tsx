@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { Database, ExternalLink } from "lucide-react";
-import { FeedbackDialog } from "./FeedbackDialog";
+import { FloatingFeedbackButton } from "./FloatingFeedbackButton";
 import { AddResourceDialog } from "./AddResourceDialog";
 
 interface LayoutProps {
@@ -50,9 +50,6 @@ export default function Layout({ children }: LayoutProps) {
                 </a>
               </li>
               {/* Analytics link hidden as requested, still accessible directly at /admin/analytics */}
-              <li className="ml-1 xs:ml-2 sm:ml-3">
-                <FeedbackDialog />
-              </li>
             </ul>
           </nav>
         </div>
@@ -74,6 +71,9 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </footer>
+      
+      {/* Floating Feedback Button */}
+      <FloatingFeedbackButton />
     </div>
   );
 }
