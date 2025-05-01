@@ -31,7 +31,6 @@ import FilterSidebar from "@/components/FilterSidebar";
 import ResourceCard from "@/components/ResourceCard";
 import ResourceList from "@/components/ResourceList";
 import QuestionBox from "@/components/QuestionBox";
-import AddResourceUrl from "@/components/AddResourceUrl";
 import { ResourceLoadingGrid, ResourceLoadingList } from "@/components/LoadingSkeleton";
 import { Resource } from "@shared/schema";
 import {
@@ -242,15 +241,8 @@ export default function Home() {
           </div>
         )}
         
-        {/* AI Features */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <QuestionBox resources={resources} />
-          </div>
-          <div className="w-full sm:w-[350px]">
-            <AddResourceUrl onResourceAdded={refetch} />
-          </div>
-        </div>
+        {/* AI Question Box */}
+        <QuestionBox resources={resources} />
         
         {/* View controls, sort and sync buttons */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 mt-6 bg-white p-3 sm:p-4 rounded-lg border border-neutral-200 shadow-sm gap-3">

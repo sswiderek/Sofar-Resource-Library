@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { Database, ExternalLink } from "lucide-react";
 import { FeedbackDialog } from "./FeedbackDialog";
+import { AddResourceDialog } from "./AddResourceDialog";
 
 interface LayoutProps {
   children: ReactNode;
@@ -34,6 +35,9 @@ export default function Layout({ children }: LayoutProps) {
           <nav className="flex items-center">
             <ul className="flex items-center space-x-2 xs:space-x-4 sm:space-x-6">
               <li>
+                <AddResourceDialog />
+              </li>
+              <li className="ml-1 xs:ml-2 sm:ml-3">
                 <a 
                   href="https://www.notion.so/sofarocean/1ac8ff95945081eda6d6d0538f2eed87?v=1ac8ff9594508161bf7c000c0d182979&pvs=4" 
                   target="_blank" 
