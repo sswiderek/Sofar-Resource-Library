@@ -38,9 +38,9 @@ export function AddResourceDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="text-sm font-medium gap-1.5 h-8 bg-white hover:bg-blue-50 text-blue-700 border border-blue-100 shadow-sm transition-all">
-          <PlusCircle className="h-4 w-4" />
-          Add Resource
+        <Button variant="secondary" className="text-sm font-medium gap-1.5 h-8 rounded-md bg-white hover:bg-blue-50 text-blue-700 border border-blue-50 shadow transition-all flex items-center">
+          <PlusCircle className="h-3.5 w-3.5 mr-1" />
+          <span>Add Resource</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

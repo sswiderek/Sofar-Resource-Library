@@ -83,10 +83,18 @@ export function FloatingFeedbackButton() {
       <div className="bg-white rounded-full shadow-lg transition-transform hover:scale-105">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="secondary" className="text-sm font-medium gap-1.5 h-10 w-10 rounded-full p-0 bg-white hover:bg-blue-50 text-blue-700 border border-blue-100 shadow-md transition-all">
-              <MessageSquare className="h-5 w-5" />
-              <span className="sr-only">Feedback</span>
-            </Button>
+            <div className="group relative">
+              <Button 
+                variant="secondary" 
+                className="text-sm font-medium gap-1.5 h-12 w-12 rounded-full p-0 bg-[#1e5bb0] hover:bg-blue-700 text-white border-2 border-blue-200 shadow-lg transition-all"
+              >
+                <MessageSquare className="h-6 w-6" />
+                <span className="sr-only">Feedback</span>
+              </Button>
+              <span className="absolute -top-10 right-0 whitespace-nowrap bg-white text-blue-700 font-medium text-sm px-2 py-1 rounded shadow-md border border-blue-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                Send Feedback
+              </span>
+            </div>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>

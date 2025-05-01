@@ -42,11 +42,11 @@ export default function Layout({ children }: LayoutProps) {
                   href="https://www.notion.so/sofarocean/1ac8ff95945081eda6d6d0538f2eed87?v=1ac8ff9594508161bf7c000c0d182979&pvs=4" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center text-white hover:text-blue-100 font-medium"
+                  className="flex items-center h-8 px-3 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
                 >
-                  <Database className="h-4 w-4 mr-1" />
-                  <span className="inline-block mt-0.5 hidden xs:inline">Notion Database</span>
-                  <ExternalLink className="h-3 w-3 ml-1 opacity-75" />
+                  <Database className="h-4 w-4 mr-1.5" />
+                  <span className="inline-block font-medium text-sm hidden xs:inline">Notion Database</span>
+                  <ExternalLink className="h-3 w-3 ml-1.5 opacity-75" />
                 </a>
               </li>
               {/* Analytics link hidden as requested, still accessible directly at /admin/analytics */}
