@@ -8,6 +8,7 @@ import AdminPage from "@/pages/admin-page";
 import AdminDashboard from "@/pages/admin";
 import AnalyticsDashboard from "@/pages/admin/analytics";
 import Layout from "@/components/Layout";
+import { PasswordProtection } from "@/components/PasswordProtection";
 
 function Router() {
   return (
@@ -26,8 +27,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <PasswordProtection>
+        <Router />
+        <Toaster />
+      </PasswordProtection>
     </QueryClientProvider>
   );
 }
