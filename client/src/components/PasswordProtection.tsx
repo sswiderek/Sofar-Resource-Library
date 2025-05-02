@@ -16,6 +16,25 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
   const [error, setError] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Add CSS keyframes to document for the background animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes gradientBackground {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      @keyframes shimmer {
+        0% { opacity: 0.3; }
+        50% { opacity: 0.6; }
+        100% { opacity: 0.3; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
 
   useEffect(() => {
     // Check if already authenticated via localStorage
@@ -63,32 +82,47 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-800 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden"  
+          style={{
+            background: `radial-gradient(circle at 30% 50%, rgba(30, 64, 175, 0.9), rgba(29, 78, 216, 0.6) 50%, rgba(30, 58, 138, 0.8)), 
+                       linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #1e40af 100%)`,
+            backgroundSize: '200% 200%',
+            animation: 'gradientBackground 15s ease infinite'
+          }}
         >
+          {/* Ocean-inspired background elements */}
+          {/* Light effect overlay */}
+          <div className="absolute inset-0 opacity-60" style={{
+            background: `radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0) 60%), 
+                         radial-gradient(circle at 30% 80%, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 50%)`,
+            animation: 'shimmer 5s infinite ease-in-out'
+          }}></div>
+          
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-blue-500 opacity-20">
-              <div className="absolute inset-0 flex">
-                {[...Array(10)].map((_, i) => (
-                  <motion.div 
-                    key={i}
-                    className="h-16 w-16 bg-white rounded-full opacity-10"
-                    style={{ 
-                      x: `${i * 10}%`, 
-                      y: Math.sin(i) * 10 
-                    }}
-                    animate={{ 
-                      y: [0, -10, 0],
-                      opacity: [0.1, 0.2, 0.1]
-                    }}
-                    transition={{ 
-                      repeat: Infinity, 
-                      duration: 3 + (i % 3), 
-                      delay: i * 0.2 
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+            {/* Floating particles that resemble bubbles */}
+            {[...Array(20)].map((_, i) => (
+              <motion.div 
+                key={i}
+                className="absolute rounded-full bg-white"
+                style={{ 
+                  height: `${Math.max(4, Math.min(12, Math.random() * 8))}px`,
+                  width: `${Math.max(4, Math.min(12, Math.random() * 8))}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  opacity: 0.2 + (Math.random() * 0.3)
+                }}
+                animate={{ 
+                  y: [0, -30],
+                  opacity: [0.2, 0]
+                }}
+                transition={{ 
+                  repeat: Infinity, 
+                  duration: 3 + (Math.random() * 5), 
+                  delay: Math.random() * 5,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
           </div>
           
           <motion.div 
@@ -97,7 +131,7 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
             transition={{ delay: 0.2 }}
             className="relative z-10 w-full max-w-md rounded-lg bg-white p-8 shadow-xl"
           >
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
               <img 
                 src="/sofar-logo.png" 
                 alt="Sofar Logo" 
@@ -106,8 +140,9 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
             </div>
             
             <h2 className="mb-2 text-center text-2xl font-bold text-gray-900">Sofar Resource Library</h2>
-            <p className="mb-6 text-center text-sm text-gray-600">
-              This is a protected resource. Please enter the password to continue.
+            <p className="mb-6 text-center text-gray-600">
+              Welcome to Sofar's curated collection of marine intelligence resources. 
+              <span className="block mt-1 text-blue-600 font-medium">Enter your password to explore.</span>
             </p>
             
             <form onSubmit={handleSubmit} id="password-form" className="space-y-4">
