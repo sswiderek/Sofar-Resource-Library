@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,6 +17,7 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
   const [error, setError] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     // Check if already authenticated via localStorage
@@ -65,33 +67,9 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
           animate={{ opacity: 1 }} 
           className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-blue-950 via-blue-900 to-blue-800 p-4 overflow-hidden"
         >
+          {/* Simple gradient background without animations */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-[url('/wave-pattern.svg')] bg-repeat-x bg-bottom opacity-5"></div>
-            <div className="absolute bottom-0 left-0 right-0 h-80 bg-gradient-to-t from-blue-800 to-transparent opacity-20"></div>
-            <div className="absolute inset-0">
-              {[...Array(5)].map((_, i) => (
-                <motion.div 
-                  key={i}
-                  className="absolute rounded-full bg-white"
-                  style={{ 
-                    width: `${8 + (i * 4)}px`,
-                    height: `${8 + (i * 4)}px`,
-                    top: `${20 + (i * 15)}%`,
-                    left: `${10 + (i * 20)}%`,
-                    opacity: 0.03 + (i * 0.01)
-                  }}
-                  animate={{ 
-                    y: [0, -15, 0],
-                    opacity: [0.03 + (i * 0.01), 0.05 + (i * 0.01), 0.03 + (i * 0.01)]
-                  }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    duration: 4 + i, 
-                    delay: i * 0.5
-                  }}
-                />
-              ))}
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800"></div>
           </div>
           
           <motion.div 
@@ -149,14 +127,24 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
               <div className="text-center mt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    alert('Please message the #marketing Slack channel for password assistance.');
-                  }}
+                  onClick={() => setShowForgotPassword(true)}
                   className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
                 >
                   Forgot password?
                 </button>
               </div>
+              
+              <AlertDialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+                <AlertDialogContent className="max-w-xs"> 
+                  <AlertDialogTitle className="text-center text-blue-600">Password Assistance</AlertDialogTitle>
+                  <AlertDialogDescription className="text-center">
+                    Please message the #marketing Slack channel for password assistance.
+                  </AlertDialogDescription>
+                  <AlertDialogFooter className="flex justify-center">
+                    <AlertDialogAction className="bg-blue-600 hover:bg-blue-700">Got it</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </form>
             
             <div className="mt-6 text-center text-xs text-gray-500">
