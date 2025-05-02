@@ -63,31 +63,34 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-800 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-blue-950 via-blue-900 to-blue-800 p-4 overflow-hidden"
         >
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-blue-500 opacity-20">
-              <div className="absolute inset-0 flex">
-                {[...Array(10)].map((_, i) => (
-                  <motion.div 
-                    key={i}
-                    className="h-16 w-16 bg-white rounded-full opacity-10"
-                    style={{ 
-                      x: `${i * 10}%`, 
-                      y: Math.sin(i) * 10 
-                    }}
-                    animate={{ 
-                      y: [0, -10, 0],
-                      opacity: [0.1, 0.2, 0.1]
-                    }}
-                    transition={{ 
-                      repeat: Infinity, 
-                      duration: 3 + (i % 3), 
-                      delay: i * 0.2 
-                    }}
-                  />
-                ))}
-              </div>
+            <div className="absolute inset-0 bg-[url('/wave-pattern.svg')] bg-repeat-x bg-bottom opacity-5"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-80 bg-gradient-to-t from-blue-800 to-transparent opacity-20"></div>
+            <div className="absolute inset-0">
+              {[...Array(5)].map((_, i) => (
+                <motion.div 
+                  key={i}
+                  className="absolute rounded-full bg-white"
+                  style={{ 
+                    width: `${8 + (i * 4)}px`,
+                    height: `${8 + (i * 4)}px`,
+                    top: `${20 + (i * 15)}%`,
+                    left: `${10 + (i * 20)}%`,
+                    opacity: 0.03 + (i * 0.01)
+                  }}
+                  animate={{ 
+                    y: [0, -15, 0],
+                    opacity: [0.03 + (i * 0.01), 0.05 + (i * 0.01), 0.03 + (i * 0.01)]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 4 + i, 
+                    delay: i * 0.5
+                  }}
+                />
+              ))}
             </div>
           </div>
           
@@ -97,7 +100,7 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
             transition={{ delay: 0.2 }}
             className="relative z-10 w-full max-w-md rounded-lg bg-white p-8 shadow-xl"
           >
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center bg-white rounded-md p-1 shadow-sm">
               <img 
                 src="/sofar-logo.png" 
                 alt="Sofar Logo" 
