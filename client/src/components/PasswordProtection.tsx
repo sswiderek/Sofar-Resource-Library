@@ -145,6 +145,18 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
               >
                 Enter Resource Library
               </Button>
+              
+              <div className="text-center mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    alert('Please message the #marketing Slack channel for password assistance.');
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
             </form>
             
             <div className="mt-6 text-center text-xs text-gray-500">
