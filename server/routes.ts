@@ -108,7 +108,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messagingStages: req.query.messagingStages ? (req.query.messagingStages as string).split(',') : [],
         contentVisibility: req.query.contentVisibility ? (req.query.contentVisibility as string).split(',') : [],
         solutions: req.query.solutions ? (req.query.solutions as string).split(',') : [],
-        newHireOptions: req.query.newHireOptions ? (req.query.newHireOptions as string).split(',') : [],
         search: req.query.search as string || '',
         sortBy: req.query.sortBy as 'popularity' | 'newest' | 'oldest' | undefined,
       };
@@ -261,7 +260,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           messagingStages: [],
           contentVisibility: [],
           solutions: [],
-          newHireOptions: ["Yes", "No"],
           lastSynced: lastSyncTime
         });
       }
@@ -291,18 +289,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - ${contentVisibility.length} visibility options
         - ${solutions.length} solutions`);
       
-      // For the newHireOptions, we always send Yes/No options
-      const newHireOptions = ["Yes", "No"];
-      
-      log(`Metadata extracted: 
-        - ${types.length} types
-        - ${products.length} products
-        - ${audiences.length} audiences
-        - ${messagingStages.length} stages
-        - ${contentVisibility.length} visibility options
-        - ${solutions.length} solutions
-        - ${newHireOptions.length} new hire options`);
-        
       res.json({
         types,
         products,
@@ -310,7 +296,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messagingStages,
         contentVisibility,
         solutions,
-        newHireOptions,
         lastSynced: lastSyncTime
       });
     } catch (error) {

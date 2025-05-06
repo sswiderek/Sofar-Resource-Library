@@ -151,9 +151,6 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                          properties["Internal Use Only?"]?.select?.name === "No" ? "external" : // For backward compatibility
                          "both",
                        
-        // Map "New Hire?" checkbox to boolean
-        newHire: properties["New Hire?"]?.checkbox === true,
-                       
         date: properties["Last Updated"]?.date?.start || 
               properties.Date?.date?.start || 
               new Date().toISOString().split('T')[0],

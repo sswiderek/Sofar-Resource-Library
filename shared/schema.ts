@@ -28,7 +28,6 @@ export const resources = pgTable("resources", {
   teamRelevancy: text("team_relevancy").array().notNull(), // Keeping for backwards compatibility
   messagingStage: text("messaging_stage").notNull(),
   contentVisibility: text("content_visibility").notNull().default("both"), // "internal", "external", or "both"
-  newHire: boolean("new_hire").default(false).notNull(), // Maps to "New Hire?" checkbox in Notion
   date: text("date").notNull(),
   url: text("url").notNull(),
   description: text("description").notNull(),
@@ -77,7 +76,6 @@ export const resourceFilterSchema = z.object({
   messagingStages: z.array(z.string()).optional(),  // Maps to "Stage in Buyer's Journey" in Notion
   contentVisibility: z.array(z.string()).optional(), // Maps to "Internal Use Only?" in Notion
   solutions: z.array(z.string()).optional(),        // Major product groupings (Wayfinder, Spotter, Smart Mooring)
-  newHireOptions: z.array(z.string()).optional(),   // Maps to "New Hire?" checkbox in Notion (Yes/No)
   search: z.string().optional(),
   sortBy: z.enum(["relevance", "popularity", "newest", "oldest"]).optional(),
 });
