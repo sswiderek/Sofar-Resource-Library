@@ -482,7 +482,10 @@ export default function FilterSidebar({
           </h3>
           <div className="space-y-2.5">
             {metadata.newHireOptions && metadata.newHireOptions.length > 0 ? (
-              metadata.newHireOptions.map((option: string) => (
+              // Sort to ensure "Yes" appears before "No"
+              [...metadata.newHireOptions].sort((a, b) => 
+                a === "Yes" ? -1 : b === "Yes" ? 1 : 0
+              ).map((option: string) => (
                 <div key={option} className="flex items-center">
                   <Checkbox
                     id={`newhire-${String(option).toLowerCase().replace(/\s+/g, '-')}`}
