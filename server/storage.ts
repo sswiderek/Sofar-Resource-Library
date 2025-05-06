@@ -946,6 +946,35 @@ export class DatabaseStorage implements IStorage {
       if (filter.messagingStages && filter.messagingStages.length > 0 && !filter.messagingStages.includes(resource.messagingStage)) {
         return false;
       }
+      
+      // Filter by New Hire option if specified
+      if (filter.newHireOptions && filter.newHireOptions.length > 0) {
+        if (filter.newHireOptions.includes("Yes") && filter.newHireOptions.includes("No")) {
+          // Both options selected - no filtering needed
+        }
+        else if (filter.newHireOptions.includes("Yes")) {
+          // Only "Yes" selected - must have newHire = true
+          if (!resource.newHire) {
+            console.log(`Filtering out resource ${resource.id} (${resource.name}) - not a new hire resource`);
+            return false;
+          }
+        }
+        else if (filter.newHireOptions.includes("No")) {
+          // Only "No" selected - must have newHire = false
+          if (resource.newHire) {
+            console.log(`Filtering out resource ${resource.id} (${resource.name}) - is a new hire resource`);
+            return false;
+          }
+        }
+        
+        // Log if this is the special resource we're tracking
+        if (resource.id === 1372) {
+          console.log(`Debug - Resource ${resource.id} (${resource.name})`);
+          console.log(`  - newHire value: ${resource.newHire}`);
+          console.log(`  - Filters applied: ${filter.newHireOptions.join(', ')}`);
+          console.log(`  - Resource will be included in results`);
+        }
+      }
 
       // Filter by search term if specified
       if (filter.search && filter.search.trim() !== '') {
