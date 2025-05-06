@@ -356,6 +356,14 @@ export class MemStorage implements IStorage {
         // Convert boolean newHire to "Yes"/"No" string
         const newHireValue = resource.newHire ? "Yes" : "No";
         
+        // Debug logging to help diagnose issues with newHire filtering
+        if (resource.id === 1372) { // The resource we know has newHire=true
+          console.log(`Debug - New Hire filtering for resource ${resource.id}:`);
+          console.log(`  - Resource newHire value: ${resource.newHire} (${newHireValue})`);
+          console.log(`  - Requested filter values: ${filter.newHireOptions.join(', ')}`);
+          console.log(`  - Will be included: ${filter.newHireOptions.includes(newHireValue)}`);
+        }
+        
         // Check if the filter includes this value
         if (!filter.newHireOptions.includes(newHireValue)) {
           return false;

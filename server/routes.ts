@@ -108,6 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messagingStages: req.query.messagingStages ? (req.query.messagingStages as string).split(',') : [],
         contentVisibility: req.query.contentVisibility ? (req.query.contentVisibility as string).split(',') : [],
         solutions: req.query.solutions ? (req.query.solutions as string).split(',') : [],
+        newHireOptions: req.query.newHireOptions ? (req.query.newHireOptions as string).split(',') : [],
         search: req.query.search as string || '',
         sortBy: req.query.sortBy as 'popularity' | 'newest' | 'oldest' | undefined,
       };
