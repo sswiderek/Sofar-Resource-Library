@@ -799,14 +799,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createResource(resource: InsertResource): Promise<Resource> {
-    const [result] = await db.insert(resources).values(resource).returning();
+    // Ensure newHire has a default value of "No" if not provided
+    const resourceWithDefaults = {
+      ...resource,
+      newHire: resource.newHire || "No"
+    };
+    const [result] = await db.insert(resources).values(resourceWithDefaults).returning();
     return result;
   }
 
   async updateResource(id: number, resourceUpdate: Partial<InsertResource>): Promise<Resource | undefined> {
+    // Ensure newHire has a default value of "No" if it's being updated to null
+    const updatedValues = {
+      ...resourceUpdate,
+      // Only set default if newHire is included in the update and is null/undefined
+      ...(('newHire' in resourceUpdate && !resourceUpdate.newHire) ? { newHire: "No" } : {})
+    };
+    
     const [result] = await db
       .update(resources)
-      .set(resourceUpdate)
+      .set(updatedValues)
       .where(eq(resources.id, id))
       .returning();
     return result;
