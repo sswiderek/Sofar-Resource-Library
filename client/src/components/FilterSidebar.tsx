@@ -15,6 +15,7 @@ interface Metadata {
   messagingStages: string[]; // Maps to "Stage in Buyer's Journey" in Notion
   contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
   solutions: string[];  // Maps to "Solution" in Notion
+  newHireOptions: string[]; // Maps to "New Hire?" checkbox in Notion
   lastSynced?: string;
 }
 
@@ -84,6 +85,7 @@ export default function FilterSidebar({
     messagingStages: [],
     contentVisibility: [],
     solutions: [],
+    newHireOptions: [],
   };
 
   // Handle search input with debounce and auto-switch to "Relevance" sort when searching
@@ -105,7 +107,7 @@ export default function FilterSidebar({
 
   // Type-safe checkbox change handler
   const handleCheckboxChange = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions' | 'newHireOptions',
     value: string,
     checked: boolean
   ) => {
@@ -122,7 +124,7 @@ export default function FilterSidebar({
 
   // Type-safe helper function to check if a value is selected
   const isSelected = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions' | 'newHireOptions',
     value: string
   ) => {
     return filter[category]?.includes(value) || false;

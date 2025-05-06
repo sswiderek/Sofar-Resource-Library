@@ -8,6 +8,7 @@ export interface ResourceFilters {
   messagingStages: string[];  // Maps to "Stage in Buyer's Journey" in Notion
   contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
   solutions: string[];        // Maps to Solution in Notion (major product groupings)
+  newHireOptions: string[];   // Maps to "New Hire?" checkbox in Notion (Yes/No)
   search: string;
   sortBy?: 'relevance' | 'popularity' | 'newest' | 'oldest'; // Optional sort parameter
 }
@@ -20,6 +21,7 @@ export const initialFilters: ResourceFilters = {
   messagingStages: [],
   contentVisibility: [], // No default selection for content visibility
   solutions: [],
+  newHireOptions: [],    // No default selection for new hire options
   search: '',
   sortBy: 'newest', // Setting "Newest First" as the default sort
 };
@@ -50,6 +52,10 @@ export const buildFilterQueryString = (filters: ResourceFilters): string => {
   
   if (filters.solutions.length > 0) {
     params.append('solutions', filters.solutions.join(','));
+  }
+  
+  if (filters.newHireOptions && filters.newHireOptions.length > 0) {
+    params.append('newHireOptions', filters.newHireOptions.join(','));
   }
 
   if (filters.search) {
