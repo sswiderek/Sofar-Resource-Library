@@ -892,10 +892,37 @@ export class DatabaseStorage implements IStorage {
       "Spotter Pitch Deck"
     ];
     
-    // Fetch all resources first - more optimal DB solutions would involve
-    // building the query with WHERE clauses, but this maintains compatibility with existing code
-    const allResources = await this.getResources();
-    console.log(`Total resources before filtering: ${allResources.length}`);
+    // Start building a SQL query
+    let query = db.select().from(resources);
+    
+    // Filter by newHireOptions directly in SQL
+    if (filter.newHireOptions && filter.newHireOptions.length > 0) {
+      console.log(`Applying New Hire filter with options: ${filter.newHireOptions.join(', ')}`);
+      
+      if (filter.newHireOptions.includes("Yes") && !filter.newHireOptions.includes("No")) {
+        // Only "Yes" selected - must have newHire = true
+        console.log("Filtering for newHire = true only");
+        query = query.where(eq(resources.newHire, true));
+      } 
+      else if (filter.newHireOptions.includes("No") && !filter.newHireOptions.includes("Yes")) {
+        // Only "No" selected - must have newHire = false
+        console.log("Filtering for newHire = false only");
+        query = query.where(eq(resources.newHire, false));
+      }
+      // If both Yes and No are selected, no need to filter
+    }
+    
+    // Execute the query
+    const allResources = await query;
+    console.log(`Total resources after database query: ${allResources.length}`);
+    
+    // Debug our test resource
+    const testResource = allResources.find(r => r.id === 1372);
+    if (testResource) {
+      console.log(`Found test resource: ${testResource.name} with newHire=${testResource.newHire}`);
+    } else {
+      console.log(`Test resource with ID 1372 was NOT found in the query results`);
+    }
     
     const filtered = allResources.filter(resource => {
       // Filter out resources that have been manually flagged for exclusion
@@ -947,34 +974,7 @@ export class DatabaseStorage implements IStorage {
         return false;
       }
       
-      // Filter by New Hire option if specified
-      if (filter.newHireOptions && filter.newHireOptions.length > 0) {
-        if (filter.newHireOptions.includes("Yes") && filter.newHireOptions.includes("No")) {
-          // Both options selected - no filtering needed
-        }
-        else if (filter.newHireOptions.includes("Yes")) {
-          // Only "Yes" selected - must have newHire = true
-          if (!resource.newHire) {
-            console.log(`Filtering out resource ${resource.id} (${resource.name}) - not a new hire resource`);
-            return false;
-          }
-        }
-        else if (filter.newHireOptions.includes("No")) {
-          // Only "No" selected - must have newHire = false
-          if (resource.newHire) {
-            console.log(`Filtering out resource ${resource.id} (${resource.name}) - is a new hire resource`);
-            return false;
-          }
-        }
-        
-        // Log if this is the special resource we're tracking
-        if (resource.id === 1372) {
-          console.log(`Debug - Resource ${resource.id} (${resource.name})`);
-          console.log(`  - newHire value: ${resource.newHire}`);
-          console.log(`  - Filters applied: ${filter.newHireOptions.join(', ')}`);
-          console.log(`  - Resource will be included in results`);
-        }
-      }
+      // Note: New Hire filtering is now done at the SQL level, so we don't need to do it here
 
       // Filter by search term if specified
       if (filter.search && filter.search.trim() !== '') {
