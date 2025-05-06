@@ -356,17 +356,27 @@ export class MemStorage implements IStorage {
         // Convert boolean newHire to "Yes"/"No" string
         const newHireValue = resource.newHire ? "Yes" : "No";
         
-        // Debug logging to help diagnose issues with newHire filtering
-        if (resource.id === 1372) { // The resource we know has newHire=true
-          console.log(`Debug - New Hire filtering for resource ${resource.id}:`);
-          console.log(`  - Resource newHire value: ${resource.newHire} (${newHireValue})`);
-          console.log(`  - Requested filter values: ${filter.newHireOptions.join(', ')}`);
+        // Debug logging for specific cases only
+        if (resource.id === 1372) {
+          console.log(`Debug - Resource ${resource.id} (${resource.name})`);
+          console.log(`  - newHire: ${resource.newHire} (${newHireValue})`);
+          console.log(`  - Filters applied: ${filter.newHireOptions.join(', ')}`);
           console.log(`  - Will be included: ${filter.newHireOptions.includes(newHireValue)}`);
         }
         
-        // Check if the filter includes this value
-        if (!filter.newHireOptions.includes(newHireValue)) {
-          return false;
+        if (filter.newHireOptions.length === 1) {
+          // Single selection filter
+          if (filter.newHireOptions[0] === "Yes" && !resource.newHire) {
+            // If asking for only "Yes" but resource is not for new hires
+            return false;
+          }
+          if (filter.newHireOptions[0] === "No" && resource.newHire) {
+            // If asking for only "No" but resource is for new hires
+            return false;
+          }
+        } else {
+          // Both "Yes" and "No" are selected - let all resources through
+          return true;
         }
       }
 
