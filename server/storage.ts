@@ -351,6 +351,16 @@ export class MemStorage implements IStorage {
       if (filter.messagingStages && filter.messagingStages.length > 0 && !filter.messagingStages.includes(resource.messagingStage)) {
         return false;
       }
+      // Filter by New Hire option if specified
+      if (filter.newHireOptions && filter.newHireOptions.length > 0) {
+        // Convert boolean newHire to "Yes"/"No" string
+        const newHireValue = resource.newHire ? "Yes" : "No";
+        
+        // Check if the filter includes this value
+        if (!filter.newHireOptions.includes(newHireValue)) {
+          return false;
+        }
+      }
 
       // Filter by search term if specified
       if (filter.search && filter.search.trim() !== '') {
