@@ -472,6 +472,45 @@ export default function FilterSidebar({
           </div>
         </div>
         
+        {/* New Hire Filter */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-purple-600 rounded-full mr-2"></span>
+            New Hire?
+          </h3>
+          <div className="space-y-2.5">
+            {metadata.newHireOptions && metadata.newHireOptions.length > 0 ? (
+              metadata.newHireOptions.map((option: string) => (
+                <div key={option} className="flex items-center">
+                  <Checkbox
+                    id={`newHire-${option.toLowerCase()}`}
+                    checked={isSelected('newHireOptions', option)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('newHireOptions', option, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-purple-600"
+                  />
+                  <Label
+                    htmlFor={`newHire-${option.toLowerCase()}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {option}
+                  </Label>
+                </div>
+              ))
+            ) : (isLoading || !isDataLoaded) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+                Loading options...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No options available
+              </div>
+            )}
+          </div>
+        </div>
+        
         {/* Bottom spacing */}
         <div className="h-4" />
       </>

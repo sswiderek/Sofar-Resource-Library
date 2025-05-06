@@ -260,6 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           messagingStages: [],
           contentVisibility: [],
           solutions: [],
+          newHireOptions: ["Yes", "No"],
           lastSynced: lastSyncTime
         });
       }
@@ -289,6 +290,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - ${contentVisibility.length} visibility options
         - ${solutions.length} solutions`);
       
+      // For the newHireOptions, we always send Yes/No options
+      const newHireOptions = ["Yes", "No"];
+      
+      log(`Metadata extracted: 
+        - ${types.length} types
+        - ${products.length} products
+        - ${audiences.length} audiences
+        - ${messagingStages.length} stages
+        - ${contentVisibility.length} visibility options
+        - ${solutions.length} solutions
+        - ${newHireOptions.length} new hire options`);
+        
       res.json({
         types,
         products,
@@ -296,6 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messagingStages,
         contentVisibility,
         solutions,
+        newHireOptions,
         lastSynced: lastSyncTime
       });
     } catch (error) {
