@@ -929,6 +929,13 @@ export class DatabaseStorage implements IStorage {
       if (filter.messagingStages && filter.messagingStages.length > 0 && !filter.messagingStages.includes(resource.messagingStage)) {
         return false;
       }
+      // Filter by New Hire options if specified
+      if (filter.newHireOptions && filter.newHireOptions.length > 0) {
+        const newHireValue = resource.newHire || "No";
+        if (!filter.newHireOptions.includes(newHireValue)) {
+          return false;
+        }
+      }
 
       // Filter by search term if specified
       if (filter.search && filter.search.trim() !== '') {
