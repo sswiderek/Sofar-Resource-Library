@@ -28,7 +28,7 @@ export const resources = pgTable("resources", {
   teamRelevancy: text("team_relevancy").array().notNull(), // Keeping for backwards compatibility
   messagingStage: text("messaging_stage").notNull(),
   contentVisibility: text("content_visibility").notNull().default("both"), // "internal", "external", or "both"
-  newHire: text("new_hire"),  // "Yes" or "No" from Notion "New Hire?" property
+  newHire: text("new_hire").notNull().default("No"),  // "Yes" or "No" from Notion "New Hire?" property
   date: text("date").notNull(),
   url: text("url").notNull(),
   description: text("description").notNull(),
