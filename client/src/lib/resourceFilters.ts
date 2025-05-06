@@ -91,12 +91,16 @@ export const extractMetadata = (resources: Resource[]) => {
   const contentVisibility = Array.from(contentVisibilitySet);
   const solutions = Array.from(solutionsSet);
   
+  // Extract newHire options (convert boolean to Yes/No)
+  const newHireOptions = ["Yes", "No"];
+  
   return {
     types,
     products,
     audiences,
     messagingStages,
     contentVisibility,
-    solutions
+    solutions,
+    newHireOptions
   };
 };

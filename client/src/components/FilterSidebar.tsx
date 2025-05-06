@@ -485,7 +485,7 @@ export default function FilterSidebar({
               metadata.newHireOptions.map((option: string) => (
                 <div key={option} className="flex items-center">
                   <Checkbox
-                    id={`newHire-${option.toLowerCase()}`}
+                    id={`newhire-${option.toLowerCase().replace(/\s+/g, '-')}`}
                     checked={isSelected('newHireOptions', option)}
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('newHireOptions', option, checked as boolean)
@@ -493,7 +493,7 @@ export default function FilterSidebar({
                     className="data-[state=checked]:bg-purple-600"
                   />
                   <Label
-                    htmlFor={`newHire-${option.toLowerCase()}`}
+                    htmlFor={`newhire-${option.toLowerCase().replace(/\s+/g, '-')}`}
                     className="ml-2 text-sm text-neutral-700"
                   >
                     {option}
@@ -503,11 +503,11 @@ export default function FilterSidebar({
             ) : (isLoading || !isDataLoaded) ? (
               <div className="text-xs text-neutral-500 italic flex items-center">
                 <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                Loading options...
+                Loading new hire options...
               </div>
             ) : (
               <div className="text-xs text-neutral-500">
-                No options available
+                No new hire options available
               </div>
             )}
           </div>
