@@ -138,7 +138,7 @@ export function PasswordProtection({ children }: PasswordProtectionProps) {
                 <AlertDialogContent className="max-w-xs"> 
                   <AlertDialogTitle className="text-center text-blue-600">Password Assistance</AlertDialogTitle>
                   <AlertDialogDescription className="text-center">
-                    Please message the #marketing Slack channel for password assistance.
+                    Please message the #marketing Slack channel or check 1password for password assistance.
                   </AlertDialogDescription>
                   <AlertDialogFooter className="flex justify-center">
                     <AlertDialogAction className="bg-blue-600 hover:bg-blue-700">Got it</AlertDialogAction>
