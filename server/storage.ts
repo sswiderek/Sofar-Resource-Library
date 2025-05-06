@@ -353,30 +353,31 @@ export class MemStorage implements IStorage {
       }
       // Filter by New Hire option if specified
       if (filter.newHireOptions && filter.newHireOptions.length > 0) {
-        // Convert boolean newHire to "Yes"/"No" string
-        const newHireValue = resource.newHire ? "Yes" : "No";
-        
-        // Debug logging for specific cases only
+        // This part is critical - we're filtering directly by the newHire boolean
+        if (filter.newHireOptions.includes("Yes") && filter.newHireOptions.includes("No")) {
+          // Both options selected - no filtering needed
+        }
+        else if (filter.newHireOptions.includes("Yes")) {
+          // Only "Yes" selected - must have newHire = true
+          if (!resource.newHire) {
+            console.log(`Filtering out resource ${resource.id} (${resource.name}) - not a new hire resource`);
+            return false;
+          }
+        }
+        else if (filter.newHireOptions.includes("No")) {
+          // Only "No" selected - must have newHire = false
+          if (resource.newHire) {
+            console.log(`Filtering out resource ${resource.id} (${resource.name}) - is a new hire resource`);
+            return false;
+          }
+        }
+
+        // Log if this is the special resource we're tracking
         if (resource.id === 1372) {
           console.log(`Debug - Resource ${resource.id} (${resource.name})`);
-          console.log(`  - newHire: ${resource.newHire} (${newHireValue})`);
+          console.log(`  - newHire value: ${resource.newHire}`);
           console.log(`  - Filters applied: ${filter.newHireOptions.join(', ')}`);
-          console.log(`  - Will be included: ${filter.newHireOptions.includes(newHireValue)}`);
-        }
-        
-        if (filter.newHireOptions.length === 1) {
-          // Single selection filter
-          if (filter.newHireOptions[0] === "Yes" && !resource.newHire) {
-            // If asking for only "Yes" but resource is not for new hires
-            return false;
-          }
-          if (filter.newHireOptions[0] === "No" && resource.newHire) {
-            // If asking for only "No" but resource is for new hires
-            return false;
-          }
-        } else {
-          // Both "Yes" and "No" are selected - let all resources through
-          return true;
+          console.log(`  - Resource will be included in results`);
         }
       }
 
