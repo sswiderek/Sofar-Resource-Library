@@ -15,6 +15,7 @@ interface Metadata {
   messagingStages: string[]; // Maps to "Stage in Buyer's Journey" in Notion
   contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
   solutions: string[];  // Maps to "Solution" in Notion
+  newHireOptions: string[]; // Maps to "New Hire?" in Notion
   lastSynced?: string;
 }
 
@@ -84,6 +85,7 @@ export default function FilterSidebar({
     messagingStages: [],
     contentVisibility: [],
     solutions: [],
+    newHireOptions: [],
   };
 
   // Handle search input with debounce and auto-switch to "Relevance" sort when searching
@@ -105,7 +107,7 @@ export default function FilterSidebar({
 
   // Type-safe checkbox change handler
   const handleCheckboxChange = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions' | 'newHireOptions',
     value: string,
     checked: boolean
   ) => {
@@ -122,7 +124,7 @@ export default function FilterSidebar({
 
   // Type-safe helper function to check if a value is selected
   const isSelected = (
-    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions',
+    category: 'types' | 'products' | 'audiences' | 'messagingStages' | 'contentVisibility' | 'solutions' | 'newHireOptions',
     value: string
   ) => {
     return filter[category]?.includes(value) || false;
@@ -467,6 +469,45 @@ export default function FilterSidebar({
             ) : (
               <div className="text-xs text-neutral-500">
                 No journey stages available
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* New Hire Filter */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center">
+            <span className="w-3 h-3 bg-purple-600 rounded-full mr-2"></span>
+            New Hire?
+          </h3>
+          <div className="space-y-2.5">
+            {metadata.newHireOptions && metadata.newHireOptions.length > 0 ? (
+              metadata.newHireOptions.map((option: string) => (
+                <div key={option} className="flex items-center">
+                  <Checkbox
+                    id={`newhire-${String(option).toLowerCase().replace(/\s+/g, '-')}`}
+                    checked={isSelected('newHireOptions', option)}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('newHireOptions', option, checked as boolean)
+                    }
+                    className="data-[state=checked]:bg-purple-600"
+                  />
+                  <Label
+                    htmlFor={`newhire-${String(option).toLowerCase().replace(/\s+/g, '-')}`}
+                    className="ml-2 text-sm text-neutral-700"
+                  >
+                    {option}
+                  </Label>
+                </div>
+              ))
+            ) : (isLoading || !isDataLoaded) ? (
+              <div className="text-xs text-neutral-500 italic flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+                Loading new hire options...
+              </div>
+            ) : (
+              <div className="text-xs text-neutral-500">
+                No new hire options available
               </div>
             )}
           </div>
