@@ -150,6 +150,9 @@ export async function fetchResourcesFromNotion(): Promise<InsertResource[]> {
                          properties["Internal Use Only?"]?.select?.name === "Yes" ? "internal" : // For backward compatibility
                          properties["Internal Use Only?"]?.select?.name === "No" ? "external" : // For backward compatibility
                          "both",
+                         
+        // Extract "New Hire?" select property from Notion                 
+        newHire: properties["New Hire?"]?.select?.name || null,
                        
         date: properties["Last Updated"]?.date?.start || 
               properties.Date?.date?.start || 

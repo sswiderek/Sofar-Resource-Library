@@ -273,6 +273,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contentVisibilitySet = new Set(resources.map(r => r.contentVisibility || "both"));
       // Extract solutions from the dedicated solution field
       const solutionsSet = new Set(resources.flatMap(r => r.solutions || []));
+      // Extract newHire options (Yes/No)
+      const newHireOptionsSet = new Set<string>();
+      resources.forEach(r => {
+        if (r.newHire) {
+          newHireOptionsSet.add(r.newHire);
+        }
+      });
       
       const types = Array.from(typesSet).filter(Boolean);  // Remove empty values
       const products = Array.from(productsSet).filter(Boolean);
@@ -280,6 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messagingStages = Array.from(messagingStagesSet).filter(Boolean);
       const contentVisibility = Array.from(contentVisibilitySet).filter(Boolean);
       const solutions = Array.from(solutionsSet).filter(Boolean);
+      const newHireOptions = Array.from(newHireOptionsSet).filter(Boolean);
 
       log(`Metadata extracted: 
         - ${types.length} types
@@ -287,7 +295,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - ${audiences.length} audiences
         - ${messagingStages.length} stages
         - ${contentVisibility.length} visibility options
-        - ${solutions.length} solutions`);
+        - ${solutions.length} solutions
+        - ${newHireOptions.length} new hire options`);
       
       res.json({
         types,
@@ -296,6 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messagingStages,
         contentVisibility,
         solutions,
+        newHireOptions,
         lastSynced: lastSyncTime
       });
     } catch (error) {

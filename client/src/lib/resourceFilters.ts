@@ -8,6 +8,7 @@ export interface ResourceFilters {
   messagingStages: string[];  // Maps to "Stage in Buyer's Journey" in Notion
   contentVisibility: string[]; // Maps to "Internal Use Only?" in Notion
   solutions: string[];        // Maps to Solution in Notion (major product groupings)
+  newHireOptions: string[];   // Maps to "New Hire?" in Notion
   search: string;
   sortBy?: 'relevance' | 'popularity' | 'newest' | 'oldest'; // Optional sort parameter
 }
@@ -20,6 +21,7 @@ export const initialFilters: ResourceFilters = {
   messagingStages: [],
   contentVisibility: [], // No default selection for content visibility
   solutions: [],
+  newHireOptions: [], // New Hire? filter options (Yes/No)
   search: '',
   sortBy: 'newest', // Setting "Newest First" as the default sort
 };
@@ -51,6 +53,10 @@ export const buildFilterQueryString = (filters: ResourceFilters): string => {
   if (filters.solutions.length > 0) {
     params.append('solutions', filters.solutions.join(','));
   }
+  
+  if (filters.newHireOptions.length > 0) {
+    params.append('newHireOptions', filters.newHireOptions.join(','));
+  }
 
   if (filters.search) {
     params.append('search', filters.search);
@@ -72,6 +78,14 @@ export const extractMetadata = (resources: Resource[]) => {
   const messagingStagesSet = new Set(resources.map(r => r.messagingStage));
   const contentVisibilitySet = new Set(resources.map(r => r.contentVisibility || 'both'));
   
+  // Extract newHire options (Yes/No)
+  const newHireOptionsSet = new Set<string>();
+  resources.forEach(r => {
+    if (r.newHire) {
+      newHireOptionsSet.add(r.newHire);
+    }
+  });
+  
   // Extract solutions from products (Wayfinder, Spotter, Smart Mooring)
   const solutionsSet = new Set(resources.flatMap(r => 
     r.product.filter(p => p.includes('Wayfinder') || p.includes('Spotter') || p.includes('Smart Mooring'))
@@ -84,6 +98,7 @@ export const extractMetadata = (resources: Resource[]) => {
   const messagingStages = Array.from(messagingStagesSet);
   const contentVisibility = Array.from(contentVisibilitySet);
   const solutions = Array.from(solutionsSet);
+  const newHireOptions = Array.from(newHireOptionsSet);
   
   return {
     types,
@@ -91,6 +106,7 @@ export const extractMetadata = (resources: Resource[]) => {
     audiences,
     messagingStages,
     contentVisibility,
-    solutions
+    solutions,
+    newHireOptions
   };
 };
