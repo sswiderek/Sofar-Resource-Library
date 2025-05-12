@@ -2,6 +2,10 @@
 
 A dynamic web portal for marine intelligence resource management, combining intelligent content discovery with an engaging user experience and streamlined content governance.
 
+**Live Application**: [https://sofar-resource-library.replit.app/](https://sofar-resource-library.replit.app/)
+
+![Sofar Resource Library Screenshot](client/public/readme_resource_library.png)
+
 ## Overview
 
 The Sofar Resource Library is a partner-facing portal that provides access to Sofar's comprehensive collection of resources. It synchronizes with a Notion database to display up-to-date resources while providing an intuitive filtering, browsing, and searching experience.
